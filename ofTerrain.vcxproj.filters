@@ -1,0 +1,309 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="src\ofApp.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="src\main.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\addons\ofxImGui-1.75\src\BaseEngine.cpp">
+      <Filter>addons\ofxImGui-1.75\src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\addons\ofxImGui-1.75\src\DefaultTheme.cpp">
+      <Filter>addons\ofxImGui-1.75\src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\addons\ofxImGui-1.75\src\EngineGLFW.cpp">
+      <Filter>addons\ofxImGui-1.75\src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\addons\ofxImGui-1.75\src\EngineOpenGLES.cpp">
+      <Filter>addons\ofxImGui-1.75\src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\addons\ofxImGui-1.75\src\EngineVk.cpp">
+      <Filter>addons\ofxImGui-1.75\src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\addons\ofxImGui-1.75\src\Gui.cpp">
+      <Filter>addons\ofxImGui-1.75\src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\addons\ofxImGui-1.75\src\Helpers.cpp">
+      <Filter>addons\ofxImGui-1.75\src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\addons\ofxImGui-1.75\src\ofxImGuiLoggerChannel.cpp">
+      <Filter>addons\ofxImGui-1.75\src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\addons\ofxImGui-1.75\libs\imgui\src\crude_json.cpp">
+      <Filter>addons\ofxImGui-1.75\libs\imgui\src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\addons\ofxImGui-1.75\libs\imgui\src\imgui.cpp">
+      <Filter>addons\ofxImGui-1.75\libs\imgui\src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\addons\ofxImGui-1.75\libs\imgui\src\imgui_canvas.cpp">
+      <Filter>addons\ofxImGui-1.75\libs\imgui\src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\addons\ofxImGui-1.75\libs\imgui\src\imgui_demo.cpp">
+      <Filter>addons\ofxImGui-1.75\libs\imgui\src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\addons\ofxImGui-1.75\libs\imgui\src\imgui_draw.cpp">
+      <Filter>addons\ofxImGui-1.75\libs\imgui\src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\addons\ofxImGui-1.75\libs\imgui\src\imgui_node_editor.cpp">
+      <Filter>addons\ofxImGui-1.75\libs\imgui\src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\addons\ofxImGui-1.75\libs\imgui\src\imgui_node_editor_api.cpp">
+      <Filter>addons\ofxImGui-1.75\libs\imgui\src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\addons\ofxImGui-1.75\libs\imgui\src\imgui_widgets.cpp">
+      <Filter>addons\ofxImGui-1.75\libs\imgui\src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\addons\ofxMidi\src\desktop\ofxRtMidiIn.cpp">
+      <Filter>addons\ofxMidi\src\desktop</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\addons\ofxMidi\src\desktop\ofxRtMidiOut.cpp">
+      <Filter>addons\ofxMidi\src\desktop</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\addons\ofxMidi\src\ofxBaseMidi.cpp">
+      <Filter>addons\ofxMidi\src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\addons\ofxMidi\src\ofxMidi.cpp">
+      <Filter>addons\ofxMidi\src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\addons\ofxMidi\src\ofxMidiClock.cpp">
+      <Filter>addons\ofxMidi\src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\addons\ofxMidi\src\ofxMidiIn.cpp">
+      <Filter>addons\ofxMidi\src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\addons\ofxMidi\src\ofxMidiMessage.cpp">
+      <Filter>addons\ofxMidi\src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\addons\ofxMidi\src\ofxMidiOut.cpp">
+      <Filter>addons\ofxMidi\src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\addons\ofxMidi\src\ofxMidiTimecode.cpp">
+      <Filter>addons\ofxMidi\src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\addons\ofxMidi\libs\rtmidi\RtMidi.cpp">
+      <Filter>addons\ofxMidi\libs\rtmidi</Filter>
+    </ClCompile>
+    <ClCompile Include="src\seam\editor.cpp">
+      <Filter>src\seam</Filter>
+    </ClCompile>
+    <ClCompile Include="src\seam\event-nodes\event-node.cpp">
+      <Filter>src\seam\event-nodes</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\addons\ofxImGui-1.75\libs\imgui\src\imgui_tables.cpp">
+      <Filter>addons\ofxImGui-1.75\libs\imgui\src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\addons\ofxImGui-1.75\libs\imgui\src\blueprints\widgets.cpp">
+      <Filter>addons\ofxImGui-1.75\libs\imgui\src\blueprints</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\addons\ofxImGui-1.75\libs\imgui\src\blueprints\builders.cpp">
+      <Filter>addons\ofxImGui-1.75\libs\imgui\src\blueprints</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\addons\ofxImGui-1.75\libs\imgui\src\blueprints\drawing.cpp">
+      <Filter>addons\ofxImGui-1.75\libs\imgui\src\blueprints</Filter>
+    </ClCompile>
+    <ClCompile Include="src\seam\event-nodes\top.cpp">
+      <Filter>src\seam\event-nodes</Filter>
+    </ClCompile>
+    <ClCompile Include="src\seam\event-nodes\texgen-perlin.cpp">
+      <Filter>src\seam\event-nodes</Filter>
+    </ClCompile>
+    <ClCompile Include="src\seam\pin.cpp">
+      <Filter>src\seam</Filter>
+    </ClCompile>
+    <ClCompile Include="src\seam\factory.cpp">
+      <Filter>src\seam</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="src">
+      <UniqueIdentifier>{d8376475-7454-4a24-b08a-aac121d3ad6f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="addons">
+      <UniqueIdentifier>{71834F65-F3A9-211E-73B8-DC85}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="addons\ofxImGui-1.75">
+      <UniqueIdentifier>{FEFAF79E-3504-65DD-71CF-1B11}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="addons\ofxImGui-1.75\src">
+      <UniqueIdentifier>{CC850521-1586-14E5-AB66-1D6A}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="addons\ofxImGui-1.75\libs">
+      <UniqueIdentifier>{0D6C55A2-54A0-DE0D-3A9A-22DB}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="addons\ofxImGui-1.75\libs\imgui">
+      <UniqueIdentifier>{572857A0-D3FB-96B4-0C6A-3C73}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="addons\ofxImGui-1.75\libs\imgui\src">
+      <UniqueIdentifier>{3AAA9403-3ECA-7481-D40E-E95D}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="addons\ofxMidi">
+      <UniqueIdentifier>{4DF4D977-A753-531B-5057-9AC1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="addons\ofxMidi\src">
+      <UniqueIdentifier>{7EED8620-FDD5-520C-3F5D-2677}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="addons\ofxMidi\src\desktop">
+      <UniqueIdentifier>{03CA45A4-AB22-A57E-895E-C6BC}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="addons\ofxMidi\libs">
+      <UniqueIdentifier>{B8086AD6-372B-1A12-88A6-74F9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="addons\ofxMidi\libs\rtmidi">
+      <UniqueIdentifier>{8E6C5628-3502-6F01-4B1D-AEAE}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\seam">
+      <UniqueIdentifier>{1080a212-c06c-4508-ad2d-870f9c1e58c2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\seam\event-nodes">
+      <UniqueIdentifier>{c80c7f3a-f25f-45f7-a46d-336a7450f72a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="addons\ofxImGui-1.75\libs\imgui\src\blueprints">
+      <UniqueIdentifier>{8a8fe114-f35d-4887-9c0a-542b99c39491}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="src\ofApp.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\addons\ofxImGui-1.75\src\BaseEngine.h">
+      <Filter>addons\ofxImGui-1.75\src</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\addons\ofxImGui-1.75\src\BaseTheme.h">
+      <Filter>addons\ofxImGui-1.75\src</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\addons\ofxImGui-1.75\src\DefaultTheme.h">
+      <Filter>addons\ofxImGui-1.75\src</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\addons\ofxImGui-1.75\src\EngineGLFW.h">
+      <Filter>addons\ofxImGui-1.75\src</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\addons\ofxImGui-1.75\src\EngineOpenGLES.h">
+      <Filter>addons\ofxImGui-1.75\src</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\addons\ofxImGui-1.75\src\EngineVk.h">
+      <Filter>addons\ofxImGui-1.75\src</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\addons\ofxImGui-1.75\src\Gui.h">
+      <Filter>addons\ofxImGui-1.75\src</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\addons\ofxImGui-1.75\src\Helpers.h">
+      <Filter>addons\ofxImGui-1.75\src</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\addons\ofxImGui-1.75\src\imconfig.h">
+      <Filter>addons\ofxImGui-1.75\src</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\addons\ofxImGui-1.75\src\ofxImGui.h">
+      <Filter>addons\ofxImGui-1.75\src</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\addons\ofxImGui-1.75\src\ofxImGuiLoggerChannel.h">
+      <Filter>addons\ofxImGui-1.75\src</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\addons\ofxImGui-1.75\libs\imgui\src\crude_json.h">
+      <Filter>addons\ofxImGui-1.75\libs\imgui\src</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\addons\ofxImGui-1.75\libs\imgui\src\imgui.h">
+      <Filter>addons\ofxImGui-1.75\libs\imgui\src</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\addons\ofxImGui-1.75\libs\imgui\src\imgui_bezier_math.h">
+      <Filter>addons\ofxImGui-1.75\libs\imgui\src</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\addons\ofxImGui-1.75\libs\imgui\src\imgui_canvas.h">
+      <Filter>addons\ofxImGui-1.75\libs\imgui\src</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\addons\ofxImGui-1.75\libs\imgui\src\imgui_extra_math.h">
+      <Filter>addons\ofxImGui-1.75\libs\imgui\src</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\addons\ofxImGui-1.75\libs\imgui\src\imgui_internal.h">
+      <Filter>addons\ofxImGui-1.75\libs\imgui\src</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\addons\ofxImGui-1.75\libs\imgui\src\imgui_node_editor.h">
+      <Filter>addons\ofxImGui-1.75\libs\imgui\src</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\addons\ofxImGui-1.75\libs\imgui\src\imgui_node_editor_internal.h">
+      <Filter>addons\ofxImGui-1.75\libs\imgui\src</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\addons\ofxImGui-1.75\libs\imgui\src\imstb_rectpack.h">
+      <Filter>addons\ofxImGui-1.75\libs\imgui\src</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\addons\ofxImGui-1.75\libs\imgui\src\imstb_textedit.h">
+      <Filter>addons\ofxImGui-1.75\libs\imgui\src</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\addons\ofxImGui-1.75\libs\imgui\src\imstb_truetype.h">
+      <Filter>addons\ofxImGui-1.75\libs\imgui\src</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\addons\ofxMidi\src\desktop\ofxRtMidiIn.h">
+      <Filter>addons\ofxMidi\src\desktop</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\addons\ofxMidi\src\desktop\ofxRtMidiOut.h">
+      <Filter>addons\ofxMidi\src\desktop</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\addons\ofxMidi\src\ofxBaseMidi.h">
+      <Filter>addons\ofxMidi\src</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\addons\ofxMidi\src\ofxMidi.h">
+      <Filter>addons\ofxMidi\src</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\addons\ofxMidi\src\ofxMidiClock.h">
+      <Filter>addons\ofxMidi\src</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\addons\ofxMidi\src\ofxMidiConstants.h">
+      <Filter>addons\ofxMidi\src</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\addons\ofxMidi\src\ofxMidiIn.h">
+      <Filter>addons\ofxMidi\src</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\addons\ofxMidi\src\ofxMidiMessage.h">
+      <Filter>addons\ofxMidi\src</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\addons\ofxMidi\src\ofxMidiOut.h">
+      <Filter>addons\ofxMidi\src</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\addons\ofxMidi\src\ofxMidiTimecode.h">
+      <Filter>addons\ofxMidi\src</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\addons\ofxMidi\src\ofxMidiTypes.h">
+      <Filter>addons\ofxMidi\src</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\addons\ofxMidi\libs\rtmidi\RtMidi.h">
+      <Filter>addons\ofxMidi\libs\rtmidi</Filter>
+    </ClInclude>
+    <ClInclude Include="src\seam\pin.h">
+      <Filter>src\seam</Filter>
+    </ClInclude>
+    <ClInclude Include="src\seam\notes.h">
+      <Filter>src\seam</Filter>
+    </ClInclude>
+    <ClInclude Include="src\seam\event-nodes\event-node.h">
+      <Filter>src\seam\event-nodes</Filter>
+    </ClInclude>
+    <ClInclude Include="src\seam\editor.h">
+      <Filter>src\seam</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\addons\ofxImGui-1.75\libs\imgui\src\blueprints\drawing.h">
+      <Filter>addons\ofxImGui-1.75\libs\imgui\src\blueprints</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\addons\ofxImGui-1.75\libs\imgui\src\blueprints\widgets.h">
+      <Filter>addons\ofxImGui-1.75\libs\imgui\src\blueprints</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\addons\ofxImGui-1.75\libs\imgui\src\blueprints\builders.h">
+      <Filter>addons\ofxImGui-1.75\libs\imgui\src\blueprints</Filter>
+    </ClInclude>
+    <ClInclude Include="src\seam\event-nodes\top.h">
+      <Filter>src\seam\event-nodes</Filter>
+    </ClInclude>
+    <ClInclude Include="src\seam\event-nodes\texgen-perlin.h">
+      <Filter>src\seam\event-nodes</Filter>
+    </ClInclude>
+    <ClInclude Include="src\seam\factory.h">
+      <Filter>src\seam</Filter>
+    </ClInclude>
+    <ClInclude Include="src\seam\hash.h">
+      <Filter>src\seam</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="icon.rc" />
+  </ItemGroup>
+</Project>
