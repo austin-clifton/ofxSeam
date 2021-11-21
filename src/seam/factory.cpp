@@ -2,6 +2,7 @@
 #include "hash.h"
 
 #include "event-nodes/texgen-perlin.h"
+#include "event-nodes/cos.h"
 
 using namespace seam;
 
@@ -9,6 +10,10 @@ EventNodeFactory::EventNodeFactory() {
 	// register seam-internal nodes here
 	Register([] {
 		return new TexgenPerlin();
+	});
+
+	Register([] {
+		return new seam::Cos();
 	});
 
 	// TODO register more seam internal generators here
