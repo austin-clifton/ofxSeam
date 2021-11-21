@@ -5,6 +5,7 @@ namespace seam {
 	PinInput CreatePinInput<int>(const std::string_view name, std::function<void(int)>&& callback) {
 		PinInput input;
 		PinInt* pin = new PinInt();
+		pin->flags = PinFlags::INPUT;
 		pin->name = name;
 		pin->callback = std::move(callback);
 		input.pin = pin;
@@ -15,6 +16,7 @@ namespace seam {
 	PinInput CreatePinInput<float>(const std::string_view name, std::function<void(float)>&& callback) {
 		PinInput input;
 		PinFloat* pin = new PinFloat();
+		pin->flags = PinFlags::INPUT;
 		pin->name = name;
 		pin->callback = std::move(callback);
 		input.pin = pin;
@@ -25,6 +27,7 @@ namespace seam {
 	PinInput CreatePinInput<Texture>(const std::string_view name, std::function<void(Texture)>&& callback) {
 		PinInput input;
 		PinTexture* pin = new PinTexture();
+		pin->flags = PinFlags::INPUT;
 		pin->name = name;
 		pin->callback = std::move(callback);
 		input.pin = pin;

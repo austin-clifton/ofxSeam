@@ -43,7 +43,9 @@ namespace seam {
 
 	// a bitmask enum for marking boolean properties of a Pin
 	enum PinFlags {
-		IS_FEEDBACK = 1 << 0,
+		FEEDBACK = 1 << 0,
+		INPUT = 1 << 1,
+		OUTPUT = 1 << 2,
 	};
 
 	struct Texture {

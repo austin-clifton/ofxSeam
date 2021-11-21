@@ -63,10 +63,6 @@ namespace {
 
 }
 
-/// ---------------------------------
-/// IEventNode implementation
-/// ---------------------------------
-
 void IEventNode::GuiDraw( ed::Utilities::BlueprintNodeBuilder& builder ) {
 	builder.Begin(ed::NodeId(this));
 
@@ -86,7 +82,7 @@ void IEventNode::GuiDraw( ed::Utilities::BlueprintNodeBuilder& builder ) {
 		// ImGui::PushStyleVar(ImGuiStyleVar_Alpha, alpha);
 
 		// a pin's pointer address is its ID for drawing purposes
-		builder.Input(ed::PinId(&inputs[i]));
+		builder.Input(ed::PinId(inputs[i].pin));
 		
 		DrawPinIcon(*inputs[i].pin, inputs[i].connection != nullptr, 1.0f);
 		ImGui::Spring(0.f);
@@ -108,7 +104,7 @@ void IEventNode::GuiDraw( ed::Utilities::BlueprintNodeBuilder& builder ) {
 	for (size_t i = 0; i < size; i++) {
 		// TODO alpha again
 
-		builder.Output(ed::PinId(&outputs[i]));
+		builder.Output(ed::PinId(&outputs[i].pin));
 
 		ImGui::Spring(0.f);
 		ImGui::TextUnformatted(outputs[i].pin.name.data());

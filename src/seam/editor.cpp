@@ -100,39 +100,39 @@ void Editor::GuiDraw() {
 
 			ed::PinId start_pin_id = 0, end_pin_id = 0;
 			if (ed::QueryNewLink(&start_pin_id, &end_pin_id)) {
-				// the pin ID is the pointer to the PinInput or PinOutput itself
-				// cast the ID to a pointer
-				PinInput* pin_in = dynamic_cast<PinInput*>(start_pin_id.AsPointer<PinInput>());
-				PinOutput* pin_out = nullptr;
-				// start_pin_id may be the input or output pin, 
-				// we have to explicitly check and reverse if needed
-				if (pin_in != nullptr) {
-					pin_out = dynamic_cast<PinOutput*>(end_pin_id.AsPointer<PinOutput>());
-				} else {
-					// pin_in is end pin ID, not the start
-					pin_in = dynamic_cast<PinInput*>(end_pin_id.AsPointer<PinInput>());
-					pin_out = dynamic_cast<PinOutput*>(start_pin_id.AsPointer<PinOutput>());
+				// the pin ID is the pointer to the Pin itself
+				// figure out which Pin is the input pin, and which is the output pin
+				Pin* pin_in = start_pin_id.AsPointer<Pin>();
+				Pin* pin_out = end_pin_id.AsPointer<Pin>();
+				if ((pin_in->flags & PinFlags::INPUT) != PinFlags::INPUT) {
+					// in and out are reversed, swap them
+					std::swap(pin_in, pin_out);
 				}
 				assert(pin_in && pin_out);
 
-				if (pin_in && pin_out) {
-					if ((void*)pin_in == (void*)pin_out) {
-						ed::RejectNewItem(ImColor(255, 0, 0), 2.0f);
-					} else if (pin_in->pin->type != pin_out->pin.type) {
-						showLabel("x Pins must be of the same type", ImColor(45, 32, 32, 180));
-						ed::RejectNewItem(ImColor(255, 128, 128), 1.0f);
-					} else {
-						showLabel("+ Create Link", ImColor(32, 45, 32, 180));
-						if (ed::AcceptNewItem(ImColor(128, 255, 128), 4.0f)) {
-
-							// TODO
-
-							// s_Links.emplace_back(Link(GetNextId(), start_pin_id, end_pin_id));
-							// s_Links.back().Color = GetIconColor(startPin->Type);
-						}
-					}
-				} else {
+				if ((void*)pin_in == (void*)pin_out) {
+					ed::RejectNewItem(ImColor(255, 0, 0), 2.0f);
+				} else if (pin_in->type != pin_out->type) {
+					showLabel("x Pins must be of the same type", ImColor(45, 32, 32, 180));
+					ed::RejectNewItem(ImColor(255, 128, 128), 1.0f);
+				} else if (
+					(pin_in->flags & PinFlags::INPUT) != PinFlags::INPUT
+					|| (pin_out->flags & PinFlags::OUTPUT) != PinFlags::OUTPUT
+				) {
 					showLabel("x Connections must be made from input to output", ImColor(45, 32, 32, 180));
+					ed::RejectNewItem(ImColor(255, 128, 128), 1.0f);
+
+				} else {
+					showLabel("+ Create Link", ImColor(32, 45, 32, 180));
+					if (ed::AcceptNewItem(ImColor(128, 255, 128), 4.0f)) {
+
+						printf("create new link!\n");
+
+						// TODO
+
+						// s_Links.emplace_back(Link(GetNextId(), start_pin_id, end_pin_id));
+						// s_Links.back().Color = GetIconColor(startPin->Type);
+					}
 				}
 			}
 
