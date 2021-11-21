@@ -87,6 +87,16 @@ void Editor::GuiDraw() {
 		n->GuiDraw(builder);
 	}
 
+	for (const auto& l : links) {
+		// TODO this runs a lot, might be better to store Pins in the Links list directly,
+		// instead of PinInput* and PinOutput* which require the pointer follow to get the data we want
+		ed::Link(
+			(ed::LinkId)&l,
+			(ed::PinId)l.first->pin,
+			(ed::PinId)&l.second->pin
+		);
+	}
+
 	// if the create dialog isn't up, handle node graph interactions
 	if (!show_create_dialog) {
 		if (ed::BeginCreate(ImColor(255, 255, 255), 2.0f)) {
@@ -135,12 +145,8 @@ void Editor::GuiDraw() {
 					showLabel("+ Create Link", ImColor(32, 45, 32, 180));
 					if (ed::AcceptNewItem(ImColor(128, 255, 128), 4.0f)) {
 
-						printf("create new link!\n");
-
-						// TODO
-
-						// s_Links.emplace_back(Link(GetNextId(), start_pin_id, end_pin_id));
-						// s_Links.back().Color = GetIconColor(startPin->Type);
+						bool connected = Connect(pin_out, pin_in);
+						assert(connected);
 					}
 				}
 			}
@@ -264,9 +270,68 @@ IEventNode* Editor::CreateAndAdd(const std::string_view node_name) {
 	return CreateAndAdd(SCHash(node_name.data(), node_name.length()));
 }
 
-bool Editor::Connect(PinInput* pin_in, PinOutput* pin_out) {
-	// TODOOOO
-	return false;
+bool Editor::Connect(IEventNode* node_out, Pin* pin_co, IEventNode* node_in, Pin* pin_ci) {
+	// pin_co == pin connection out
+	// pin_ci == pin connection in 
+	assert((pin_ci->flags & PinFlags::INPUT) == PinFlags::INPUT);
+	assert((pin_co->flags & PinFlags::OUTPUT) == PinFlags::OUTPUT);
+	assert(pin_co->type == pin_ci->type);
+
+	// find the structs that contain the pins to be connected
+	// also more validations: make sure pin_out is actually an output pin of node_out, and same for the input
+	PinInput* pin_in = nullptr;
+	PinOutput* pin_out = nullptr;
+	{
+		bool found = false;
+		size_t size;
+		PinOutput* pin_outputs = node_out->PinOutputs(size);
+		for (size_t i = 0; i < size && !found; i++) {
+			pin_out = &pin_outputs[i];
+			found = &pin_outputs[i].pin == pin_co;
+		}
+		assert(found);
+		if (!found) {
+			pin_out = nullptr;
+		}
+
+		found = false;
+		PinInput* pin_inputs = node_in->PinInputs(size);
+		for (size_t i = 0; i < size && !found; i++) {
+			pin_in = &pin_inputs[i];
+			found = pin_inputs[i].pin == pin_ci;
+		}
+		assert(found);
+		assert(pin_out != nullptr && pin_in != nullptr);
+		if (!found) {
+			pin_in = nullptr;
+		}
+	}
+
+	if (pin_in == nullptr || pin_out == nullptr) {
+		return false;
+	} else {
+		// create the connection
+		pin_out->connections.push_back(pin_in->pin);
+
+		// add to the links list
+		Link link;
+		link.first = pin_in;
+		link.second = pin_out;
+		links.push_back(std::move(link));
+		return true;
+	}
+}
+
+bool Editor::Connect(Pin* pin_out, Pin* pin_in) {
+	// find the node each pin is connected to
+	auto it_in = std::lower_bound(pins_to_nodes.begin(), pins_to_nodes.end(), pin_in);
+	auto it_out = std::lower_bound(pins_to_nodes.begin(), pins_to_nodes.end(), pin_out);
+	assert(it_in != pins_to_nodes.end() && it_out != pins_to_nodes.end());
+
+	IEventNode* node_in = it_in->node;
+	IEventNode* node_out = it_out->node;
+
+	return Connect(node_out, pin_out, node_in, pin_in);
 }
 
 void Editor::ShowGui(bool toggle) {

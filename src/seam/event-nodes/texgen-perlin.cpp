@@ -20,6 +20,7 @@ TexgenPerlin::TexgenPerlin() : IEventNode("Perlin Noise") {
 	});
 
 	pin_inputs[1] = CreatePinInput<float>("frequency", [&](float v) {
+		printf("freq changed: %f\n", v);
 		frequency = v;
 		dirty = true;
 	});

@@ -31,7 +31,9 @@ namespace seam {
 		/// \return the newly created event node, or nullptr if the node name didn't match a registered node type.
 		IEventNode* CreateAndAdd(const std::string_view node_name);
 
-		bool Connect(PinInput* pin_in, PinOutput* pin_out);
+		bool Connect(IEventNode* node_out, Pin* pin_out, IEventNode* node_in, Pin* pin_in);
+
+		bool Connect(Pin* pin_out, Pin* pin_in);
 
 		void ShowGui(bool toggle);
 
