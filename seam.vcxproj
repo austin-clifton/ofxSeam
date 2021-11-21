@@ -217,6 +217,7 @@
     <ClCompile Include="..\..\..\addons\ofxMidi\src\ofxMidiTimecode.cpp" />
     <ClCompile Include="..\..\..\addons\ofxMidi\libs\rtmidi\RtMidi.cpp" />
     <ClCompile Include="src\seam\editor.cpp" />
+    <ClCompile Include="src\seam\event-nodes\cos.cpp" />
     <ClCompile Include="src\seam\event-nodes\event-node.cpp" />
     <ClCompile Include="src\seam\event-nodes\texgen-perlin.cpp" />
     <ClCompile Include="src\seam\event-nodes\top.cpp" />
@@ -263,6 +264,7 @@
     <ClInclude Include="..\..\..\addons\ofxMidi\src\ofxMidiTypes.h" />
     <ClInclude Include="..\..\..\addons\ofxMidi\libs\rtmidi\RtMidi.h" />
     <ClInclude Include="src\seam\editor.h" />
+    <ClInclude Include="src\seam\event-nodes\cos.h" />
     <ClInclude Include="src\seam\event-nodes\event-node.h" />
     <ClInclude Include="src\seam\event-nodes\texgen-perlin.h" />
     <ClInclude Include="src\seam\event-nodes\top.h" />

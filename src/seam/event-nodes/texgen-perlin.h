@@ -15,10 +15,10 @@ namespace seam {
 
 		void GuiDrawPropertiesList() override;
 	
-	private:
 		PinInput* PinInputs(size_t& size) override;
 
 		PinOutput* PinOutputs(size_t& size) override;
+	private:
 
 		// nomenclature from http://libnoise.sourceforge.net/glossary/#perlinnoise
 

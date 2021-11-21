@@ -115,6 +115,9 @@
     <ClCompile Include="src\seam\factory.cpp">
       <Filter>src\seam</Filter>
     </ClCompile>
+    <ClCompile Include="src\seam\event-nodes\cos.cpp">
+      <Filter>src\seam\event-nodes</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="src">
@@ -301,6 +304,9 @@
     </ClInclude>
     <ClInclude Include="src\seam\hash.h">
       <Filter>src\seam</Filter>
+    </ClInclude>
+    <ClInclude Include="src\seam\event-nodes\cos.h">
+      <Filter>src\seam\event-nodes</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

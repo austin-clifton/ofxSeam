@@ -119,11 +119,12 @@ namespace seam {
 		Pin* connection = nullptr;
 	};
 
+	Pin CreatePinOutput(PinType type, std::string_view name, PinFlags flags = (PinFlags)0);
+
 	// template utility function for creating input pins 
 	// explicit template speclializations are defined in the cpp file
 	// each overload takes a different callback, and infers the pin's type
 	// TODO not sure why the template is needed, vc++17 compiler says it can't disambiguate overloads without the template
 	template <typename... T>
 	PinInput CreatePinInput(const std::string_view name, std::function<void(T...)>&& callback);
-
 };

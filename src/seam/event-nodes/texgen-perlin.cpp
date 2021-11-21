@@ -40,8 +40,7 @@ TexgenPerlin::TexgenPerlin() : IEventNode("Perlin Noise") {
 	});
 
 	// define the output pin
-	pin_out_tex.pin.type = PinType::TEXTURE;
-	pin_out_tex.pin.name = "texture";
+	pin_out_tex.pin = CreatePinOutput(PinType::TEXTURE, "texture");
 
 	// TODO this shouldn't be an RGB buffer if only using one color channel
 	fbo.allocate(tex_size.x, tex_size.y, GL_RGB);

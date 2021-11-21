@@ -1,6 +1,14 @@
 #include "pin.h"
 
 namespace seam {
+	Pin CreatePinOutput(PinType type, std::string_view name, PinFlags flags) {
+		Pin pin;
+		pin.type = type;
+		pin.name = name;
+		pin.flags = (PinFlags)(flags | PinFlags::OUTPUT);
+		return pin;
+	}
+
 	template <>
 	PinInput CreatePinInput<int>(const std::string_view name, std::function<void(int)>&& callback) {
 		PinInput input;

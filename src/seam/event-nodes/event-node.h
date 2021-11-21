@@ -41,12 +41,8 @@ namespace seam {
 		// and should be exposed for editing.
 		virtual void GuiDrawPropertiesList() { }
 
-		// virtual IEventNode** NodeInputs(size_t& size) = 0;
-
-		// virtual IEventNode** NodeOutputs(size_t& size) = 0;
-
 		/// to be called during OF's update() loop
-		void Update();
+		virtual void Update(float time) { }
 
 		void GuiDraw( ed::Utilities::BlueprintNodeBuilder& builder );
 
