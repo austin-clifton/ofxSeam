@@ -37,6 +37,15 @@ void Editor::Draw() {
 	// TODO draw a final image to the screen
 }
 
+void Editor::Update() {
+	// TODO nodes need to be sorted for updating!
+	// Parent nodes need to propagate their changes down before a child node updates
+	float time = ofGetElapsedTimef();
+	for (size_t i = 0; i < nodes.size(); i++) {
+		nodes[i]->Update(time);
+	}
+}
+
 void Editor::GuiDrawPopups() {
 	const ImVec2 open_popup_position = ImGui::GetMousePos();
 
