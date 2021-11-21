@@ -39,6 +39,7 @@ namespace seam {
 		static bool CompareDrawOrder(const IEventNode* l, const IEventNode* r);
 
 		void GuiDraw();
+		void GuiDrawPopups();
 
 		// used by GUI interactions to "map" Pins to their Nodes
 		struct PinToNode {
@@ -66,7 +67,7 @@ namespace seam {
 
 		ax::NodeEditor::EditorContext* node_editor_context;
 
-		EventNodeFactory node_factory;
+		EventNodeFactory factory;
 
 		// list of all the event nodes the graph will draw
 		// this list does not need to be sorted

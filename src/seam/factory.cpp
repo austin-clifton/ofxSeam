@@ -34,7 +34,7 @@ IEventNode* EventNodeFactory::Create(NodeId node_id) {
 }
 
 bool EventNodeFactory::Register(EventNodeFactory::CreateFunc&& Create) {
-	NodeGenerator gen;
+	Generator gen;
 	// TODO it'd be nice to stack alloc dummy nodes instead but probably doesn't matter that much;
 	// this should only run once per node type
 	std::unique_ptr<IEventNode> n(Create());
@@ -78,11 +78,22 @@ bool EventNodeFactory::Register(EventNodeFactory::CreateFunc&& Create) {
 	generators.push_back(std::move(gen));
 }
 
-void EventNodeFactory::DrawCreatePopup(PinType input_type, PinType output_type) {
+NodeId EventNodeFactory::DrawCreatePopup(PinType input_type, PinType output_type) {
 	if (!generators_sorted) {
 		std::sort(generators.begin(), generators.end());
 	}
 
-	// TODO
+	// loop through each Generator that's been registered with the EventNodeFactory,
+	// and make a selectable menu item for it
+	NodeId new_node_id = 0;
+	for (auto gen : generators) {
+		// TODO filter input / output types, only enable items which match the filter
 
+		// MenuItem() will return true if this menu item was selected
+		if (ImGui::MenuItem(gen.node_name.data())) {
+			new_node_id = gen.node_id;
+		}
+	}
+
+	return new_node_id;
 }

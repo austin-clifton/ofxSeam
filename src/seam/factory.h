@@ -8,7 +8,7 @@ namespace seam {
 		using CreateFunc = std::function<IEventNode*()>;
 
 		/// holds metadata about an event node, and a function that can create one
-		struct NodeGenerator {
+		struct Generator {
 			/// the node's hash, calculated from its name
 			NodeId node_id;
 
@@ -24,7 +24,7 @@ namespace seam {
 			/// can create a unique instance of the node described by this struct
 			CreateFunc Create;
 
-			bool operator <(const NodeGenerator& other) {
+			bool operator <(const Generator& other) {
 				return node_id < other.node_id;
 			}
 
@@ -44,7 +44,8 @@ namespace seam {
 
 		IEventNode* Create(NodeId node_id);
 
-		void DrawCreatePopup(PinType input_type = PinType::NONE, PinType output_type = PinType::NONE);
+		/// \return the NodeId of the new node to create, or 0 if no new node was requested
+		NodeId DrawCreatePopup(PinType input_type = PinType::NONE, PinType output_type = PinType::NONE);
 
 		/// creates a node and puts its metadata into a generator
 		/// \return false if the node id is already registered, otherwise true
@@ -52,6 +53,6 @@ namespace seam {
 	private:
 
 		bool generators_sorted = false;
-		std::vector<NodeGenerator> generators;
+		std::vector<Generator> generators;
 	};
 }

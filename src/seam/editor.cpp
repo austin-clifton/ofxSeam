@@ -10,6 +10,10 @@ using namespace seam;
 namespace im = ImGui;
 namespace ed = ax::NodeEditor;
 
+namespace {
+	const char* POPUP_NAME_NEW_NODE = "Create New Node";
+}
+
 bool Editor::CompareDrawOrder(const IEventNode* l, const IEventNode* r) {
 	return l->draw_order < r->draw_order;
 }
@@ -31,6 +35,37 @@ void Editor::Draw() {
 	}
 
 	// TODO draw a final image to the screen
+}
+
+void Editor::GuiDrawPopups() {
+	const ImVec2 open_popup_position = ImGui::GetMousePos();
+
+	ed::Suspend();
+	if (ed::ShowBackgroundContextMenu()) {
+		show_create_dialog = true;
+		ImGui::OpenPopup(POPUP_NAME_NEW_NODE);
+	}
+	// TODO there are more contextual menus, see blueprints-example.cpp line 1545
+
+	if (ImGui::BeginPopup(POPUP_NAME_NEW_NODE)) {
+		// TODO specify an input or output type here if new_link_pin != nullptr
+		NodeId new_node_id = factory.DrawCreatePopup();
+		if (new_node_id != 0) {
+			show_create_dialog = false;
+			IEventNode* node = CreateAndAdd(new_node_id);
+			ed::SetNodePosition((ed::NodeId)node, open_popup_position);
+
+
+			// TODO handle new_link_pin
+			new_link_pin = nullptr;
+		}
+
+		ImGui::EndPopup();
+	} else {
+		show_create_dialog = false;
+	}
+
+	ed::Resume();
 }
 
 void Editor::GuiDraw() {
@@ -123,7 +158,7 @@ void Editor::GuiDraw() {
 					// newNodeLinkPin = FindPin(pin_id);
 					// newLinkPin = nullptr;
 					ed::Suspend();
-					ImGui::OpenPopup("Create New Node");
+					ImGui::OpenPopup(POPUP_NAME_NEW_NODE);
 					ed::Resume();
 				}
 			}
@@ -165,11 +200,13 @@ void Editor::GuiDraw() {
 		ed::EndDelete();
 	}
 
+	GuiDrawPopups();
+
 	ed::End();
 }
 
 IEventNode* Editor::CreateAndAdd(NodeId node_id) {
-	IEventNode* node = node_factory.Create(node_id);
+	IEventNode* node = factory.Create(node_id);
 	if (node != nullptr) {
 		// handle book keeping for the new node
 
