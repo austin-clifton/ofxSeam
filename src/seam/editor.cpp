@@ -398,6 +398,8 @@ bool Editor::Disconnect(IEventNode* node_out, Pin* pin_co, IEventNode* node_in, 
 	if (rearranged) {
 		// TODO...
 	}
+
+	return true;
 }
 
 bool Editor::Disconnect(Pin* pin_out, Pin* pin_in) {
