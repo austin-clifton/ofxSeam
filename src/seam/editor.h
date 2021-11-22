@@ -31,8 +31,11 @@ namespace seam {
 		/// \return the newly created event node, or nullptr if the node name didn't match a registered node type.
 		IEventNode* CreateAndAdd(const std::string_view node_name);
 
+		/// Connect an output pin to an input pin.
+		/// \return true if the Pins were successfully connected.
 		bool Connect(IEventNode* node_out, Pin* pin_out, IEventNode* node_in, Pin* pin_in);
 
+		/// helper function for Connect() which will find the related nodes, given that only the Pins are known
 		bool Connect(Pin* pin_out, Pin* pin_in);
 
 		bool Disconnect(IEventNode* node_out, Pin* pin_out, IEventNode* node_in, Pin* pin_in);
@@ -43,6 +46,15 @@ namespace seam {
 
 	private:
 		static bool CompareDrawOrder(const IEventNode* l, const IEventNode* r);
+		static bool CompareUpdateOrder(const IEventNode* l, const IEventNode* r);
+		
+		int16_t RecalculateUpdateOrder(IEventNode* node);
+
+		int16_t RecalculateDrawOrder(IEventNode* node);
+		void InvalidateDrawOrder(IEventNode* node);
+
+		/// Recalculates the update and/or draw orders of nodes
+		void RecalculateTraversalOrder(bool recalc_update, bool recalc_draw);
 
 		void GuiDraw();
 		void GuiDrawPopups();

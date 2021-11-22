@@ -18,23 +18,25 @@ bool Editor::CompareDrawOrder(const IEventNode* l, const IEventNode* r) {
 	return l->draw_order < r->draw_order;
 }
 
+bool Editor::CompareUpdateOrder(const IEventNode* l, const IEventNode* r) {
+	return l->update_order < r->update_order;
+}
+
 void Editor::Setup() {
 	node_editor_context = ed::CreateEditor();
-
-	IEventNode* perlin_noise = CreateAndAdd("Perlin Noise");
-	assert(perlin_noise != nullptr);
-
 }
 
 void Editor::Draw() {
-
-	// TODO update visual (texture-outputting) nodes BEFORE running GUI updates
+	for (auto n : visual_nodes) {
+		n->Draw();
+	}
 
 	if (show_gui) {
 		GuiDraw();
 	}
 
 	// TODO draw a final image to the screen
+	// probably want multiple viewports / docking?
 }
 
 void Editor::Update() {
@@ -301,32 +303,34 @@ bool Editor::Connect(IEventNode* node_out, Pin* pin_co, IEventNode* node_in, Pin
 	bool rearranged = false;
 
 	// add to each node's transmitters and receivers list
-	auto it = std::find(node_out->receivers.begin(), node_out->receivers.end(), node_in);
-	if (it == node_out->receivers.end()) {
+	auto it = std::find(node_out->children.begin(), node_out->children.end(), node_in);
+	if (it == node_out->children.end()) {
 		// new to the list, add it
 		IEventNode::NodeConnection conn;
 		conn.node = node_in;
 		conn.conn_count = 1;
-		node_out->receivers.push_back(conn);
+		node_out->children.push_back(conn);
 		rearranged = true;
 	} else {
 		// not new, just increase the connection count
 		it->conn_count += 1;
 	}
 
-	it = std::find(node_in->transmitters.begin(), node_in->transmitters.end(), node_out);
-	if (it == node_in->transmitters.end()) {
+	it = std::find(node_in->parents.begin(), node_in->parents.end(), node_out);
+	if (it == node_in->parents.end()) {
 		IEventNode::NodeConnection conn;
 		conn.node = node_out;
 		conn.conn_count = 1;
-		node_in->transmitters.push_back(conn);
+		node_in->parents.push_back(conn);
 		rearranged = true;
 	} else {
 		it->conn_count += 1;
 	}
 
 	if (rearranged) {
-		// TODO recalculate update traversal order
+		// TODO smarter logic for what needs to be recalculated
+		// there are likely cases where draw order can be left alone
+		RecalculateTraversalOrder(true, true);
 	}
 
 	return true;
@@ -374,10 +378,10 @@ bool Editor::Disconnect(IEventNode* node_out, Pin* pin_co, IEventNode* node_in, 
 
 	// remove or decrement from receivers / transmitters lists
 	{
-		auto it = std::find(node_out->receivers.begin(), node_out->receivers.end(), node_in);
-		assert(it != node_out->receivers.end());
+		auto it = std::find(node_out->children.begin(), node_out->children.end(), node_in);
+		assert(it != node_out->children.end());
 		if (it->conn_count == 1) {
-			node_out->receivers.erase(it);
+			node_out->children.erase(it);
 			rearranged = true;
 		} else {
 			it->conn_count -= 1;
@@ -385,10 +389,10 @@ bool Editor::Disconnect(IEventNode* node_out, Pin* pin_co, IEventNode* node_in, 
 	}
 
 	{
-		auto it = std::find(node_in->transmitters.begin(), node_in->transmitters.end(), node_out);
-		assert(it != node_in->transmitters.end());
+		auto it = std::find(node_in->parents.begin(), node_in->parents.end(), node_out);
+		assert(it != node_in->parents.end());
 		if (it->conn_count == 1) {
-			node_in->transmitters.erase(it);
+			node_in->parents.erase(it);
 			rearranged = true;
 		} else {
 			it->conn_count -= 1;
@@ -396,7 +400,7 @@ bool Editor::Disconnect(IEventNode* node_out, Pin* pin_co, IEventNode* node_in, 
 	}
 
 	if (rearranged) {
-		// TODO...
+		RecalculateTraversalOrder(true, true);
 	}
 
 	return true;
@@ -408,6 +412,80 @@ bool Editor::Disconnect(Pin* pin_out, Pin* pin_in) {
 	assert(node_out && node_in);
 	
 	return Disconnect(node_out, pin_out, node_in, pin_in);
+}
+
+int16_t Editor::RecalculateUpdateOrder(IEventNode* node) {
+	// update order is always max of parents' update order + 1
+	int16_t max_parents_update_order = -1;
+	for (auto parent : node->parents) {
+		max_parents_update_order = std::max(
+			max_parents_update_order,
+			RecalculateUpdateOrder(parent.node)
+		);
+	}
+	node->update_order = max_parents_update_order + 1;
+	return node->update_order;
+}
+
+int16_t Editor::RecalculateDrawOrder(IEventNode* node) {
+	// the draw order of a node is the max of its parents' draw order,
+	// plus 1 IF this node is a visual node
+	int16_t max_parents_draw_order = 0;
+	for (auto parent : node->parents) {
+		max_parents_draw_order = std::max(
+			max_parents_draw_order, 
+			RecalculateDrawOrder(parent.node)
+		);
+	}
+	bool is_visual = (node->flags & NodeFlags::IS_VISUAL);
+	node->draw_order = max_parents_draw_order + is_visual;
+	return node->draw_order;
+}
+
+void Editor::InvalidateDrawOrder(IEventNode* node) {
+	// recursively invalidate draw order
+	node->draw_order = -1;
+	for (auto t : node->parents) {
+		InvalidateDrawOrder(t.node);
+	}
+}
+
+void Editor::RecalculateTraversalOrder(bool recalc_update, bool recalc_draw) {
+	if (recalc_update) {
+		// invalidate update order of all nodes
+		for (auto n : nodes) {
+			n->update_order = -1;
+		}
+
+		// recalculate update order of each node.
+		// the function will run recursively on parent nodes, 
+		// but still need to loop through all nodes to make sure they're traversed;
+		// some of them may not be connected to anything
+		for (auto n : nodes) {
+			RecalculateUpdateOrder(n);
+		}
+
+		// re-sort
+		std::sort(nodes.begin(), nodes.end(), &Editor::CompareUpdateOrder);
+	}
+
+	if (recalc_draw) {
+		// only invalidate nodes involved in a visual node tree
+		// if a node isn't in a visual tree, its draw order doesn't matter
+		for (auto n : visual_nodes) {
+			// recursively invalidate parents
+			InvalidateDrawOrder(n);
+		}
+
+
+		// recursively traverse up each visual node tree to re-determine draw order
+		for (auto n : visual_nodes) {
+			RecalculateDrawOrder(n);
+		}
+
+		// re-sort
+		std::sort(visual_nodes.begin(), visual_nodes.end(), &Editor::CompareDrawOrder);
+	}
 }
 
 IEventNode* Editor::MapPinToNode(Pin* pin) {

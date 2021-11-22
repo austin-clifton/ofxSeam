@@ -44,6 +44,10 @@ namespace seam {
 		/// to be called during OF's update() loop
 		virtual void Update(float time) { }
 
+		/// to be called during OF's draw() loop
+		/// should be overridden by visual nodes
+		virtual void Draw() { }
+
 		void GuiDraw( ed::Utilities::BlueprintNodeBuilder& builder );
 
 		inline NodeFlags Flags() {
@@ -76,9 +80,13 @@ namespace seam {
 
 		NodeFlags flags = (NodeFlags)0;
 
+		// nodes' Update() calls should be made parent-first
+		// update order == max(transmitters' update order) + 1
+		int16_t update_order = -1;
+
 		// visual nodes must be drawn in dependency order,
 		// meaning a node using a texture from a previous node must be drawn after the previous.
-		int draw_order = -1;
+		int16_t draw_order = -1;
 
 		// TODO remove me?
 		seam::NodeId id;
@@ -95,11 +103,11 @@ namespace seam {
 			}
 		};
 
-		// list of nodes which this node sends events to
-		std::vector<NodeConnection> receivers;
+		// list of child nodes which this node sends events to
+		std::vector<NodeConnection> children;
 
-		// list of nodes which this node receives events from
-		std::vector<NodeConnection> transmitters;
+		// list of parent nodes which this node receives events from
+		std::vector<NodeConnection> parents;
 
 		// the factory is a friend class so it can grab all the node's metadata easily
 		friend class EventNodeFactory;

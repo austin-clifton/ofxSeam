@@ -11,7 +11,7 @@ float icon_size = 24.f;
 
 namespace {
 	// next two are stripped from the blueprints example in imgui-node-editor
-	// TODO make the pin icons more meaningful
+	// TODO make the pin icons more meaningful (circles and colors are meaningless)
 
 	ImColor GetIconColor(PinType type)
 	{
