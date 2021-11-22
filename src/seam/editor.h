@@ -35,6 +35,10 @@ namespace seam {
 
 		bool Connect(Pin* pin_out, Pin* pin_in);
 
+		bool Disconnect(IEventNode* node_out, Pin* pin_out, IEventNode* node_in, Pin* pin_in);
+
+		bool Disconnect(Pin* pin_out, Pin* pin_in);
+
 		void ShowGui(bool toggle);
 
 	private:
@@ -42,6 +46,12 @@ namespace seam {
 
 		void GuiDraw();
 		void GuiDrawPopups();
+
+		inline IEventNode* MapPinToNode(Pin* pin);
+
+		inline PinInput* FindPinInput(IEventNode* node, Pin* pin_in);
+
+		inline PinOutput* FindPinOutput(IEventNode* node, Pin* pin_out);
 
 		// used by GUI interactions to "map" Pins to their Nodes
 		struct PinToNode {

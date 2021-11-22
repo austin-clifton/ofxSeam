@@ -193,6 +193,8 @@ void Editor::GuiDraw() {
 						return link->first == other.first && link->second == other.second;
 					});
 					assert(it != links.end());
+					bool disconnected = Disconnect(&it->second->pin, it->first->pin);
+					assert(disconnected);
 
 					// TODO disconnect the link from the Pins
 					// remove from node_inputs and node_outputs in the nodes that the pins are attached to
@@ -272,66 +274,167 @@ IEventNode* Editor::CreateAndAdd(const std::string_view node_name) {
 
 bool Editor::Connect(IEventNode* node_out, Pin* pin_co, IEventNode* node_in, Pin* pin_ci) {
 	// pin_co == pin connection out
-	// pin_ci == pin connection in 
+	// pin_ci == pin connection in
+	// names are hard :(
 	assert((pin_ci->flags & PinFlags::INPUT) == PinFlags::INPUT);
 	assert((pin_co->flags & PinFlags::OUTPUT) == PinFlags::OUTPUT);
 	assert(pin_co->type == pin_ci->type);
 
 	// find the structs that contain the pins to be connected
 	// also more validations: make sure pin_out is actually an output pin of node_out, and same for the input
-	PinInput* pin_in = nullptr;
-	PinOutput* pin_out = nullptr;
-	{
-		bool found = false;
-		size_t size;
-		PinOutput* pin_outputs = node_out->PinOutputs(size);
-		for (size_t i = 0; i < size && !found; i++) {
-			pin_out = &pin_outputs[i];
-			found = &pin_outputs[i].pin == pin_co;
-		}
-		assert(found);
-		if (!found) {
-			pin_out = nullptr;
-		}
-
-		found = false;
-		PinInput* pin_inputs = node_in->PinInputs(size);
-		for (size_t i = 0; i < size && !found; i++) {
-			pin_in = &pin_inputs[i];
-			found = pin_inputs[i].pin == pin_ci;
-		}
-		assert(found);
-		assert(pin_out != nullptr && pin_in != nullptr);
-		if (!found) {
-			pin_in = nullptr;
-		}
-	}
+	PinInput* pin_in = FindPinInput(node_in, pin_ci);
+	PinOutput* pin_out = FindPinOutput(node_out, pin_co);
+	assert(pin_in && pin_out);
 
 	if (pin_in == nullptr || pin_out == nullptr) {
 		return false;
-	} else {
-		// create the connection
-		pin_out->connections.push_back(pin_in->pin);
-
-		// add to the links list
-		Link link;
-		link.first = pin_in;
-		link.second = pin_out;
-		links.push_back(std::move(link));
-		return true;
 	}
+
+	// create the connection
+	pin_out->connections.push_back(pin_in->pin);
+
+	// add to the links list
+	links.push_back(Link(pin_in, pin_out));
+
+	// if this connection rearranged the node graph, 
+	// its traversal order will need to be recalculated
+	bool rearranged = false;
+
+	// add to each node's transmitters and receivers list
+	auto it = std::find(node_out->receivers.begin(), node_out->receivers.end(), node_in);
+	if (it == node_out->receivers.end()) {
+		// new to the list, add it
+		IEventNode::NodeConnection conn;
+		conn.node = node_in;
+		conn.conn_count = 1;
+		node_out->receivers.push_back(conn);
+		rearranged = true;
+	} else {
+		// not new, just increase the connection count
+		it->conn_count += 1;
+	}
+
+	it = std::find(node_in->transmitters.begin(), node_in->transmitters.end(), node_out);
+	if (it == node_in->transmitters.end()) {
+		IEventNode::NodeConnection conn;
+		conn.node = node_out;
+		conn.conn_count = 1;
+		node_in->transmitters.push_back(conn);
+		rearranged = true;
+	} else {
+		it->conn_count += 1;
+	}
+
+	if (rearranged) {
+		// TODO recalculate update traversal order
+	}
+
+	return true;
 }
 
 bool Editor::Connect(Pin* pin_out, Pin* pin_in) {
 	// find the node each pin is connected to
-	auto it_in = std::lower_bound(pins_to_nodes.begin(), pins_to_nodes.end(), pin_in);
-	auto it_out = std::lower_bound(pins_to_nodes.begin(), pins_to_nodes.end(), pin_out);
-	assert(it_in != pins_to_nodes.end() && it_out != pins_to_nodes.end());
-
-	IEventNode* node_in = it_in->node;
-	IEventNode* node_out = it_out->node;
+	IEventNode* node_in = MapPinToNode(pin_in);
+	IEventNode* node_out = MapPinToNode(pin_out);
+	assert(node_in && node_out);
 
 	return Connect(node_out, pin_out, node_in, pin_in);
+}
+
+bool Editor::Disconnect(IEventNode* node_out, Pin* pin_co, IEventNode* node_in, Pin* pin_ci) {
+	assert((pin_ci->flags & PinFlags::INPUT) == PinFlags::INPUT);
+	assert((pin_co->flags & PinFlags::OUTPUT) == PinFlags::OUTPUT);
+	assert(pin_co->type == pin_ci->type);
+
+	PinInput* pin_in = FindPinInput(node_in, pin_ci);
+	PinOutput* pin_out = FindPinOutput(node_out, pin_co);
+	assert(pin_in && pin_out);
+
+	if (pin_in == nullptr || pin_out == nullptr) {
+		return false;
+	}
+
+	// remove from pin_out's connections list
+	{
+		auto it = std::find(pin_out->connections.begin(), pin_out->connections.end(), pin_in->pin);
+		assert(it != pin_out->connections.end());
+		pin_out->connections.erase(it);
+	}
+
+	// remove from links list
+	{
+		Link l(pin_in, pin_out);
+		auto it = std::find(links.begin(), links.end(), l);
+		assert(it != links.end());
+		links.erase(it);
+	}
+
+	// track if we need to update traversal order
+	bool rearranged = false;
+
+	// remove or decrement from receivers / transmitters lists
+	{
+		auto it = std::find(node_out->receivers.begin(), node_out->receivers.end(), node_in);
+		assert(it != node_out->receivers.end());
+		if (it->conn_count == 1) {
+			node_out->receivers.erase(it);
+			rearranged = true;
+		} else {
+			it->conn_count -= 1;
+		}
+	}
+
+	{
+		auto it = std::find(node_in->transmitters.begin(), node_in->transmitters.end(), node_out);
+		assert(it != node_in->transmitters.end());
+		if (it->conn_count == 1) {
+			node_in->transmitters.erase(it);
+			rearranged = true;
+		} else {
+			it->conn_count -= 1;
+		}
+	}
+
+	if (rearranged) {
+		// TODO...
+	}
+}
+
+bool Editor::Disconnect(Pin* pin_out, Pin* pin_in) {
+	IEventNode* node_out = MapPinToNode(pin_out);
+	IEventNode* node_in = MapPinToNode(pin_in);
+	assert(node_out && node_in);
+	
+	return Disconnect(node_out, pin_out, node_in, pin_in);
+}
+
+IEventNode* Editor::MapPinToNode(Pin* pin) {
+	auto it = std::lower_bound(pins_to_nodes.begin(), pins_to_nodes.end(), pin);
+	return it != pins_to_nodes.end() ? it->node : nullptr;
+}
+
+PinInput* Editor::FindPinInput(IEventNode* node, Pin* pin) {
+	PinInput* pin_in = nullptr;
+	size_t size;
+	PinInput* pin_inputs = node->PinInputs(size);
+	for (size_t i = 0; i < size && pin_in == nullptr; i++) {
+		if (pin_inputs[i].pin == pin) {
+			pin_in = &pin_inputs[i];
+		}
+	}
+	return pin_in;
+}
+
+PinOutput* Editor::FindPinOutput(IEventNode* node, Pin* pin) {
+	PinOutput* pin_out = nullptr;
+	size_t size;
+	PinOutput* pin_outputs = node->PinOutputs(size);
+	for (size_t i = 0; i < size && pin_out == nullptr; i++) {
+		if (&pin_outputs[i].pin == pin) {
+			pin_out = &pin_outputs[i];
+		}
+	}
+	return pin_out;
 }
 
 void Editor::ShowGui(bool toggle) {

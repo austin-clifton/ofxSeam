@@ -84,9 +84,22 @@ namespace seam {
 		seam::NodeId id;
 
 	private:
-		// these are both for GUI drawing
-		std::vector<IEventNode*> node_inputs;
-		std::vector<IEventNode*> node_outputs;
+		struct NodeConnection {
+			IEventNode* node = nullptr;
+			// number of connections to this node,
+			// since there may be more than one Pin connecting the nodes together
+			uint16_t conn_count = 0;
+
+			bool operator==(const IEventNode* other) {
+				return node == other;
+			}
+		};
+
+		// list of nodes which this node sends events to
+		std::vector<NodeConnection> receivers;
+
+		// list of nodes which this node receives events from
+		std::vector<NodeConnection> transmitters;
 
 		// the factory is a friend class so it can grab all the node's metadata easily
 		friend class EventNodeFactory;
@@ -151,8 +164,6 @@ namespace seam {
 			size = pin_outputs.size();
 			return pin_outputs.data();
 		}
-
-		IEventNode** NodeOutputs(size_t& size) override { size = 0; return nullptr; }
 
 
 	private:
