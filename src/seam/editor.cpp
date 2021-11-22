@@ -410,7 +410,7 @@ bool Editor::Disconnect(Pin* pin_out, Pin* pin_in) {
 
 IEventNode* Editor::MapPinToNode(Pin* pin) {
 	auto it = std::lower_bound(pins_to_nodes.begin(), pins_to_nodes.end(), pin);
-	return it != pins_to_nodes.end() ? it->node : nullptr;
+	return it != pins_to_nodes.end() && it->pin == pin ? it->node : nullptr;
 }
 
 PinInput* Editor::FindPinInput(IEventNode* node, Pin* pin) {
