@@ -255,10 +255,15 @@ void Editor::GuiDraw() {
 		im::SetNextWindowPos(ImVec2(
 			window_pos.x + window_size.x,
 			editor_cursor_start_pos.y + window_pos.y)
+			// add padding
 			+ ImVec2(-8.f, 8.f),
 			0,
 			ImVec2(1.f, 0.f)
 		);
+
+		ImGui::PushStyleVar(ImGuiStyleVar_ChildBorderSize, 2.f);
+		ImGui::PushStyleVar(ImGuiStyleVar_ChildRounding, 4.f);
+		ImGui::PushStyleColor(ImGuiCol_Border, ImVec4(0.5f, 0.5f, 0.5f, 0.5f));
 
 		if (im::BeginChild(WINDOW_NAME_NODE_MENU, child_size, true)) {
 			ImGui::Text("hello world");
@@ -266,6 +271,10 @@ void Editor::GuiDraw() {
 			// selected_node->GuiDrawPropertiesList();
 		}
 		im::EndChild();
+		
+		ImGui::PopStyleVar(2);
+		ImGui::PopStyleColor(1);
+
 	}
 
 
