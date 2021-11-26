@@ -108,6 +108,7 @@ namespace seam {
 
 		// book keeping for GUI interactions
 		Pin* new_link_pin;
+		IEventNode* selected_node = nullptr;
 
 		bool show_gui = true;
 		

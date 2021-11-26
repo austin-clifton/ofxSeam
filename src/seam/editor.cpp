@@ -12,6 +12,7 @@ namespace ed = ax::NodeEditor;
 
 namespace {
 	const char* POPUP_NAME_NEW_NODE = "Create New Node";
+	const char* WINDOW_NAME_NODE_MENU = "Node Properties Menu";
 }
 
 bool Editor::CompareDrawOrder(const IEventNode* l, const IEventNode* r) {
@@ -52,9 +53,13 @@ void Editor::GuiDrawPopups() {
 	const ImVec2 open_popup_position = ImGui::GetMousePos();
 
 	ed::Suspend();
+
+	ed::NodeId node_id;
 	if (ed::ShowBackgroundContextMenu()) {
 		show_create_dialog = true;
 		ImGui::OpenPopup(POPUP_NAME_NEW_NODE);
+	} else if (ed::ShowNodeContextMenu(&node_id)) {
+		// TODO this is a right click on the node, not left click
 	}
 	// TODO there are more contextual menus, see blueprints-example.cpp line 1545
 
@@ -80,7 +85,14 @@ void Editor::GuiDrawPopups() {
 }
 
 void Editor::GuiDraw() {
+
+	im::Begin("Seam Editor", nullptr);
+
 	ed::SetCurrentEditor(node_editor_context);
+
+	// remember the editor cursor's start position and the editor's window position,
+	// so we can offset other draws on top of the node editor's window
+	const ImVec2 editor_cursor_start_pos = ImGui::GetCursorPos();
 
 	ed::Begin("Event Flow");
 
@@ -99,8 +111,21 @@ void Editor::GuiDraw() {
 		);
 	}
 
+	// query if node(s) have been selected with left click
+	// the last selected node should be shown in the properties editor
+	std::vector<ed::NodeId> selected_nodes;
+	selected_nodes.resize(ed::GetSelectedObjectCount());
+	int nodes_count = ed::GetSelectedNodes(selected_nodes.data(), static_cast<int>(selected_nodes.size()));
+	if (nodes_count) {
+		// the last selected node is the one we'll show in the properties editor
+		selected_node = selected_nodes.back().AsPointer<IEventNode>();
+	} else {
+		selected_node = nullptr;
+	}
+
 	// if the create dialog isn't up, handle node graph interactions
 	if (!show_create_dialog) {
+		// are we trying to create a new pin or node connection? if so, visualize it
 		if (ed::BeginCreate(ImColor(255, 255, 255), 2.0f)) {
 			auto showLabel = [](const char* label, ImColor color) {
 				ImGui::SetCursorPosY(ImGui::GetCursorPosY() - ImGui::GetTextLineHeight());
@@ -119,6 +144,7 @@ void Editor::GuiDraw() {
 				ImGui::TextUnformatted(label);
 			};
 
+			// visualize potential new links
 			ed::PinId start_pin_id = 0, end_pin_id = 0;
 			if (ed::QueryNewLink(&start_pin_id, &end_pin_id)) {
 				// the pin ID is the pointer to the Pin itself
@@ -153,6 +179,7 @@ void Editor::GuiDraw() {
 				}
 			}
 
+			// visualize potential new node 
 			ed::PinId pin_id = 0;
 			if (ed::QueryNewNode(&pin_id)) {
 				// figure out if it's an input or output pin
@@ -185,6 +212,7 @@ void Editor::GuiDraw() {
 
 		ed::EndCreate();
 
+		// visualize deletion interactions, if any
 		if (ed::BeginDelete()) {
 			ed::LinkId link_id = 0;
 			while (ed::QueryDeletedLink(&link_id)) {
@@ -197,10 +225,6 @@ void Editor::GuiDraw() {
 					assert(it != links.end());
 					bool disconnected = Disconnect(&it->second->pin, it->first->pin);
 					assert(disconnected);
-
-					// TODO disconnect the link from the Pins
-					// remove from node_inputs and node_outputs in the nodes that the pins are attached to
-					// Disconnect(link);
 				}
 			}
 
@@ -222,6 +246,30 @@ void Editor::GuiDraw() {
 	GuiDrawPopups();
 
 	ed::End();
+
+	if (selected_node) {
+		
+		ImVec2 window_size = im::GetContentRegionAvail();
+		ImVec2 window_pos = im::GetWindowPos();
+		ImVec2 child_size = ImVec2(256, 256);
+		im::SetNextWindowPos(ImVec2(
+			window_pos.x + window_size.x,
+			editor_cursor_start_pos.y + window_pos.y)
+			+ ImVec2(-8.f, 8.f),
+			0,
+			ImVec2(1.f, 0.f)
+		);
+
+		if (im::BeginChild(WINDOW_NAME_NODE_MENU, child_size, true)) {
+			ImGui::Text("hello world");
+
+			// selected_node->GuiDrawPropertiesList();
+		}
+		im::EndChild();
+	}
+
+
+	im::End();
 }
 
 IEventNode* Editor::CreateAndAdd(NodeId node_id) {
@@ -416,6 +464,9 @@ bool Editor::Disconnect(Pin* pin_out, Pin* pin_in) {
 
 int16_t Editor::RecalculateUpdateOrder(IEventNode* node) {
 	// update order is always max of parents' update order + 1
+
+	// TODO! deal with feedback pins
+
 	int16_t max_parents_update_order = -1;
 	for (auto parent : node->parents) {
 		max_parents_update_order = std::max(
@@ -430,6 +481,9 @@ int16_t Editor::RecalculateUpdateOrder(IEventNode* node) {
 int16_t Editor::RecalculateDrawOrder(IEventNode* node) {
 	// the draw order of a node is the max of its parents' draw order,
 	// plus 1 IF this node is a visual node
+
+	// TODO handle feedback pins
+
 	int16_t max_parents_draw_order = 0;
 	for (auto parent : node->parents) {
 		max_parents_draw_order = std::max(
