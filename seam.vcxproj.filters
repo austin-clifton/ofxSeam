@@ -103,9 +103,6 @@
     <ClCompile Include="..\..\..\addons\ofxImGui-1.75\libs\imgui\src\blueprints\drawing.cpp">
       <Filter>addons\ofxImGui-1.75\libs\imgui\src\blueprints</Filter>
     </ClCompile>
-    <ClCompile Include="src\seam\event-nodes\top.cpp">
-      <Filter>src\seam\event-nodes</Filter>
-    </ClCompile>
     <ClCompile Include="src\seam\event-nodes\texgen-perlin.cpp">
       <Filter>src\seam\event-nodes</Filter>
     </ClCompile>
@@ -292,9 +289,6 @@
     </ClInclude>
     <ClInclude Include="..\..\..\addons\ofxImGui-1.75\libs\imgui\src\blueprints\builders.h">
       <Filter>addons\ofxImGui-1.75\libs\imgui\src\blueprints</Filter>
-    </ClInclude>
-    <ClInclude Include="src\seam\event-nodes\top.h">
-      <Filter>src\seam\event-nodes</Filter>
     </ClInclude>
     <ClInclude Include="src\seam\event-nodes\texgen-perlin.h">
       <Filter>src\seam\event-nodes</Filter>
