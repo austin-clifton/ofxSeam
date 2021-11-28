@@ -1,46 +1,19 @@
 #include "pin.h"
 
 namespace seam {
-	Pin CreatePinOutput(PinType type, std::string_view name, PinFlags flags) {
+	PinInput SetupPinInput(Pin* pin, IEventNode* node) {
+		assert(pin && node);
+		PinInput input;
+		input.pin = pin;
+		input.node = node;
+		return input;
+	}
+
+	Pin SetupPinOutput(PinType type, std::string_view name, PinFlags flags) {
 		Pin pin;
 		pin.type = type;
 		pin.name = name;
 		pin.flags = (PinFlags)(flags | PinFlags::OUTPUT);
 		return pin;
 	}
-
-	template <>
-	PinInput CreatePinInput<int>(const std::string_view name, std::function<void(int)>&& callback) {
-		PinInput input;
-		PinInt* pin = new PinInt();
-		pin->flags = PinFlags::INPUT;
-		pin->name = name;
-		pin->callback = std::move(callback);
-		input.pin = pin;
-		return input;
-	}
-
-	template <>
-	PinInput CreatePinInput<float>(const std::string_view name, std::function<void(float)>&& callback) {
-		PinInput input;
-		PinFloat* pin = new PinFloat();
-		pin->flags = PinFlags::INPUT;
-		pin->name = name;
-		pin->callback = std::move(callback);
-		input.pin = pin;
-		return input;
-	}
-
-	template<>
-	PinInput CreatePinInput<Texture>(const std::string_view name, std::function<void(Texture)>&& callback) {
-		PinInput input;
-		PinTexture* pin = new PinTexture();
-		pin->flags = PinFlags::INPUT;
-		pin->name = name;
-		pin->callback = std::move(callback);
-		input.pin = pin;
-		return input;
-	}
-
-	// TODO there are more of these...
 }

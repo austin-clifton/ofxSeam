@@ -22,21 +22,19 @@ namespace seam {
 
 		// nomenclature from http://libnoise.sourceforge.net/glossary/#perlinnoise
 
-		// number of iterations, anything more than 1 is fractal noise
-		int octaves = 4;
-		// frequency of the first octave
-		float frequency = 8.0;
-		// each octave's frequency is multiplied by this number
-		float lacunarity = 2.0f;
-		// amplitude of the first octave
-		float amplitude = 0.5f;
-		// each octave's amplitude is multiplied by this number
-		float persistence = 0.5f;
+		PinInt pin_octaves = PinInt("octaves", 1, 1, 8);
+		PinFloat pin_frequency = PinFloat("frequency", 8.f, 0.001f);
+		PinFloat pin_lacunarity = PinFloat("lacunarity", 2.f, 0.001f);
+		PinFloat pin_amplitude = PinFloat("amplitude", .5f, 0.001f, 1.f);
+		PinFloat pin_persistence = PinFloat("persistence", 0.5f, 0.001f);
 
-		// only re-draw the texture when one of its inputs change
-		bool dirty = true;
-
-		std::array<PinInput, 5> pin_inputs;
+		std::array<PinInput, 5> pin_inputs = {
+			SetupPinInput(&pin_octaves, this),
+			SetupPinInput(&pin_frequency, this),
+			SetupPinInput(&pin_lacunarity, this),
+			SetupPinInput(&pin_amplitude, this),
+			SetupPinInput(&pin_persistence, this)
+		};
 
 		PinOutput pin_out_tex;
 

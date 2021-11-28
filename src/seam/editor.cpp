@@ -28,7 +28,9 @@ void Editor::Setup() {
 }
 
 void Editor::Draw() {
-	for (auto n : visual_nodes) {
+
+	std::sort(nodes_to_draw.begin(), nodes_to_draw.end(), &Editor::CompareDrawOrder);
+	for (auto n : nodes_to_draw) {
 		n->Draw();
 	}
 
@@ -40,12 +42,40 @@ void Editor::Draw() {
 	// probably want multiple viewports / docking?
 }
 
+void Editor::TraverseNodesToUpdate(IEventNode* n) {
+	// only nodes which update every frame, or update over time, will need to update
+	if (n->UpdatesOverTime() || n->dirty) {
+		// avoid traversing and pushing the same node to the lists multiple times per frame
+		if (std::find(nodes_to_update.begin(), nodes_to_update.end(), n) != nodes_to_update.end()) {
+			return;
+		}
+		nodes_to_update.push_back(n);
+		if (n->IsVisual()) {
+			nodes_to_draw.push_back(n);
+		}
+		for (auto p : n->parents) {
+			TraverseNodesToUpdate(p.node);
+		}
+	}
+
+}
+
 void Editor::Update() {
-	// TODO nodes need to be sorted for updating!
-	// Parent nodes need to propagate their changes down before a child node updates
+	// traverse the parent tree of each visible visual node and determine what needs to update
+	nodes_to_update.clear();
+	nodes_to_draw.clear();
+
+	for (auto n : visible_nodes) {
+		TraverseNodesToUpdate(n);
+	}
+
+	// sort the update list now and update
+	std::sort(nodes_to_update.begin(), nodes_to_update.end(), &Editor::CompareUpdateOrder);
+
 	float time = ofGetElapsedTimef();
-	for (size_t i = 0; i < nodes.size(); i++) {
-		nodes[i]->Update(time);
+	for (auto n : nodes_to_update) {
+		n->Update(time);
+		n->dirty = false;
 	}
 }
 
@@ -291,7 +321,7 @@ IEventNode* Editor::CreateAndAdd(NodeId node_id) {
 
 		nodes.push_back(node);
 
-		if ((node->Flags() & NodeFlags::IS_VISUAL) == NodeFlags::IS_VISUAL) {
+		if (node->IsVisual()) {
 			// node has no inputs yet so it must have draw order 0
 			node->draw_order = 0;
 
@@ -299,6 +329,10 @@ IEventNode* Editor::CreateAndAdd(NodeId node_id) {
 			auto it = std::upper_bound(visual_nodes.begin(), visual_nodes.end(), node, &Editor::CompareDrawOrder);
 			// and insert it
 			visual_nodes.insert(it, node);
+
+			// probably temporary: add to the list of visible nodes up front
+			it = std::upper_bound(visible_nodes.begin(), visible_nodes.end(), node, &Editor::CompareDrawOrder);
+			visible_nodes.insert(it, node);
 		}
 
 		// add input and output pins to the pins_to_nodes list
@@ -350,7 +384,7 @@ bool Editor::Connect(IEventNode* node_out, Pin* pin_co, IEventNode* node_in, Pin
 	}
 
 	// create the connection
-	pin_out->connections.push_back(pin_in->pin);
+	pin_out->connections.push_back(*pin_in);
 
 	// add to the links list
 	links.push_back(Link(pin_in, pin_out));
@@ -359,7 +393,7 @@ bool Editor::Connect(IEventNode* node_out, Pin* pin_co, IEventNode* node_in, Pin
 	// its traversal order will need to be recalculated
 	bool rearranged = false;
 
-	// add to each node's transmitters and receivers list
+	// add to each node's parents and children list
 	auto it = std::find(node_out->children.begin(), node_out->children.end(), node_in);
 	if (it == node_out->children.end()) {
 		// new to the list, add it
@@ -385,6 +419,12 @@ bool Editor::Connect(IEventNode* node_out, Pin* pin_co, IEventNode* node_in, Pin
 	}
 
 	if (rearranged) {
+		// mark the child node and its children recursively with PARENT_UPDATES_OVER_TIME, 
+		// if the new parent node updates over time
+		if (node_out->UpdatesOverTime()) {
+			node_in->SetUpdatesOverTime(true);
+		}
+
 		// TODO smarter logic for what needs to be recalculated
 		// there are likely cases where draw order can be left alone
 		RecalculateTraversalOrder(true, true);
@@ -417,7 +457,7 @@ bool Editor::Disconnect(IEventNode* node_out, Pin* pin_co, IEventNode* node_in, 
 
 	// remove from pin_out's connections list
 	{
-		auto it = std::find(pin_out->connections.begin(), pin_out->connections.end(), pin_in->pin);
+		auto it = std::find(pin_out->connections.begin(), pin_out->connections.end(), *pin_in);
 		assert(it != pin_out->connections.end());
 		pin_out->connections.erase(it);
 	}
@@ -457,6 +497,11 @@ bool Editor::Disconnect(IEventNode* node_out, Pin* pin_co, IEventNode* node_in, 
 	}
 
 	if (rearranged) {
+		// if a node that updates over time was disconnected, the child node may not update over time anymore
+		if (node_out->UpdatesOverTime()) {
+			node_in->SetUpdatesOverTime(false);
+		}
+
 		RecalculateTraversalOrder(true, true);
 	}
 

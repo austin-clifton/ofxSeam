@@ -3,33 +3,14 @@
 using namespace seam;
 
 Cos::Cos() : IEventNode("Cosine") {
-	// define input pins
-	pin_inputs[0] = CreatePinInput<float>("frequency", [&](float v) {
-		frequency = v;
-	});
-
-	pin_inputs[1] = CreatePinInput<float>("amplitude", [&](float v) {
-		amplitude = v;
-	});
-
-	pin_inputs[2] = CreatePinInput<float>("amplitude shift", [&](float v) {
-		amplitude_shift = v;
-	});
-
-	pin_inputs[3] = CreatePinInput<float>("phase_shift", [&](float v) {
-		phase_shift = v;
-	});
+	flags = (NodeFlags)(flags | NodeFlags::UPDATES_OVER_TIME);
 
 	// define output pin
-	pin_out_fval.pin = CreatePinOutput(PinType::FLOAT, "output");
+	pin_out_fval.pin = SetupPinOutput(PinType::FLOAT, "output");
 }
 
 Cos::~Cos() {
-	// delete input pins
-	for (size_t i = 0; i < pin_inputs.size(); i++) {
-		delete pin_inputs[i].pin;
-		pin_inputs[i].pin = nullptr;
-	}
+
 }
 
 PinInput* Cos::PinInputs(size_t& size) {
@@ -44,13 +25,16 @@ PinOutput* Cos::PinOutputs(size_t& size) {
 
 float Cos::Calculate(float t) {
 	// frequency of 1 == period multiplier of 2PI
-	float period_mul = 2.f * PI * frequency;
-	return amplitude_shift + amplitude * cos(period_mul * t + phase_shift);
+	float period_mul = 2.f * PI * pin_frequency.value;
+	return pin_amplitude_shift.value + pin_amplitude.value * cos(period_mul * t + pin_phase_shift.value);
 }
 
 void Cos::Update(float time) {
 	float v = Calculate(time);
+	// TODO generalize "propagation" (template function?)
 	for (size_t i = 0; i < pin_out_fval.connections.size(); i++) {
-		static_cast<PinFloat*>(pin_out_fval.connections[i])->callback(v);
+		// assert(dynamic_cast<PinFloat*>(pin_out_fval.connections[i].pin) != nullptr);
+		static_cast<PinFloat*>(pin_out_fval.connections[i].pin)->value = v;
+		pin_out_fval.connections[i].node->SetDirty();
 	}
 }

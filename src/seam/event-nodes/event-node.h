@@ -16,8 +16,18 @@ namespace seam {
 	using NodeId = uint32_t;
 
 	/// A bitmask enum for marking boolean properties of a Node
-	enum NodeFlags : uint8_t {
+	enum NodeFlags : uint16_t {
+		// visual nodes draw things using the GPU,
+		// and visible visual nodes dictate each frame's update and draw workloads
 		IS_VISUAL = 1 << 0,
+
+		// if a node uses time as an update parameter it updates every frame
+		// if a node wants to use time as an argument, it should mark itself with this flag
+		UPDATES_OVER_TIME = 1 << 1,
+
+		// children node of a node that updates over time also update over time,
+		// but if unparented from a node that updates over time, the child can stop updating every frame too
+		PARENT_UPDATES_OVER_TIME = 1 << 2,
 	};
 
 	/// Base class for all nodes that use the eventing system
@@ -67,6 +77,18 @@ namespace seam {
 			return instance_name;
 		}
 
+		void SetDirty();
+
+		inline bool UpdatesOverTime() {
+			return (flags & NodeFlags::UPDATES_OVER_TIME) || (flags & NodeFlags::PARENT_UPDATES_OVER_TIME);
+		}
+
+		inline bool IsVisual() {
+			return (flags & NodeFlags::IS_VISUAL) == NodeFlags::IS_VISUAL;
+		}
+
+		void SetUpdatesOverTime(bool updates_over_time);
+
 	protected:
 		// draw the center of the node (the contextual bits)
 		// should be overridden if the node's center should display something in the GUI
@@ -79,6 +101,11 @@ namespace seam {
 		std::string instance_name;
 
 		NodeFlags flags = (NodeFlags)0;
+
+		// a node is dirtied when its inputs change, or time progresses in some cases
+		// a dirtied node needs to have its Update() called once it becomes part of the visual chain,
+		// and a dirtied visual node needs to have its Draw() called
+		bool dirty = true;
 
 		// nodes' Update() calls should be made parent-first
 		// update order == max(transmitters' update order) + 1

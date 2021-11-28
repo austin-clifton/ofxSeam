@@ -47,6 +47,10 @@ namespace seam {
 	private:
 		static bool CompareDrawOrder(const IEventNode* l, const IEventNode* r);
 		static bool CompareUpdateOrder(const IEventNode* l, const IEventNode* r);
+
+		// recursively traverse visual nodes' parent trees and determine which nodes
+		// need to be drawn and/or updated this frame
+		void TraverseNodesToUpdate(IEventNode* n);
 		
 		int16_t RecalculateUpdateOrder(IEventNode* node);
 
@@ -96,6 +100,12 @@ namespace seam {
 		// list of all the event nodes the graph will draw
 		// this list does not need to be sorted
 		std::vector<IEventNode*> nodes;
+
+		std::vector<IEventNode*> nodes_to_update;
+		std::vector<IEventNode*> nodes_to_draw;
+
+		// visible visual nodes dictate which nodes actually get updated and drawn during those loops
+		std::vector<IEventNode*> visible_nodes;
 
 		// list of visual (texture-outputting) nodes, sorted by draw order
 		std::vector<IEventNode*> visual_nodes;

@@ -1,13 +1,14 @@
 #pragma once
 
 #include <vector>
-#include <functional>
 
 #include "ofMain.h"
 
 #include "notes.h"
 
 namespace seam {
+
+	class IEventNode;
 
 	enum PinType : uint8_t {
 		// invalid pin type
@@ -41,11 +42,19 @@ namespace seam {
 		NOTE_CHANGED,
 	};
 
+	// TODO move me
+	enum RangeType : uint8_t {
+		LINEAR,
+		// logarithmic
+		LOG,
+	};
+
 	// a bitmask enum for marking boolean properties of a Pin
-	enum PinFlags {
-		FEEDBACK = 1 << 0,
-		INPUT = 1 << 1,
-		OUTPUT = 1 << 2,
+	enum PinFlags : uint16_t {
+		INPUT = 1 << 0,
+		OUTPUT = 1 << 1,
+		// only INPUT pins can be marked as feedback
+		FEEDBACK = 1 << 2,
 	};
 
 	struct Texture {
@@ -54,11 +63,12 @@ namespace seam {
 	};
 
 	// base struct for pin types
-	// input pins also contain an eventing callback
-	// output pins contain their list of connections
 	struct Pin {
 		PinType type;
+		// human-readable Pin name for display purposes
 		std::string_view name;
+		// human-readable Pin description for display purposes
+		std::string_view description;
 		PinFlags flags = (PinFlags)0;
 	};
 
@@ -68,63 +78,97 @@ namespace seam {
 		PinFlow() {
 			type = PinType::FLOW;
 		}
-		std::function<void()> callback;
+		// flow pins have no value, the node just needs to be dirtied and updated
 	};
 
 	struct PinBool : Pin {
 		PinBool() {
 			type = PinType::BOOL;
 		}
-		std::function<void(bool v)> callback;
+		bool value = false;
 	};
 
 	struct PinFloat : Pin {
-		PinFloat() {
+		PinFloat(
+			std::string_view _name = "float",
+			float _init_val = 0.f,
+			float _min = -FLT_MAX,
+			float _max = FLT_MAX,
+			RangeType _range_type = RangeType::LINEAR,
+			PinFlags _flags = PinFlags::INPUT
+		) {
+			name = _name;
 			type = PinType::FLOAT;
+			flags = _flags;
+			value = std::min(_max, std::max(_init_val, _min));
+			min = _min;
+			max = _max;
+			range_type = _range_type;
 		}
-		std::function<void(float v)> callback;
+
+		float value = 0.f;
+		float min = -FLT_MAX;
+		float max = FLT_MAX;
+		RangeType range_type = RangeType::LINEAR;
 	};
 
 	struct PinInt : Pin {
-		PinInt() {
+		PinInt(
+			std::string_view _name = "int",
+			int _init_val = 0,
+			int _min = INT_MIN,
+			int _max = INT_MAX,
+			RangeType _range_type = RangeType::LINEAR,
+			PinFlags _flags = PinFlags::INPUT
+		) {
+			name = _name;
 			type = PinType::INT;
+			flags = _flags;
+			value = std::min(_max, std::max(_init_val, _min));
+			min = _min;
+			max = _max;
+			range_type = _range_type;
 		}
-		std::function<void(int v)> callback;
+
+		int value = 0;
+		int min = INT_MIN;
+		int max = INT_MAX;
+		RangeType range_type = RangeType::LINEAR;
 	};
 
 	struct PinTexture : Pin {
 		PinTexture() {
 			type = PinType::TEXTURE;
 		}
-		std::function<void(Texture tex)> callback;
+		Texture value;
 	};
 
 	struct PinNoteOn : Pin {
 		PinNoteOn() {
 			type = PinType::NOTE_ON;
 		}
-		std::function<void(BasicNote v)> callback;
-	};
-
-
-	struct PinOutput {
-		// output pin doesn't need an event, just need to know the name and type
-		// use the base struct
-		Pin pin;
-		std::vector<Pin*> connections;
 	};
 
 	struct PinInput {
 		Pin* pin = nullptr;
 		Pin* connection = nullptr;
+		IEventNode* node = nullptr;
+
+		bool operator==(const PinInput& other) {
+			return pin == other.pin;
+		}
 	};
 
-	Pin CreatePinOutput(PinType type, std::string_view name, PinFlags flags = (PinFlags)0);
+	struct PinOutput {
+		// output pins don't have values, just need to know metadata (name and type)
+		// use the base struct
+		Pin pin;
+		std::vector<PinInput> connections;
+	};
 
-	// template utility function for creating input pins 
-	// explicit template speclializations are defined in the cpp file
-	// each overload takes a different callback, and infers the pin's type
-	// TODO not sure why the template is needed, vc++17 compiler says it can't disambiguate overloads without the template
-	template <typename... T>
-	PinInput CreatePinInput(const std::string_view name, std::function<void(T...)>&& callback);
+	// TODO this is bad nomenclature
+
+	PinInput SetupPinInput(Pin* pin, IEventNode* node);
+
+	Pin SetupPinOutput(PinType type, std::string_view name, PinFlags flags = (PinFlags)0);
 };

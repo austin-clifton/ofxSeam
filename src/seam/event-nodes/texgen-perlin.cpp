@@ -12,35 +12,8 @@ namespace {
 TexgenPerlin::TexgenPerlin() : IEventNode("Perlin Noise") {
 	flags = (NodeFlags)(flags | NodeFlags::IS_VISUAL);
 
-	// define input pins and their callbacks
-	pin_inputs[0] = CreatePinInput<int>("octaves", [&](int v) {
-		assert(octaves > 0);
-		octaves = v;
-		dirty = true;
-	});
-
-	pin_inputs[1] = CreatePinInput<float>("frequency", [&](float v) {
-		frequency = v;
-		dirty = true;
-	});
-
-	pin_inputs[2] = CreatePinInput<float>("lacunarity", [&](float v) {
-		lacunarity = v;
-		dirty = true;
-	});
-
-	pin_inputs[3] = CreatePinInput<float>("amplitude", [&](float v) {
-		amplitude = v;
-		dirty = true;
-	});
-
-	pin_inputs[4] = CreatePinInput<float>("persistence", [&](float v) {
-		persistence = v;
-		dirty = true;
-	});
-
 	// define the output pin
-	pin_out_tex.pin = CreatePinOutput(PinType::TEXTURE, "texture");
+	pin_out_tex.pin = SetupPinOutput(PinType::TEXTURE, "texture");
 
 	// TODO this shouldn't be an RGB buffer if only using one color channel
 	fbo.allocate(tex_size.x, tex_size.y, GL_RGB);
@@ -59,11 +32,7 @@ TexgenPerlin::TexgenPerlin() : IEventNode("Perlin Noise") {
 }
 
 TexgenPerlin::~TexgenPerlin() {
-	// delete input pins
-	for (size_t i = 0; i < pin_inputs.size(); i++) {
-		delete pin_inputs[i].pin;
-		pin_inputs[i].pin = nullptr;
-	}
+
 }
 
 PinInput* TexgenPerlin::PinInputs(size_t& size) {
