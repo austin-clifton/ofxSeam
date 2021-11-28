@@ -17,6 +17,8 @@ namespace seam {
 		/// to be called by ofApp::draw()
 		void Draw();
 
+		void GuiDraw();
+
 		/// to be called by ofApp::update()
 		void Update();
 
@@ -41,9 +43,7 @@ namespace seam {
 		bool Disconnect(IEventNode* node_out, Pin* pin_out, IEventNode* node_in, Pin* pin_in);
 
 		bool Disconnect(Pin* pin_out, Pin* pin_in);
-
-		void ShowGui(bool toggle);
-
+	
 	private:
 		static bool CompareDrawOrder(const IEventNode* l, const IEventNode* r);
 		static bool CompareUpdateOrder(const IEventNode* l, const IEventNode* r);
@@ -60,7 +60,6 @@ namespace seam {
 		/// Recalculates the update and/or draw orders of nodes
 		void RecalculateTraversalOrder(bool recalc_update, bool recalc_draw);
 
-		void GuiDraw();
 		void GuiDrawPopups();
 
 		inline IEventNode* MapPinToNode(Pin* pin);
@@ -120,8 +119,6 @@ namespace seam {
 		Pin* new_link_pin;
 		IEventNode* selected_node = nullptr;
 
-		bool show_gui = true;
-		
 		bool show_create_dialog = false;
 	};
 }

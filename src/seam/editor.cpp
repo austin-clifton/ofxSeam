@@ -4,7 +4,7 @@
 #include "imgui/src/blueprints/builders.h"
 
 #include "hash.h"
-#include "event-nodes/texgen-perlin.h"
+#include "imgui-utils/properties.h"
 
 using namespace seam;
 namespace im = ImGui;
@@ -34,8 +34,8 @@ void Editor::Draw() {
 		n->Draw();
 	}
 
-	if (show_gui) {
-		GuiDraw();
+	if (selected_node && selected_node->IsVisual()) {
+		selected_node->DrawToScreen();
 	}
 
 	// TODO draw a final image to the screen
@@ -296,9 +296,11 @@ void Editor::GuiDraw() {
 		ImGui::PushStyleColor(ImGuiCol_Border, ImVec4(0.5f, 0.5f, 0.5f, 0.5f));
 
 		if (im::BeginChild(WINDOW_NAME_NODE_MENU, child_size, true)) {
-			ImGui::Text("hello world");
-
-			// selected_node->GuiDrawPropertiesList();
+			bool dirty = props::DrawPinInputs(selected_node);
+			dirty = selected_node->GuiDrawPropertiesList() || dirty;
+			if (dirty) {
+				selected_node->SetDirty();
+			}
 		}
 		im::EndChild();
 		
@@ -625,6 +627,3 @@ PinOutput* Editor::FindPinOutput(IEventNode* node, Pin* pin) {
 	return pin_out;
 }
 
-void Editor::ShowGui(bool toggle) {
-	show_gui = toggle;
-}

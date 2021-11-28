@@ -24,6 +24,8 @@ PinOutput* Cos::PinOutputs(size_t& size) {
 }
 
 float Cos::Calculate(float t) {
+	// TODO modulating frequency makes this go whacko
+
 	// frequency of 1 == period multiplier of 2PI
 	float period_mul = 2.f * PI * pin_frequency.value;
 	return pin_amplitude_shift.value + pin_amplitude.value * cos(period_mul * t + pin_phase_shift.value);

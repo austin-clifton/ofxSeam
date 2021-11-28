@@ -13,12 +13,17 @@ void ofApp::update(){
 
 //--------------------------------------------------------------
 void ofApp::draw(){
-	gui.begin();
-
+	
 	seam_editor.Draw();
 
-	gui.end();
-	gui.draw();
+	if (show_gui) {
+		gui.begin();
+
+		seam_editor.GuiDraw();
+
+		gui.end();
+		gui.draw();
+	}
 }
 
 //--------------------------------------------------------------

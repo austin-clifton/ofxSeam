@@ -91,6 +91,7 @@ namespace seam {
 	struct PinFloat : Pin {
 		PinFloat(
 			std::string_view _name = "float",
+			std::string_view _description = "",
 			float _init_val = 0.f,
 			float _min = -FLT_MAX,
 			float _max = FLT_MAX,
@@ -98,6 +99,7 @@ namespace seam {
 			PinFlags _flags = PinFlags::INPUT
 		) {
 			name = _name;
+			description = _description;
 			type = PinType::FLOAT;
 			flags = _flags;
 			value = std::min(_max, std::max(_init_val, _min));
@@ -115,6 +117,7 @@ namespace seam {
 	struct PinInt : Pin {
 		PinInt(
 			std::string_view _name = "int",
+			std::string_view _description = "",
 			int _init_val = 0,
 			int _min = INT_MIN,
 			int _max = INT_MAX,
@@ -122,6 +125,7 @@ namespace seam {
 			PinFlags _flags = PinFlags::INPUT
 		) {
 			name = _name;
+			description = _description;
 			type = PinType::INT;
 			flags = _flags;
 			value = std::min(_max, std::max(_init_val, _min));

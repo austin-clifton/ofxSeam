@@ -49,7 +49,7 @@ namespace seam {
 
 		// draw configurable and display-only properties that are internal to the node
 		// and should be exposed for editing.
-		virtual void GuiDrawPropertiesList() { }
+		virtual bool GuiDrawPropertiesList() { return false; }
 
 		/// to be called during OF's update() loop
 		virtual void Update(float time) { }
@@ -57,6 +57,8 @@ namespace seam {
 		/// to be called during OF's draw() loop
 		/// should be overridden by visual nodes
 		virtual void Draw() { }
+
+		virtual void DrawToScreen() { }
 
 		void GuiDraw( ed::Utilities::BlueprintNodeBuilder& builder );
 

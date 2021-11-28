@@ -25,6 +25,7 @@ class ofApp : public ofBaseApp{
 		void gotMessage(ofMessage msg);
 
 		// seam::MidiNoteBank<8, 2> midi_bank;
+		bool show_gui = true;
 		ofxImGui::Gui gui;
 		seam::Editor seam_editor;
 };

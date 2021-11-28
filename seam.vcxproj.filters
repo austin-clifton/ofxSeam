@@ -115,7 +115,7 @@
     <ClCompile Include="src\seam\event-nodes\cos.cpp">
       <Filter>src\seam\event-nodes</Filter>
     </ClCompile>
-    <ClCompile Include="..\seam-old\src\seam\imgui-utils\properties.cpp">
+    <ClCompile Include="src\seam\imgui-utils\properties.cpp">
       <Filter>src\seam\imgui-utils</Filter>
     </ClCompile>
   </ItemGroup>
@@ -308,7 +308,7 @@
     <ClInclude Include="src\seam\event-nodes\cos.h">
       <Filter>src\seam\event-nodes</Filter>
     </ClInclude>
-    <ClInclude Include="..\seam-old\src\seam\imgui-utils\properties.h">
+    <ClInclude Include="src\seam\imgui-utils\properties.h">
       <Filter>src\seam\imgui-utils</Filter>
     </ClInclude>
   </ItemGroup>

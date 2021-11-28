@@ -188,7 +188,6 @@
     <ClCompile Include="..\..\..\addons\ofxImGui-1.75\libs\imgui\src\blueprints\drawing.cpp" />
     <ClCompile Include="..\..\..\addons\ofxImGui-1.75\libs\imgui\src\blueprints\widgets.cpp" />
     <ClCompile Include="..\..\..\addons\ofxImGui-1.75\libs\imgui\src\imgui_tables.cpp" />
-    <ClCompile Include="..\seam-old\src\seam\imgui-utils\properties.cpp" />
     <ClCompile Include="src\main.cpp" />
     <ClCompile Include="src\ofApp.cpp" />
     <ClCompile Include="..\..\..\addons\ofxImGui-1.75\src\BaseEngine.cpp" />
@@ -222,13 +221,13 @@
     <ClCompile Include="src\seam\event-nodes\event-node.cpp" />
     <ClCompile Include="src\seam\event-nodes\texgen-perlin.cpp" />
     <ClCompile Include="src\seam\factory.cpp" />
+    <ClCompile Include="src\seam\imgui-utils\properties.cpp" />
     <ClCompile Include="src\seam\pin.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\addons\ofxImGui-1.75\libs\imgui\src\blueprints\builders.h" />
     <ClInclude Include="..\..\..\addons\ofxImGui-1.75\libs\imgui\src\blueprints\drawing.h" />
     <ClInclude Include="..\..\..\addons\ofxImGui-1.75\libs\imgui\src\blueprints\widgets.h" />
-    <ClInclude Include="..\seam-old\src\seam\imgui-utils\properties.h" />
     <ClInclude Include="src\ofApp.h" />
     <ClInclude Include="..\..\..\addons\ofxImGui-1.75\src\BaseEngine.h" />
     <ClInclude Include="..\..\..\addons\ofxImGui-1.75\src\BaseTheme.h" />
@@ -270,6 +269,7 @@
     <ClInclude Include="src\seam\event-nodes\texgen-perlin.h" />
     <ClInclude Include="src\seam\factory.h" />
     <ClInclude Include="src\seam\hash.h" />
+    <ClInclude Include="src\seam\imgui-utils\properties.h" />
     <ClInclude Include="src\seam\notes.h" />
     <ClInclude Include="src\seam\pin.h" />
   </ItemGroup>

@@ -10,10 +10,14 @@ namespace seam {
 
 		~TexgenPerlin();
 
+		void Draw() override;
+
+		void DrawToScreen() override;
+
 		// TODO make this a utility function so any texture drawing node can use it
 		void GuiDrawNodeView() override;
 
-		void GuiDrawPropertiesList() override;
+		bool GuiDrawPropertiesList() override;
 	
 		PinInput* PinInputs(size_t& size) override;
 
@@ -22,11 +26,35 @@ namespace seam {
 
 		// nomenclature from http://libnoise.sourceforge.net/glossary/#perlinnoise
 
-		PinInt pin_octaves = PinInt("octaves", 1, 1, 8);
-		PinFloat pin_frequency = PinFloat("frequency", 8.f, 0.001f);
-		PinFloat pin_lacunarity = PinFloat("lacunarity", 2.f, 0.001f);
-		PinFloat pin_amplitude = PinFloat("amplitude", .5f, 0.001f, 1.f);
-		PinFloat pin_persistence = PinFloat("persistence", 0.5f, 0.001f);
+		PinInt pin_octaves = PinInt(
+			"octaves", 
+			"number of iterations of noise",
+			1, 1, 8
+		);
+		PinFloat pin_frequency = PinFloat(
+			"frequency",
+			"initial noise frequency for the first octave",
+			8.f, 0.001f
+		);
+		PinFloat pin_lacunarity = PinFloat(
+			"lacunarity",
+			"each octave's frequency is multiplied by this number",
+			2.f, 
+			0.001f
+		);
+		PinFloat pin_amplitude = PinFloat(
+			"amplitude",
+			"peak value of the first octave",
+			.5f, 
+			0.001f, 
+			1.f
+		);
+		PinFloat pin_persistence = PinFloat(
+			"persistence", 
+			"each octave's amplitude is multiplied by this number",
+			0.5f, 
+			0.001f
+		);
 
 		std::array<PinInput, 5> pin_inputs = {
 			SetupPinInput(&pin_octaves, this),
