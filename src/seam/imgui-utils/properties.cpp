@@ -34,7 +34,8 @@ namespace seam::props {
 		strncpy(buf, v.c_str(), std::min(v.size(), 256ULL));
 
 		// refresh button needs a logo
-		bool refresh_requested = ImGui::Button("refresh shader");
+
+		bool refresh_requested = is_shader_path && ImGui::Button("refresh shader");
 
 		if (ImGui::InputText(label.data(), buf, 256)) {
 			v = buf;

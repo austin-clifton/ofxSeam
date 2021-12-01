@@ -11,7 +11,7 @@ namespace seam {
 			float& v,
 			float min = -FLT_MAX,
 			float max = FLT_MAX,
-			float speed = 1.f,
+			float speed = .001f,
 			ImGuiSliderFlags flags = 0
 		);
 		bool Draw(
@@ -19,14 +19,14 @@ namespace seam {
 			int& v,
 			int min = INT_MIN,
 			int max = INT_MAX,
-			float speed = 1.f,
+			float speed = .001f,
 			ImGuiSliderFlags flags = 0
 		);
 
 		bool Draw(std::string_view label, std::string& v, bool is_shader_path = false);
 
-		bool DrawPin(PinFloat* pin, float speed = 1.f);
-		bool DrawPin(PinInt* pin, float speed = .2f);
+		bool DrawPin(PinFloat* pin, float speed = .001f);
+		bool DrawPin(PinInt* pin, float speed = .01f);
 
 		/// generic for drawing different input pin types
 		bool DrawPinInput(PinInput input);

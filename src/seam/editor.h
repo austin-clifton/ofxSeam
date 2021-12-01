@@ -100,19 +100,20 @@ namespace seam {
 		// this list does not need to be sorted
 		std::vector<IEventNode*> nodes;
 
+		// these two are re-calculated each frame, and then sorted for update + draw in that order
 		std::vector<IEventNode*> nodes_to_update;
 		std::vector<IEventNode*> nodes_to_draw;
 
 		// visible visual nodes dictate which nodes actually get updated and drawn during those loops
 		std::vector<IEventNode*> visible_nodes;
 
-		// list of visual (texture-outputting) nodes, sorted by draw order
+		// unsorted list of visual (texture-outputting) nodes, used to re-calculate draw order
 		std::vector<IEventNode*> visual_nodes;
 
 		// list of all pins and their associated nodes, sorted by Pin pointer value
 		std::vector<PinToNode> pins_to_nodes;
 
-		// list of all links between pins
+		// sorted list of all links between pins, mostly for GUI display + interactions
 		std::vector<Link> links;
 
 		// book keeping for GUI interactions

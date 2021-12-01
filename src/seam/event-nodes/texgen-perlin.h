@@ -29,17 +29,17 @@ namespace seam {
 		PinInt pin_octaves = PinInt(
 			"octaves", 
 			"number of iterations of noise",
-			1, 1, 8
+			5, 1, 8
 		);
 		PinFloat pin_frequency = PinFloat(
 			"frequency",
 			"initial noise frequency for the first octave",
-			8.f, 0.001f
+			7.19f, 0.001f
 		);
 		PinFloat pin_lacunarity = PinFloat(
 			"lacunarity",
 			"each octave's frequency is multiplied by this number",
-			2.f, 
+			2.68f, 
 			0.001f
 		);
 		PinFloat pin_amplitude = PinFloat(
@@ -52,7 +52,7 @@ namespace seam {
 		PinFloat pin_persistence = PinFloat(
 			"persistence", 
 			"each octave's amplitude is multiplied by this number",
-			0.5f, 
+			0.6f, 
 			0.001f
 		);
 

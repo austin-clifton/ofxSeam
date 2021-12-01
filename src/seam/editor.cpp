@@ -296,7 +296,9 @@ void Editor::GuiDraw() {
 		ImGui::PushStyleColor(ImGuiCol_Border, ImVec4(0.5f, 0.5f, 0.5f, 0.5f));
 
 		if (im::BeginChild(WINDOW_NAME_NODE_MENU, child_size, true)) {
+			ImGui::Text("Pins:");
 			bool dirty = props::DrawPinInputs(selected_node);
+			ImGui::Text("Properties:");
 			dirty = selected_node->GuiDrawPropertiesList() || dirty;
 			if (dirty) {
 				selected_node->SetDirty();
@@ -327,13 +329,10 @@ IEventNode* Editor::CreateAndAdd(NodeId node_id) {
 			// node has no inputs yet so it must have draw order 0
 			node->draw_order = 0;
 
-			// find out where to insert the node into the sorted visual_nodes list
-			auto it = std::upper_bound(visual_nodes.begin(), visual_nodes.end(), node, &Editor::CompareDrawOrder);
-			// and insert it
-			visual_nodes.insert(it, node);
+			visual_nodes.push_back(node);
 
 			// probably temporary: add to the list of visible nodes up front
-			it = std::upper_bound(visible_nodes.begin(), visible_nodes.end(), node, &Editor::CompareDrawOrder);
+			auto it = std::upper_bound(visible_nodes.begin(), visible_nodes.end(), node, &Editor::CompareDrawOrder);
 			visible_nodes.insert(it, node);
 		}
 
@@ -593,8 +592,7 @@ void Editor::RecalculateTraversalOrder(bool recalc_update, bool recalc_draw) {
 			RecalculateDrawOrder(n);
 		}
 
-		// re-sort
-		std::sort(visual_nodes.begin(), visual_nodes.end(), &Editor::CompareDrawOrder);
+		// these don't need to be re-sorted
 	}
 }
 
