@@ -39,8 +39,10 @@ void main() {
     vec2 fragCoord = vec2( gl_FragCoord.x / resolution.x, gl_FragCoord.y / resolution.y );
     float curr_lacunarity = frequency;
     float curr_gain = amplitude;
+    // offset at random directions per octave to improve blockiness
+    vec2 curr_offset = vec2(0.3, 0.9);
     for ( int i = 0; i < octaves; i++ ) {
-        vec2 uv = fragCoord * curr_lacunarity;
+        vec2 uv = fragCoord * curr_lacunarity + curr_offset;
         color += vec4(
             noise( uv ),
             noise( vec2(17.3, -8.1) + uv ),
@@ -50,6 +52,8 @@ void main() {
 
         curr_gain *= persistence;
         curr_lacunarity *= lacunarity;
+        curr_offset.x = rand(curr_offset);
+        curr_offset.y = rand(curr_offset);
     }
     color.a = 1.0;
 
