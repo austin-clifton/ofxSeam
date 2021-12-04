@@ -22,6 +22,7 @@ Seam's design goals include:
 ## Roadmap
 
 A shorter term roadmap for seam includes:
+- make seam an actual openFrameworks extension
 - node deletion 
 - prettify it (use a better font)
 - serialize and deserialize node graphs to save and load "scene graphs" (will probably use [capnp](https://capnproto.org/capnp-tool.html) for this)
