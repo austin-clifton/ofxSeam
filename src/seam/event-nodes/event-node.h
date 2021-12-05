@@ -104,26 +104,18 @@ namespace seam {
 
 		NodeFlags flags = (NodeFlags)0;
 
-		// a node is dirtied when its inputs change, or time progresses in some cases
-		// a dirtied node needs to have its Update() called once it becomes part of the visual chain,
-		// and a dirtied visual node needs to have its Draw() called
-		bool dirty = true;
-
 		// nodes' Update() calls should be made parent-first
 		// update order == max(transmitters' update order) + 1
-		int16_t update_order = -1;
+		int16_t update_order = 0;
 
 		// visual nodes must be drawn in dependency order,
 		// meaning a node using a texture from a previous node must be drawn after the previous.
-		int16_t draw_order = -1;
+		int16_t draw_order = 0;
 
 		// TODO remove me?
 		seam::NodeId id;
 
 	private:
-		static bool CompareDrawOrder(const IEventNode* l, const IEventNode* r);
-		static bool CompareUpdateOrder(const IEventNode* l, const IEventNode* r);
-
 		struct NodeConnection {
 			IEventNode* node = nullptr;
 			// number of connections to this node,
@@ -133,9 +125,28 @@ namespace seam {
 			bool operator==(const IEventNode* other) {
 				return node == other;
 			}
+
+			bool operator<(const IEventNode* other) {
+				return node < other;
+			}
 		};
 
+		static bool CompareDrawOrder(const IEventNode* l, const IEventNode* r);
+		static bool CompareUpdateOrder(const IEventNode* l, const IEventNode* r);
+		static bool CompareConnUpdateOrder(const NodeConnection& l, const NodeConnection& r);
+
+		/// \return true if this is a new parent node
+		bool AddParent(IEventNode* parent);
+
+		/// \return true if this is a new child node
+		bool AddChild(IEventNode* child);
+
 		void SortParents();
+
+		// a node is dirtied when its inputs change, or time progresses in some cases
+		// a dirtied node needs to have its Update() called once it becomes part of the visual chain,
+		// and a dirtied visual node needs to have its Draw() called
+		bool dirty = true;
 
 		// list of child nodes which this node sends events to
 		std::vector<NodeConnection> children;

@@ -49,13 +49,17 @@ namespace seam {
 		// need to be drawn and/or updated this frame
 		void TraverseNodesToUpdate(IEventNode* n);
 		
+		/// recalculate a node and its children's update order
 		int16_t RecalculateUpdateOrder(IEventNode* node);
 
+		/// recalculate a node and its children's draw order
 		int16_t RecalculateDrawOrder(IEventNode* node);
-		void InvalidateDrawOrder(IEventNode* node);
+
+		/// recalculate the node and its children's update and/or draw orders
+		void InvalidateChildren(IEventNode* node, bool recalc_update, bool recalc_draw);
 
 		/// Recalculates the update and/or draw orders of nodes
-		void RecalculateTraversalOrder(bool recalc_update, bool recalc_draw);
+		void RecalculateTraversalOrder(IEventNode* node, bool recalc_update, bool recalc_draw);
 
 		void GuiDrawPopups();
 
@@ -103,9 +107,6 @@ namespace seam {
 
 		// visible visual nodes dictate which nodes actually get updated and drawn during those loops
 		std::vector<IEventNode*> visible_nodes;
-
-		// unsorted list of visual (texture-outputting) nodes, used to re-calculate draw order
-		std::vector<IEventNode*> visual_nodes;
 
 		// list of all pins and their associated nodes, sorted by Pin pointer value
 		std::vector<PinToNode> pins_to_nodes;

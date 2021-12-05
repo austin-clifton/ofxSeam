@@ -71,6 +71,48 @@ bool IEventNode::CompareUpdateOrder(const IEventNode* l, const IEventNode* r) {
 	return l->update_order < r->update_order;
 }
 
+bool IEventNode::CompareConnUpdateOrder(const NodeConnection& l, const NodeConnection& r) {
+	return l.node->update_order < r.node->update_order;
+}
+
+void IEventNode::SortParents() {
+	std::sort(parents.begin(), parents.end(), &IEventNode::CompareConnUpdateOrder);
+}
+
+bool IEventNode::AddParent(IEventNode* parent) {
+	// the parents list is sorted to keep update traversal in order without any further sorting
+	// insert to a sorted list, if this parent isn't already in the parents list
+	NodeConnection conn;
+	conn.node = parent;
+	auto it = std::lower_bound(parents.begin(), parents.end(), conn, &IEventNode::CompareConnUpdateOrder);
+	if (it->node != parent) {
+		// new parent, add the new NodeConnection for it
+		conn.conn_count = 1;
+		parents.insert(it, conn);
+		return true;
+	} else {
+		// parent already exists, increase its connection count
+		it->conn_count += 1;
+		return false;
+	}
+}
+
+bool IEventNode::AddChild(IEventNode* child) {
+	// the children list is not sorted for now, don't think there is any reason to sort it
+	auto it = std::find(children.begin(), children.end(), child);
+	if (it->node != child) {
+		// new child, make a NodeConnection for it
+		NodeConnection conn;
+		conn.node = child;
+		conn.conn_count = 1;
+		children.push_back(conn);
+		return true;
+	} else {
+		// child already exists, increase its connection count
+		it->conn_count += 1;
+		return false;
+	}
+}
 
 void IEventNode::SetDirty() {
 	dirty = true;
