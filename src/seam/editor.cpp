@@ -34,40 +34,42 @@ void Editor::Draw() {
 	// probably want multiple viewports / docking?
 }
 
-void Editor::TraverseNodesToUpdate(IEventNode* n) {
-	// only nodes which update every frame, or update over time, will need to update
-	if (n->UpdatesOverTime() || n->dirty) {
-		// avoid traversing and pushing the same node to the lists multiple times per frame
-		if (std::find(nodes_to_update.begin(), nodes_to_update.end(), n) != nodes_to_update.end()) {
-			return;
-		}
-		nodes_to_update.push_back(n);
+void Editor::UpdateVisibleNodeGraph(IEventNode* n) {
+	// traverse parents and update them before traversing this node
+	// parents are sorted by update order, so that any "shared parents" are updated first
+	int16_t last_update_order = -1;
+	for (auto p : n->parents) {
+		assert(last_update_order <= p.node->update_order);
+		last_update_order = p.node->update_order;
+		UpdateVisibleNodeGraph(p.node);
+	}
+
+	// now, this node can update, if it's dirty
+	if (n->dirty) {
+		n->Update(ofGetElapsedTimef());
+		n->dirty = false;
+
+		// if this is a visual node, it will need to be re-drawn now
 		if (n->IsVisual()) {
 			nodes_to_draw.push_back(n);
 		}
-		for (auto p : n->parents) {
-			TraverseNodesToUpdate(p.node);
-		}
 	}
-
 }
 
 void Editor::Update() {
 	// traverse the parent tree of each visible visual node and determine what needs to update
-	nodes_to_update.clear();
 	nodes_to_draw.clear();
 
-	for (auto n : visible_nodes) {
-		TraverseNodesToUpdate(n);
+	// before traversing the graphs of visible nodes, dirty nodes which update every frame
+	for (auto n : nodes_update_over_time) {
+		// set the dirty flag directly so children aren't affected;
+		// just because the node updates over time doesn't mean it will be dirtied every frame,
+		// for instance in the case of a timer which fires every XX seconds
+		n->dirty = true;
 	}
 
-	// sort the update list now and update
-	std::sort(nodes_to_update.begin(), nodes_to_update.end(), &IEventNode::CompareUpdateOrder);
-
-	float time = ofGetElapsedTimef();
-	for (auto n : nodes_to_update) {
-		n->Update(time);
-		n->dirty = false;
+	for (auto n : visible_nodes) {
+		UpdateVisibleNodeGraph(n);
 	}
 }
 
@@ -324,6 +326,10 @@ IEventNode* Editor::CreateAndAdd(NodeId node_id) {
 			visible_nodes.insert(it, node);
 		}
 
+		if (node->UpdatesOverTime()) {
+			nodes_update_over_time.push_back(node);
+		}
+
 		// add input and output pins to the pins_to_nodes list
 		// leaving this easy for now -- just add each pin and then sort the whole list
 		// nodes probably won't be frequently created, so this doesn't need to be super fast
@@ -386,12 +392,6 @@ bool Editor::Connect(IEventNode* parent, Pin* pin_co, IEventNode* child, Pin* pi
 	const bool rearranged = is_new_parent || is_new_child;
 
 	if (rearranged) {
-		// mark the child node and its children recursively with PARENT_UPDATES_OVER_TIME, 
-		// if the new parent node updates over time
-		if (parent->UpdatesOverTime()) {
-			child->SetUpdatesOverTime(true);
-		}
-
 		RecalculateTraversalOrder(child, true, true);
 	}
 
@@ -462,11 +462,6 @@ bool Editor::Disconnect(IEventNode* parent, Pin* pin_co, IEventNode* child, Pin*
 	}
 
 	if (rearranged) {
-		// if a node that updates over time was disconnected, the child node may not update over time anymore
-		if (parent->UpdatesOverTime()) {
-			child->SetUpdatesOverTime(false);
-		}
-
 		// the child node and its children need to recalculate draw and update order now
 		RecalculateTraversalOrder(child, true, true);
 	}

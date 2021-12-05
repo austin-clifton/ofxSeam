@@ -24,10 +24,6 @@ namespace seam {
 		// if a node uses time as an update parameter it updates every frame
 		// if a node wants to use time as an argument, it should mark itself with this flag
 		UPDATES_OVER_TIME = 1 << 1,
-
-		// children node of a node that updates over time also update over time,
-		// but if unparented from a node that updates over time, the child can stop updating every frame too
-		PARENT_UPDATES_OVER_TIME = 1 << 2,
 	};
 
 	/// Base class for all nodes that use the eventing system
@@ -82,14 +78,12 @@ namespace seam {
 		void SetDirty();
 
 		inline bool UpdatesOverTime() {
-			return (flags & NodeFlags::UPDATES_OVER_TIME) || (flags & NodeFlags::PARENT_UPDATES_OVER_TIME);
+			return (flags & NodeFlags::UPDATES_OVER_TIME) == NodeFlags::UPDATES_OVER_TIME;
 		}
 
 		inline bool IsVisual() {
 			return (flags & NodeFlags::IS_VISUAL) == NodeFlags::IS_VISUAL;
 		}
-
-		void SetUpdatesOverTime(bool updates_over_time);
 
 	protected:
 		// draw the center of the node (the contextual bits)

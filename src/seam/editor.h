@@ -45,9 +45,9 @@ namespace seam {
 		bool Disconnect(Pin* pin_out, Pin* pin_in);
 	
 	private:
-		// recursively traverse visual nodes' parent trees and determine which nodes
-		// need to be drawn and/or updated this frame
-		void TraverseNodesToUpdate(IEventNode* n);
+		/// recursively traverse a visual node's parent tree and update nodes in order
+		/// also determines the draw list (but not ordering!) for this frame
+		void UpdateVisibleNodeGraph(IEventNode* n);
 		
 		/// recalculate a node and its children's update order
 		int16_t RecalculateUpdateOrder(IEventNode* node);
@@ -102,11 +102,13 @@ namespace seam {
 		std::vector<IEventNode*> nodes;
 
 		// these two are re-calculated each frame, and then sorted for update + draw in that order
-		std::vector<IEventNode*> nodes_to_update;
 		std::vector<IEventNode*> nodes_to_draw;
 
 		// visible visual nodes dictate which nodes actually get updated and drawn during those loops
 		std::vector<IEventNode*> visible_nodes;
+
+		// nodes which update every frame (over time) need to be invalidated every frame
+		std::vector<IEventNode*> nodes_update_over_time;
 
 		// list of all pins and their associated nodes, sorted by Pin pointer value
 		std::vector<PinToNode> pins_to_nodes;

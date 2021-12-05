@@ -123,37 +123,6 @@ void IEventNode::SetDirty() {
 	}
 }
 
-void IEventNode::SetUpdatesOverTime(bool updates_over_time) {
-	// check if the flag is already set
-	if (updates_over_time && (flags & NodeFlags::PARENT_UPDATES_OVER_TIME) == 0) {
-		// not set, set it
-		flags = (NodeFlags)(flags | NodeFlags::PARENT_UPDATES_OVER_TIME);
-		// children also update over time now
-		for (auto child : children) {
-			child.node->SetUpdatesOverTime(true);
-		}
-
-	} else if (!updates_over_time) {
-		// make sure no parent nodes still update over time
-		bool other_updates_over_time = false;
-		for (size_t i = 0; i < parents.size() && !other_updates_over_time; i++) {
-			other_updates_over_time = parents[i].node->UpdatesOverTime();
-		}
-
-		if (!other_updates_over_time) {
-			// clear it
-			flags = (NodeFlags)(flags & ~NodeFlags::PARENT_UPDATES_OVER_TIME);
-			// if this node doesn't update over time anymore, its children might not either
-			if (!UpdatesOverTime()) {
-				// children nodes might not update over time now, let them sort it out
-				for (auto child : children) {
-					child.node->SetUpdatesOverTime(false);
-				}
-			}
-		}
-	}
-}
-
 void IEventNode::GuiDraw( ed::Utilities::BlueprintNodeBuilder& builder ) {
 	builder.Begin(ed::NodeId(this));
 
