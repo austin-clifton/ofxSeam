@@ -81,6 +81,7 @@ bool EventNodeFactory::Register(EventNodeFactory::CreateFunc&& Create) {
 
 	gen.Create = std::move(Create);
 	generators.push_back(std::move(gen));
+	return true;
 }
 
 NodeId EventNodeFactory::DrawCreatePopup(PinType input_type, PinType output_type) {
