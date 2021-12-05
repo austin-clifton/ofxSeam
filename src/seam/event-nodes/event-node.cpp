@@ -85,7 +85,7 @@ bool IEventNode::AddParent(IEventNode* parent) {
 	NodeConnection conn;
 	conn.node = parent;
 	auto it = std::lower_bound(parents.begin(), parents.end(), conn, &IEventNode::CompareConnUpdateOrder);
-	if (it->node != parent) {
+	if (it == parents.end() || it->node != parent) {
 		// new parent, add the new NodeConnection for it
 		conn.conn_count = 1;
 		parents.insert(it, conn);
@@ -100,7 +100,7 @@ bool IEventNode::AddParent(IEventNode* parent) {
 bool IEventNode::AddChild(IEventNode* child) {
 	// the children list is not sorted for now, don't think there is any reason to sort it
 	auto it = std::find(children.begin(), children.end(), child);
-	if (it->node != child) {
+	if (it == children.end()) {
 		// new child, make a NodeConnection for it
 		NodeConnection conn;
 		conn.node = child;
