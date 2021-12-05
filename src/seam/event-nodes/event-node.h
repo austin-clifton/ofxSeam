@@ -121,6 +121,9 @@ namespace seam {
 		seam::NodeId id;
 
 	private:
+		static bool CompareDrawOrder(const IEventNode* l, const IEventNode* r);
+		static bool CompareUpdateOrder(const IEventNode* l, const IEventNode* r);
+
 		struct NodeConnection {
 			IEventNode* node = nullptr;
 			// number of connections to this node,
@@ -131,6 +134,8 @@ namespace seam {
 				return node == other;
 			}
 		};
+
+		void SortParents();
 
 		// list of child nodes which this node sends events to
 		std::vector<NodeConnection> children;

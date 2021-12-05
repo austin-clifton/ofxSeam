@@ -63,6 +63,15 @@ namespace {
 
 }
 
+bool IEventNode::CompareDrawOrder(const IEventNode* l, const IEventNode* r) {
+	return l->draw_order < r->draw_order;
+}
+
+bool IEventNode::CompareUpdateOrder(const IEventNode* l, const IEventNode* r) {
+	return l->update_order < r->update_order;
+}
+
+
 void IEventNode::SetDirty() {
 	dirty = true;
 	// dirtying a node dirties its children

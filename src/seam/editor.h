@@ -45,9 +45,6 @@ namespace seam {
 		bool Disconnect(Pin* pin_out, Pin* pin_in);
 	
 	private:
-		static bool CompareDrawOrder(const IEventNode* l, const IEventNode* r);
-		static bool CompareUpdateOrder(const IEventNode* l, const IEventNode* r);
-
 		// recursively traverse visual nodes' parent trees and determine which nodes
 		// need to be drawn and/or updated this frame
 		void TraverseNodesToUpdate(IEventNode* n);

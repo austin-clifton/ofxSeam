@@ -15,21 +15,13 @@ namespace {
 	const char* WINDOW_NAME_NODE_MENU = "Node Properties Menu";
 }
 
-bool Editor::CompareDrawOrder(const IEventNode* l, const IEventNode* r) {
-	return l->draw_order < r->draw_order;
-}
-
-bool Editor::CompareUpdateOrder(const IEventNode* l, const IEventNode* r) {
-	return l->update_order < r->update_order;
-}
-
 void Editor::Setup() {
 	node_editor_context = ed::CreateEditor();
 }
 
 void Editor::Draw() {
 
-	std::sort(nodes_to_draw.begin(), nodes_to_draw.end(), &Editor::CompareDrawOrder);
+	std::sort(nodes_to_draw.begin(), nodes_to_draw.end(), &IEventNode::CompareDrawOrder);
 	for (auto n : nodes_to_draw) {
 		n->Draw();
 	}
@@ -70,7 +62,7 @@ void Editor::Update() {
 	}
 
 	// sort the update list now and update
-	std::sort(nodes_to_update.begin(), nodes_to_update.end(), &Editor::CompareUpdateOrder);
+	std::sort(nodes_to_update.begin(), nodes_to_update.end(), &IEventNode::CompareUpdateOrder);
 
 	float time = ofGetElapsedTimef();
 	for (auto n : nodes_to_update) {
@@ -332,7 +324,7 @@ IEventNode* Editor::CreateAndAdd(NodeId node_id) {
 			visual_nodes.push_back(node);
 
 			// probably temporary: add to the list of visible nodes up front
-			auto it = std::upper_bound(visible_nodes.begin(), visible_nodes.end(), node, &Editor::CompareDrawOrder);
+			auto it = std::upper_bound(visible_nodes.begin(), visible_nodes.end(), node, &IEventNode::CompareDrawOrder);
 			visible_nodes.insert(it, node);
 		}
 
@@ -575,7 +567,7 @@ void Editor::RecalculateTraversalOrder(bool recalc_update, bool recalc_draw) {
 		}
 
 		// re-sort
-		std::sort(nodes.begin(), nodes.end(), &Editor::CompareUpdateOrder);
+		std::sort(nodes.begin(), nodes.end(), &IEventNode::CompareUpdateOrder);
 	}
 
 	if (recalc_draw) {
