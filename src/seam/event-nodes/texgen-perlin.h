@@ -69,7 +69,6 @@ namespace seam {
 		// TODO this should be an editable property, but not a pin (resolution shouldn't be changing)
 		glm::ivec2 tex_size = glm::ivec2(512, 512);
 
-		// TODO should also be an editable property, with a hot-reload butan!
 		std::string shader_name = "simplex-noise";
 
 		ofFbo fbo;

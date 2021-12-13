@@ -28,20 +28,23 @@ namespace seam::props {
 		return ImGui::DragInt(label.data(), &v, speed, min, max, "%d", flags);
 	}
 
-	bool Draw(std::string_view label, std::string& v, bool is_shader_path) {
+	bool Draw(std::string_view label, std::string& v) {
 		char buf[256] = { 0 };
 		// TODO not strcpy
 		strncpy(buf, v.c_str(), std::min(v.size(), 256ULL));
-
-		// refresh button needs a logo
-
-		bool refresh_requested = is_shader_path && ImGui::Button("refresh shader");
 
 		if (ImGui::InputText(label.data(), buf, 256)) {
 			v = buf;
 			return true;
 		}
-		return refresh_requested;
+		return false;
+	}
+
+	bool DrawShaderPath(std::string_view label, std::string& path) {
+		// refresh button needs a logo
+		bool refresh_requested = ImGui::Button("refresh shader");
+		bool name_changed = Draw(label, path);
+		return refresh_requested || name_changed;
 	}
 
 	bool DrawPin(PinFloat* pin, float speed) {

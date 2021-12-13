@@ -23,7 +23,10 @@ namespace seam {
 			ImGuiSliderFlags flags = 0
 		);
 
-		bool Draw(std::string_view label, std::string& v, bool is_shader_path = false);
+		bool Draw(std::string_view label, std::string& v);
+
+		/// draws a reload button in addition to providing a path setter
+		bool DrawShaderPath(std::string_view label, std::string& path);
 
 		bool DrawPin(PinFloat* pin, float speed = .001f);
 		bool DrawPin(PinInt* pin, float speed = .01f);

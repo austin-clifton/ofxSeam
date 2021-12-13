@@ -1,31 +1,8 @@
 #include "texgen-perlin.h"
 #include "../imgui-utils/properties.h"
+#include "../shader-utils.h"
 
 using namespace seam;
-
-namespace {
-	// TODO move these
-	void GuiDrawTexture() {
-
-	}
-
-	bool LoadShader(ofShader& shader, const std::string& shader_name) {
-		if (shader.isLoaded()) {
-			shader.unload();
-		}
-
-		// TODO should not need to prefix with the cwd in "normal" OF
-		// something around loading from the bin path was broken with the c++17 update
-		std::filesystem::path shader_path = std::filesystem::current_path() / "data/shaders" / shader_name;
-		if (!shader.load(shader_path)) {
-			std::string strpath = shader_path.string();
-			printf("failed to load shader at path %s\n", strpath.c_str());
-			return false;
-		} else {
-			return true;
-		}
-	}
-}
 
 TexgenPerlin::TexgenPerlin() : IEventNode("Perlin Noise") {
 	flags = (NodeFlags)(flags | NodeFlags::IS_VISUAL);
@@ -42,7 +19,7 @@ TexgenPerlin::TexgenPerlin() : IEventNode("Perlin Noise") {
 	fbo.allocate(settings);
 	// fbo.allocate(tex_size.x, tex_size.y, GL_RGB);
 
-	if (LoadShader(shader, shader_name)) {
+	if (ShaderUtils::LoadShader(shader, shader_name)) {
 		// tell the shader what the image resolution is
 		shader.setUniform2iv("resolution", &tex_size[0]);
 	}
@@ -88,21 +65,15 @@ void TexgenPerlin::GuiDrawNodeView() {
 	// https://forum.openframeworks.cc/t/how-to-draw-an-offbo-in-ofximgui-window/33174/2
 	ImTextureID texture_id = (ImTextureID)(uintptr_t)fbo.getTexture().getTextureData().textureID;
 	ImGui::Image(texture_id, ImVec2(256, 256));
-
-
-
-	// TODO draw imgui texture
 }
 
 bool TexgenPerlin::GuiDrawPropertiesList() {
-	if (props::Draw("shader name", shader_name, true)) {
-		if (LoadShader(shader, shader_name)) {
-			// tell the shader what the image resolution is
-			shader.setUniform2iv("resolution", &tex_size[0]);
-			printf("reloaded shader\n");
-
-			return true;
-		}
+	if ( props::DrawShaderPath("shader name", shader_name) 
+		&& ShaderUtils::LoadShader(shader, shader_name)
+	) {
+		// reloaded, tell the shader what the image resolution is again
+		shader.setUniform2iv("resolution", &tex_size[0]);
+		return true;
 	}
 	return false;
 }
