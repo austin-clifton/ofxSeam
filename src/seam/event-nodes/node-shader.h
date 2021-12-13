@@ -15,10 +15,6 @@ namespace seam {
 
 		void Draw() override;
 
-		void DrawToScreen() override;
-
-		void GuiDrawNodeView() override;
-
 		bool GuiDrawPropertiesList() override;
 
 		PinInput* PinInputs(size_t& size) override;

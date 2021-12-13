@@ -29,14 +29,6 @@ void ShaderNode::Draw() {
 	// TODO set uniforms
 }
 
-void ShaderNode::DrawToScreen() {
-
-}
-
-void ShaderNode::GuiDrawNodeView() {
-
-}
-
 bool ShaderNode::GuiDrawPropertiesList() {
 	if (props::DrawShaderPath("shader name", shader_name)
 		&& ShaderUtils::LoadShader(shader, shader_name)
