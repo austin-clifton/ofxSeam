@@ -118,6 +118,12 @@
     <ClCompile Include="src\seam\imgui-utils\properties.cpp">
       <Filter>src\seam\imgui-utils</Filter>
     </ClCompile>
+    <ClCompile Include="src\seam\event-nodes\node-shader.cpp">
+      <Filter>src\seam\event-nodes</Filter>
+    </ClCompile>
+    <ClCompile Include="src\seam\shader-utils.cpp">
+      <Filter>src\seam</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="src">
@@ -310,6 +316,12 @@
     </ClInclude>
     <ClInclude Include="src\seam\imgui-utils\properties.h">
       <Filter>src\seam\imgui-utils</Filter>
+    </ClInclude>
+    <ClInclude Include="src\seam\event-nodes\node-shader.h">
+      <Filter>src\seam\event-nodes</Filter>
+    </ClInclude>
+    <ClInclude Include="src\seam\shader-utils.h">
+      <Filter>src\seam</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

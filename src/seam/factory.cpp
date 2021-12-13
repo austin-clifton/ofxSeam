@@ -3,17 +3,22 @@
 
 #include "event-nodes/texgen-perlin.h"
 #include "event-nodes/cos.h"
+#include "event-nodes/node-shader.h"
 
 using namespace seam;
 
 EventNodeFactory::EventNodeFactory() {
 	// register seam-internal nodes here
 	Register([] {
-		return new TexgenPerlin();
+		return new seam::TexgenPerlin();
 	});
 
 	Register([] {
 		return new seam::Cos();
+	});
+
+	Register([] {
+		return new seam::ShaderNode();
 	});
 
 	// TODO register more seam internal generators here
