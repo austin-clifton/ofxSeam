@@ -30,6 +30,9 @@ namespace seam {
 		// FBO + resolution
 		TEXTURE,
 
+		// a material is really just a shader with specific uniform value settings
+		MATERIAL,
+
 		// Note* events are somewhat special: they use a base BasicNote struct which may be masked as a more complex struct.
 		// the BasicNote type contains velocity and pitch, but you can create other note types that inherit BasicNote,
 		// and then make other Nodes that are capable of handling the more complex Note type
@@ -66,9 +69,9 @@ namespace seam {
 	struct Pin {
 		PinType type;
 		// human-readable Pin name for display purposes
-		std::string_view name;
+		std::string name;
 		// human-readable Pin description for display purposes
-		std::string_view description;
+		std::string description;
 		PinFlags flags = (PinFlags)0;
 	};
 
@@ -147,6 +150,13 @@ namespace seam {
 		Texture value;
 	};
 
+	struct PinMaterial : Pin {
+		PinMaterial() {
+			type = PinType::MATERIAL;
+		}
+		ofShader* shader = nullptr;
+	};
+
 	struct PinNoteOn : Pin {
 		PinNoteOn() {
 			type = PinType::NOTE_ON;
@@ -170,9 +180,17 @@ namespace seam {
 		std::vector<PinInput> connections;
 	};
 
-	// TODO this is bad nomenclature
+	// TODO this is bad nomenclature (SetupPinOutput doesn't return a PinOutput)
+	// probably need to redo the PinInput and PinOutput nomenclature
 
 	PinInput SetupPinInput(Pin* pin, IEventNode* node);
 
 	Pin SetupPinOutput(PinType type, std::string_view name, PinFlags flags = (PinFlags)0);
+
+	/// Queries a linked shader program's active uniforms and creates a PinInput list from them.
+	/// \param shader The linked shader program to query the uniforms of.
+	/// \param node The node the shader's Pins will be added to. 
+	/// \return The list of PinInputs which maps to the uniforms in the shader.
+	/// All PinInput's Pin structs are heap-allocated for now, and must be freed when no longer in use.
+	std::vector<PinInput> UniformsToPinInputs(ofShader& shader, IEventNode* node);
 };
