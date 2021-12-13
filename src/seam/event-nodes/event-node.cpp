@@ -43,6 +43,7 @@ namespace {
 		case PinType::FLOAT:    icon_type = IconType::Circle; break;
 		case PinType::STRING:   icon_type = IconType::Circle; break;
 		case PinType::TEXTURE:	icon_type = IconType::Square; break;
+		case PinType::MATERIAL: icon_type = IconType::Square; break;
 
 		// case PinType::Object:   icon_type = IconType::Circle; break;
 		// case PinType::Function: icon_type = IconType::Circle; break;
