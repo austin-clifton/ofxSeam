@@ -68,10 +68,18 @@ namespace seam {
 	// base struct for pin types, holds metadata about the pin
 	struct Pin {
 		PinType type;
+
+		// TODO make name and description string-view-ifiable again somehow
+
 		// human-readable Pin name for display purposes
 		std::string name;
 		// human-readable Pin description for display purposes
 		std::string description;
+
+		// Pins keep track of the node they are associated with;
+		// is expected to have a valid pointer value
+		IEventNode* node = nullptr;
+
 		PinFlags flags = (PinFlags)0;
 	};
 
@@ -91,10 +99,6 @@ namespace seam {
 		// the output pin which connects to this pin
 		// can be nullptr
 		PinOutput* connection = nullptr;
-
-		// the associated node for this pin input
-		// is expected to have a valid pointer value
-		IEventNode* node = nullptr;
 	};
 
 	/// Concrete implementation for IPinInput.
@@ -264,7 +268,7 @@ namespace seam {
 	// TODO this is bad nomenclature (SetupPinOutput doesn't return a PinOutput)
 	// probably need to redo the PinInput and PinOutput nomenclature
 
-	Pin SetupPinOutput(PinType type, std::string_view name, PinFlags flags = (PinFlags)0);
+	Pin SetupOutputPin(IEventNode* node, PinType type, std::string_view name, PinFlags flags = (PinFlags)0);
 
 	/// Queries a linked shader program's active uniforms and creates a PinInput list from them.
 	/// \param shader The linked shader program to query the uniforms of.

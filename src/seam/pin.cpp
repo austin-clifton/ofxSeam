@@ -1,8 +1,10 @@
 #include "pin.h"
 
 namespace seam {
-	Pin SetupPinOutput(PinType type, std::string_view name, PinFlags flags) {
+	Pin SetupOutputPin(IEventNode* node, PinType type, std::string_view name, PinFlags flags) {
+		assert(node != nullptr);
 		Pin pin;
+		pin.node = node;
 		pin.type = type;
 		pin.name = name;
 		pin.flags = (PinFlags)(flags | PinFlags::OUTPUT);

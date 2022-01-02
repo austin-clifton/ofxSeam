@@ -37,9 +37,6 @@ namespace seam {
 		/// \return true if the Pins were successfully connected.
 		bool Connect(IEventNode* node_out, Pin* pin_out, IEventNode* node_in, Pin* pin_in);
 
-		/// helper function for Connect() which will find the related nodes, given that only the Pins are known
-		bool Connect(Pin* pin_out, Pin* pin_in);
-
 		bool Disconnect(IEventNode* node_out, Pin* pin_out, IEventNode* node_in, Pin* pin_in);
 
 		bool Disconnect(Pin* pin_out, Pin* pin_in);
@@ -62,8 +59,6 @@ namespace seam {
 		void RecalculateTraversalOrder(IEventNode* node, bool recalc_update, bool recalc_draw);
 
 		void GuiDrawPopups();
-
-		inline IEventNode* MapPinToNode(Pin* pin);
 
 		inline IPinInput* FindPinInput(IEventNode* node, Pin* pin_in);
 
@@ -109,9 +104,6 @@ namespace seam {
 
 		// nodes which update every frame (over time) need to be invalidated every frame
 		std::vector<IEventNode*> nodes_update_over_time;
-
-		// list of all pins and their associated nodes, sorted by Pin pointer value
-		std::vector<PinToNode> pins_to_nodes;
 
 		// sorted list of all links between pins, mostly for GUI display + interactions
 		std::vector<Link> links;

@@ -193,23 +193,15 @@ void Editor::GuiDraw() {
 					showLabel("x Connections must be made from input to output", ImColor(45, 32, 32, 180));
 					ed::RejectNewItem(ImColor(255, 128, 128), 1.0f);
 
+				} else if (pin_in->node == pin_out->node) {
+					showLabel("x Cannot connect input to output on the same node", ImColor(45, 32, 32, 180));
+					ed::RejectNewItem(ImColor(255, 128, 128), 1.0f);
 				} else {
-					// make sure the input and output pins aren't on the same node
-					// find the node each pin is connected to
-					IEventNode* node_in = MapPinToNode(pin_in);
-					IEventNode* node_out = MapPinToNode(pin_out);
-
-					if (node_in != node_out) {
-						showLabel("+ Create Link", ImColor(32, 45, 32, 180));
-						if (ed::AcceptNewItem(ImColor(128, 255, 128), 4.0f)) {
-							bool connected = Connect(node_out, pin_out, node_in, pin_in);
-							assert(connected);
-						}
-					} else {
-						showLabel("x Cannot connect input to output on the same node", ImColor(45, 32, 32, 180));
-						ed::RejectNewItem(ImColor(255, 128, 128), 1.0f);
+					showLabel("+ Create Link", ImColor(32, 45, 32, 180));
+					if (ed::AcceptNewItem(ImColor(128, 255, 128), 4.0f)) {
+						bool connected = Connect(pin_out->node, pin_out, pin_in->node, pin_in);
+						assert(connected);
 					}
-
 				}
 			}
 
@@ -339,28 +331,6 @@ IEventNode* Editor::CreateAndAdd(NodeId node_id) {
 		if (node->UpdatesOverTime()) {
 			nodes_update_over_time.push_back(node);
 		}
-
-		// add input and output pins to the pins_to_nodes list
-		// leaving this easy for now -- just add each pin and then sort the whole list
-		// nodes probably won't be frequently created, so this doesn't need to be super fast
-		size_t size;
-		IPinInput** inputs = node->PinInputs(size);
-		for (size_t i = 0; i < size; i++) {
-			PinToNode ptn;
-			ptn.pin = inputs[i];
-			ptn.node = node;
-			pins_to_nodes.push_back(ptn);
-		}
-
-		PinOutput* outputs = node->PinOutputs(size);
-		for (size_t i = 0; i < size; i++) {
-			PinToNode ptn;
-			ptn.pin = &outputs[i].pin;
-			ptn.node = node;
-			pins_to_nodes.push_back(ptn);
-		}
-
-		std::sort(pins_to_nodes.begin(), pins_to_nodes.end());
 	}
 
 	return node;
@@ -406,15 +376,6 @@ bool Editor::Connect(IEventNode* parent, Pin* pin_co, IEventNode* child, Pin* pi
 	}
 
 	return true;
-}
-
-bool Editor::Connect(Pin* pin_out, Pin* pin_in) {
-	// find the node each pin is connected to
-	IEventNode* node_in = MapPinToNode(pin_in);
-	IEventNode* node_out = MapPinToNode(pin_out);
-	assert(node_in && node_out);
-
-	return Connect(node_out, pin_out, node_in, pin_in);
 }
 
 bool Editor::Disconnect(IEventNode* parent, Pin* pin_co, IEventNode* child, Pin* pin_ci) {
@@ -480,8 +441,8 @@ bool Editor::Disconnect(IEventNode* parent, Pin* pin_co, IEventNode* child, Pin*
 }
 
 bool Editor::Disconnect(Pin* pin_out, Pin* pin_in) {
-	IEventNode* node_out = MapPinToNode(pin_out);
-	IEventNode* node_in = MapPinToNode(pin_in);
+	IEventNode* node_out = pin_out->node;
+	IEventNode* node_in = pin_in->node;
 	assert(node_out && node_in);
 	
 	return Disconnect(node_out, pin_out, node_in, pin_in);
@@ -570,11 +531,6 @@ void Editor::RecalculateTraversalOrder(IEventNode* node, bool recalc_update, boo
 	if (recalc_draw) {
 		RecalculateDrawOrder(node);
 	}
-}
-
-IEventNode* Editor::MapPinToNode(Pin* pin) {
-	auto it = std::lower_bound(pins_to_nodes.begin(), pins_to_nodes.end(), pin);
-	return it != pins_to_nodes.end() && it->pin == pin ? it->node : nullptr;
 }
 
 IPinInput* Editor::FindPinInput(IEventNode* node, Pin* pin) {

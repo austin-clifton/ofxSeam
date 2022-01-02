@@ -6,7 +6,7 @@ Cos::Cos() : IEventNode("Cosine") {
 	flags = (NodeFlags)(flags | NodeFlags::UPDATES_OVER_TIME);
 
 	// define output pin
-	pin_out_fval.pin = SetupPinOutput(PinType::FLOAT, "output");
+	pin_out_fval.pin = SetupOutputPin(this, PinType::FLOAT, "output");
 }
 
 Cos::~Cos() {
