@@ -1,14 +1,6 @@
 #include "pin.h"
 
 namespace seam {
-	PinInput SetupPinInput(Pin* pin, IEventNode* node) {
-		assert(pin && node);
-		PinInput input;
-		input.pin = pin;
-		input.node = node;
-		return input;
-	}
-
 	Pin SetupPinOutput(PinType type, std::string_view name, PinFlags flags) {
 		Pin pin;
 		pin.type = type;
@@ -17,7 +9,7 @@ namespace seam {
 		return pin;
 	}
 
-	std::vector<PinInput> UniformsToPinInputs(ofShader& shader, IEventNode* node) {
+	std::vector<IPinInput*> UniformsToPinInputs(ofShader& shader, IEventNode* node) {
 		// sanity check there were no errors before now
 		assert(glGetError() == GL_NO_ERROR);
 
@@ -35,7 +27,7 @@ namespace seam {
 		// the length includes the null terminating char
 		name.resize(max_name_length);
 
-		std::vector<PinInput> pin_inputs;
+		std::vector<IPinInput*> pin_inputs;
 		pin_inputs.reserve(uniforms_count);
 		// query each uniform variable and make a PinInput for it
 		for (GLint i = 0; i < uniforms_count; i++) {
@@ -59,15 +51,15 @@ namespace seam {
 
 			// now make a PinInput for the uniform
 			// first need to figure out what kind of Pin is needed
-			Pin* pin = nullptr;
+			IPinInput* pin = nullptr;
 			// TODO many more possible types here, including textures,
 			// and many which are "multichannel", and require a rework of Pins so that they're multichannel capable
 			switch (uniform_type) {
 			case GL_FLOAT:
-				pin = new PinFloat(name.c_str());
+				pin = new PinFloat<1>(name.c_str());
 				break;
 			case GL_INT:
-				pin = new PinInt(name.c_str());
+				pin = new PinInt<1>(name.c_str());
 				break;
 			default:
 				printf("uniform to PinInput for GL with enum type %d not implemented yet\n", uniform_type);
@@ -76,7 +68,8 @@ namespace seam {
 			
 			// add it to the list, if it's an implemented and supported pin type
 			if (pin != nullptr) {
-				pin_inputs.push_back(SetupPinInput(pin, node));
+				pin->node = node;
+				pin_inputs.push_back(pin);
 			}
 		}
 

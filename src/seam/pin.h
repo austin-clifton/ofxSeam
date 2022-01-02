@@ -15,8 +15,7 @@ namespace seam {
 		// used internally but should not be used for actual pins
 		NONE,
 
-		// flow pins are stateless triggers (no arguments in the event callback)
-		// the output pin calls whatever function it's attached to when some criteria is met
+		// flow pins are stateless triggers which just dirty any nodes that use them as inputs
 		FLOW,
 
 		// basic types
@@ -58,6 +57,7 @@ namespace seam {
 		OUTPUT = 1 << 1,
 		// only INPUT pins can be marked as feedback
 		FEEDBACK = 1 << 2,
+
 	};
 
 	struct Texture {
@@ -65,7 +65,7 @@ namespace seam {
 		ofFbo* fbo = nullptr;
 	};
 
-	// base struct for pin types
+	// base struct for pin types, holds metadata about the pin
 	struct Pin {
 		PinType type;
 		// human-readable Pin name for display purposes
@@ -75,115 +75,194 @@ namespace seam {
 		PinFlags flags = (PinFlags)0;
 	};
 
-	// TODO pin allocs should maybe come from a pool
+	struct PinOutput;
 
-	struct PinFlow : Pin {
-		PinFlow() {
-			type = PinType::FLOW;
-		}
-		// flow pins have no value, the node just needs to be dirtied and updated
+	/// Abstract class for input pins.
+	/// Defines a generic function to retrieve the channels array which must be implemented.
+	class IPinInput : public Pin {
+	public:
+		virtual ~IPinInput() { }
+
+		/// Get a pointer to the input pin's raw channels data.
+		/// \param size should be set to the size of the returned array
+		/// \return the c-style array of channels the input Pin owns
+		virtual void* GetChannels(size_t& size) = 0;
+
+		// the output pin which connects to this pin
+		// can be nullptr
+		PinOutput* connection = nullptr;
+
+		// the associated node for this pin input
+		// is expected to have a valid pointer value
+		IEventNode* node = nullptr;
 	};
 
-	struct PinBool : Pin {
+	/// Concrete implementation for IPinInput.
+	/// Should be inherited by all input pin types since input pins are where pin channels data is stored.
+	/// Is capable of allocating a fixed size stack allocated array, 
+	/// or a variable size heap allocated array, for pin channels.
+	/// Pass N == 0 for a variable sized array (see template specialization below).
+	template <typename T, std::size_t N>
+	class PinInput : public IPinInput {
+	public:
+		PinInput(const std::array<T, N>& init_vals) {
+			channels = init_vals;
+		}
+
+		virtual ~PinInput() { }
+
+		/// Generic for grabbing channels data.
+		/// \return a pointer to the raw data, which should be casted to the proper type based on the pin's type 
+		inline void* GetChannels(size_t& size) override {
+			size = channels.size();
+			return channels.data();
+		}
+
+		inline T& operator[](size_t index) {
+#if _DEBUG
+			assert(index < channels.size());
+#endif
+			return channels[index];
+		}
+
+		std::array<T, N> channels;
+	};
+
+	template <typename T>
+	class PinInput<T, 0> : public IPinInput {
+	public:
+		PinInput(const std::vector<T>& init_vals = {} ) {
+			channels = init_vals;
+		}
+
+		virtual ~PinInput() { }
+
+		inline void* GetChannels(size_t& size) override {
+			size = channels.size();
+			// return the address of the first element in the vector
+			return &channels[0];
+		}
+
+		inline T& operator[](size_t index) {
+			assert(index < channels.size());
+			return channels[i];
+		}
+
+		std::vector<T> channels;
+	};
+
+	// TODO pin allocs should maybe come from a pool
+
+	// flow pins are always a single channel since they hold no state,
+	// and are only used to dirty nodes
+	struct PinFlow : public PinInput<bool, 0> {
+		PinFlow() : PinInput<bool, 0>() {
+			type = PinType::FLOW;
+		}
+
+		// flow pins have no value, the node just needs to be dirtied and updated
+
+	};
+
+	template <std::size_t N>
+	struct PinBool : public PinInput<bool, N> {
 		PinBool() {
 			type = PinType::BOOL;
 		}
-		bool value = false;
+		// bool value = false;
 	};
 
-	struct PinFloat : Pin {
-		PinFloat(
-			std::string_view _name = "float",
-			std::string_view _description = "",
-			float _init_val = 0.f,
-			float _min = -FLT_MAX,
-			float _max = FLT_MAX,
-			RangeType _range_type = RangeType::LINEAR,
-			PinFlags _flags = PinFlags::INPUT
-		) {
-			name = _name;
-			description = _description;
-			type = PinType::FLOAT;
-			flags = _flags;
-			value = std::min(_max, std::max(_init_val, _min));
-			min = _min;
-			max = _max;
-			range_type = _range_type;
-		}
-
-		float value = 0.f;
+	struct PinFloatMeta {
 		float min = -FLT_MAX;
 		float max = FLT_MAX;
 		RangeType range_type = RangeType::LINEAR;
 	};
 
-	struct PinInt : Pin {
-		PinInt(
-			std::string_view _name = "int",
+	template <std::size_t N>
+	struct PinFloat : public PinInput<float, N>, public PinFloatMeta {
+		PinFloat(
+			std::string_view _name = "float",
 			std::string_view _description = "",
-			int _init_val = 0,
-			int _min = INT_MIN,
-			int _max = INT_MAX,
+			std::array<float, N> _init_vals = { 0 },
+			float _min = -FLT_MAX,
+			float _max = FLT_MAX,
 			RangeType _range_type = RangeType::LINEAR,
 			PinFlags _flags = PinFlags::INPUT
-		) {
+		)
+			: PinInput<float, N>(_init_vals)
+		{
 			name = _name;
 			description = _description;
-			type = PinType::INT;
+			type = PinType::FLOAT;
 			flags = _flags;
-			value = std::min(_max, std::max(_init_val, _min));
 			min = _min;
 			max = _max;
 			range_type = _range_type;
 		}
+	};
 
-		int value = 0;
+	struct PinIntMeta {
 		int min = INT_MIN;
 		int max = INT_MAX;
 		RangeType range_type = RangeType::LINEAR;
 	};
 
-	struct PinTexture : Pin {
+	template <std::size_t N>
+	struct PinInt : public PinInput<int, N>, public PinIntMeta {
+		PinInt(
+			std::string_view _name = "int",
+			std::string_view _description = "",
+			std::array<int, N> init_vals = { 0 },
+			int _min = INT_MIN,
+			int _max = INT_MAX,
+			RangeType _range_type = RangeType::LINEAR,
+			PinFlags _flags = PinFlags::INPUT
+		)
+			: PinInput<int, N>(init_vals)
+		{
+			name = _name;
+			description = _description;
+			type = PinType::INT;
+			flags = _flags;
+			min = _min;
+			max = _max;
+			range_type = _range_type;
+		}
+	};
+
+	template <std::size_t N>
+	struct PinTexture : public PinInput<Texture, N> {
 		PinTexture() {
 			type = PinType::TEXTURE;
 		}
 		Texture value;
 	};
 
-	struct PinMaterial : Pin {
+	template <std::size_t N>
+	struct PinMaterial : public PinInput<ofShader*, N> {
 		PinMaterial() {
 			type = PinType::MATERIAL;
 		}
 		ofShader* shader = nullptr;
 	};
 
+	/*
 	struct PinNoteOn : Pin {
 		PinNoteOn() {
 			type = PinType::NOTE_ON;
 		}
 	};
-
-	struct PinInput {
-		Pin* pin = nullptr;
-		Pin* connection = nullptr;
-		IEventNode* node = nullptr;
-
-		bool operator==(const PinInput& other) {
-			return pin == other.pin;
-		}
-	};
+	*/
 
 	struct PinOutput {
 		// output pins don't have values, just need to know metadata (name and type)
 		// use the base struct
 		Pin pin;
-		std::vector<PinInput> connections;
+		std::vector<IPinInput*> connections;
 	};
 
 	// TODO this is bad nomenclature (SetupPinOutput doesn't return a PinOutput)
 	// probably need to redo the PinInput and PinOutput nomenclature
-
-	PinInput SetupPinInput(Pin* pin, IEventNode* node);
 
 	Pin SetupPinOutput(PinType type, std::string_view name, PinFlags flags = (PinFlags)0);
 
@@ -191,6 +270,6 @@ namespace seam {
 	/// \param shader The linked shader program to query the uniforms of.
 	/// \param node The node the shader's Pins will be added to. 
 	/// \return The list of PinInputs which maps to the uniforms in the shader.
-	/// All PinInput's Pin structs are heap-allocated for now, and must be freed when no longer in use.
-	std::vector<PinInput> UniformsToPinInputs(ofShader& shader, IEventNode* node);
+	/// All IPinInput structs are heap-allocated, and must be freed when no longer in use.
+	std::vector<IPinInput*> UniformsToPinInputs(ofShader& shader, IEventNode* node);
 };

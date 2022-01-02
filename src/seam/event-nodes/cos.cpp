@@ -13,7 +13,7 @@ Cos::~Cos() {
 
 }
 
-PinInput* Cos::PinInputs(size_t& size) {
+IPinInput** Cos::PinInputs(size_t& size) {
 	size = pin_inputs.size();
 	return pin_inputs.data();
 }
@@ -27,16 +27,20 @@ float Cos::Calculate(float t) {
 	// TODO modulating frequency makes this go whacko
 
 	// frequency of 1 == period multiplier of 2PI
-	float period_mul = 2.f * PI * pin_frequency.value;
-	return pin_amplitude_shift.value + pin_amplitude.value * cos(period_mul * t + pin_phase_shift.value);
+	float period_mul = 2.f * PI * pin_frequency[0];
+	return pin_amplitude_shift[0] + pin_amplitude[0] * cos(period_mul * t + pin_phase_shift[0]);
 }
 
 void Cos::Update(float time) {
 	float v = Calculate(time);
 	// TODO generalize "propagation" (template function?)
 	for (size_t i = 0; i < pin_out_fval.connections.size(); i++) {
-		// assert(dynamic_cast<PinFloat*>(pin_out_fval.connections[i].pin) != nullptr);
-		static_cast<PinFloat*>(pin_out_fval.connections[i].pin)->value = v;
-		pin_out_fval.connections[i].node->SetDirty();
+		size_t chans_size;
+		float* channels = (float*)pin_out_fval.connections[i]->GetChannels(chans_size);
+		pin_out_fval.connections[i]->node->SetDirty();
+
+		for (size_t c = 0; c < chans_size; c++) {
+			channels[c] = v;
+		}
 	}
 }

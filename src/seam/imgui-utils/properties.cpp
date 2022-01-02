@@ -47,22 +47,42 @@ namespace seam::props {
 		return refresh_requested || name_changed;
 	}
 
-	bool DrawPin(PinFloat* pin, float speed) {
-		return Draw(pin->name.data(), pin->value, pin->min, pin->max, speed);
+	bool DrawPin(std::string_view name, PinFloatMeta* pin, float* channels, const size_t size, float speed) {
+		bool changed = false;
+		std::string chan_name;
+		for (size_t i = 0; i < size; i++) {
+			// this should be smarter eventually
+			// like, draw 1-4 channels in the same line
+			chan_name = std::string(name) + "[" + std::to_string(i) + "]";
+			changed = Draw(chan_name, channels[i], pin->min, pin->max, speed) || changed;
+		}
+		return changed;
 	}
 
-	bool DrawPin(PinInt* pin, float speed) {
-		return Draw(pin->name.data(), pin->value, pin->min, pin->max, speed);
+	bool DrawPin(std::string_view name, PinIntMeta* pin, int* channels, const size_t size, float speed) {
+		bool changed = false;
+		std::string chan_name;
+		for (size_t i = 0; i < size; i++) {
+			// same as above, this could be smarter
+			chan_name = std::string(name) + "[" + std::to_string(i) + "]";
+			changed = Draw(chan_name, channels[i], pin->min, pin->max, speed) || changed;
+		}
+		return changed;
 	}
 
-	bool DrawPinInput(PinInput input) {
-		// TODO should connected pins be settable?
+	bool DrawPinInput(IPinInput* input) {
 
-		switch (input.pin->type) {
-		case PinType::INT:
-			return DrawPin((PinInt*)input.pin);
-		case PinType::FLOAT:
-			return DrawPin((PinFloat*)input.pin);
+		size_t num_channels = 0;
+		void* channels = input->GetChannels(num_channels);
+		switch (input->type) {
+		case PinType::INT: {
+			PinIntMeta* meta = dynamic_cast<PinIntMeta*>(input);
+			return DrawPin(input->name, meta, (int*)channels, num_channels);
+		}
+		case PinType::FLOAT: {
+			PinFloatMeta* meta = dynamic_cast<PinFloatMeta*>(input);
+			return DrawPin(input->name, meta, (float*)channels, num_channels);
+		}
 		default:
 			// TODO
 			assert(false);
@@ -73,7 +93,7 @@ namespace seam::props {
 	bool DrawPinInputs(IEventNode* node) {
 		bool changed = false;
 		size_t size;
-		PinInput* inputs = node->PinInputs(size);
+		IPinInput** inputs = node->PinInputs(size);
 		for (size_t i = 0; i < size; i++) {
 			changed = DrawPinInput(inputs[i]) || changed;
 		}

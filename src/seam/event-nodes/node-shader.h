@@ -17,7 +17,7 @@ namespace seam {
 
 		bool GuiDrawPropertiesList() override;
 
-		PinInput* PinInputs(size_t& size) override;
+		IPinInput** PinInputs(size_t& size) override;
 
 		PinOutput* PinOutputs(size_t& size) override;
 
@@ -26,7 +26,7 @@ namespace seam {
 		ofShader shader;
 		
 		// input pins are dynamically created based on the shader's uniforms
-		std::vector<PinInput> pin_inputs;
+		std::vector<IPinInput*> pin_inputs;
 		PinOutput pin_out_material;
 	};
 }

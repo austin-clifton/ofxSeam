@@ -33,11 +33,11 @@ void TexgenPerlin::Draw() {
 	fbo.begin();
 	shader.begin();
 
-	shader.setUniform1i("octaves", pin_octaves.value);
-	shader.setUniform1f("frequency", pin_frequency.value);
-	shader.setUniform1f("lacunarity", pin_lacunarity.value);
-	shader.setUniform1f("amplitude", pin_amplitude.value);
-	shader.setUniform1f("persistence", pin_persistence.value);
+	shader.setUniform1i("octaves", pin_octaves[0]);
+	shader.setUniform1f("frequency", pin_frequency[0]);
+	shader.setUniform1f("lacunarity", pin_lacunarity[0]);
+	shader.setUniform1f("amplitude", pin_amplitude[0]);
+	shader.setUniform1f("persistence", pin_persistence[0]);
 
 	fbo.draw(0, 0);
 
@@ -49,7 +49,7 @@ void TexgenPerlin::DrawToScreen() {
 	fbo.draw(0, 0);
 }
 
-PinInput* TexgenPerlin::PinInputs(size_t& size) {
+IPinInput** TexgenPerlin::PinInputs(size_t& size) {
 	size = pin_inputs.size();
 	return pin_inputs.data();
 }

@@ -137,17 +137,17 @@ void IEventNode::GuiDraw( ed::Utilities::BlueprintNodeBuilder& builder ) {
 	builder.EndHeader();
 
 	// draw input pins
-	PinInput* inputs = PinInputs(size);
+	IPinInput** inputs = PinInputs(size);
 	for (size_t i = 0; i < size; i++) {
 		// TODO push alpha when new links are being created
 		// ImGui::PushStyleVar(ImGuiStyleVar_Alpha, alpha);
 
 		// a pin's pointer address is its ID for drawing purposes
-		builder.Input(ed::PinId(inputs[i].pin));
+		builder.Input(ed::PinId((Pin*)inputs[i]));
 		
-		DrawPinIcon(*inputs[i].pin, inputs[i].connection != nullptr, 1.0f);
+		DrawPinIcon(*inputs[i], inputs[i]->connection != nullptr, 1.0f);
 		ImGui::Spring(0.f);
-		ImGui::TextUnformatted(inputs[i].pin->name.data());
+		ImGui::TextUnformatted(inputs[i]->name.data());
 		ImGui::Spring(0.f);
 
 		builder.EndInput();

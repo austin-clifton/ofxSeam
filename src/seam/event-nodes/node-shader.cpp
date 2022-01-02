@@ -15,7 +15,7 @@ ShaderNode::~ShaderNode() {
 	// TODO dealloc pin input names
 }
 
-PinInput* ShaderNode::PinInputs(size_t& size) {
+IPinInput** ShaderNode::PinInputs(size_t& size) {
 	size = pin_inputs.size();
 	return pin_inputs.data();
 }

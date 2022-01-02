@@ -11,39 +11,37 @@ namespace seam {
 
 		void Update(float time) override;
 
-		PinInput* PinInputs(size_t& size) override;
+		IPinInput** PinInputs(size_t& size) override;
 
 		PinOutput* PinOutputs(size_t& size) override;
 	private:
 		float Calculate(float t);
 
-		PinFloat pin_frequency = PinFloat(
+		PinFloat<1> pin_frequency = PinFloat<1>(
 			"frequency", 
 			"a frequency of one will oscillate once per second; two will oscillate twice per second, etc.",
-			1.f, 
+			{ 1.f },
 			0.000001f
 		);
-		PinFloat pin_amplitude = PinFloat(
+		PinFloat<1> pin_amplitude = PinFloat<1>(
 			"amplitude",
 			"all values are multiplied by this number",
-			.5f
+			{ .5f }
 		);
-		PinFloat pin_amplitude_shift = PinFloat(
+		PinFloat<1> pin_amplitude_shift = PinFloat<1>(
 			"amplitude_shift", 
-			"is added to all values",
-			0.f
+			"is added to all values"
 		);
-		PinFloat pin_phase_shift = PinFloat(
+		PinFloat<1> pin_phase_shift = PinFloat<1>(
 			"phase_shift", 
-			"offsets oscillations",
-			0.f
+			"offsets oscillations"
 		);
 		
-		std::array<PinInput, 4> pin_inputs = {
-			SetupPinInput(&pin_frequency, this),
-			SetupPinInput(&pin_amplitude, this),
-			SetupPinInput(&pin_amplitude_shift, this),
-			SetupPinInput(&pin_phase_shift, this)
+		std::array<IPinInput*, 4> pin_inputs = {
+			&pin_frequency,
+			&pin_amplitude,
+			&pin_amplitude_shift,
+			&pin_phase_shift,
 		};
 
 		PinOutput pin_out_fval;

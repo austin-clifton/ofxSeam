@@ -130,7 +130,7 @@ void Editor::GuiDraw() {
 		// instead of PinInput* and PinOutput* which require the pointer follow to get the data we want
 		ed::Link(
 			(ed::LinkId)&l,
-			(ed::PinId)l.first->pin,
+			ed::PinId((Pin*)(l.first)),
 			(ed::PinId)&l.second->pin
 		);
 	}
@@ -194,12 +194,22 @@ void Editor::GuiDraw() {
 					ed::RejectNewItem(ImColor(255, 128, 128), 1.0f);
 
 				} else {
-					showLabel("+ Create Link", ImColor(32, 45, 32, 180));
-					if (ed::AcceptNewItem(ImColor(128, 255, 128), 4.0f)) {
+					// make sure the input and output pins aren't on the same node
+					// find the node each pin is connected to
+					IEventNode* node_in = MapPinToNode(pin_in);
+					IEventNode* node_out = MapPinToNode(pin_out);
 
-						bool connected = Connect(pin_out, pin_in);
-						assert(connected);
+					if (node_in != node_out) {
+						showLabel("+ Create Link", ImColor(32, 45, 32, 180));
+						if (ed::AcceptNewItem(ImColor(128, 255, 128), 4.0f)) {
+							bool connected = Connect(node_out, pin_out, node_in, pin_in);
+							assert(connected);
+						}
+					} else {
+						showLabel("x Cannot connect input to output on the same node", ImColor(45, 32, 32, 180));
+						ed::RejectNewItem(ImColor(255, 128, 128), 1.0f);
 					}
+
 				}
 			}
 
@@ -207,9 +217,9 @@ void Editor::GuiDraw() {
 			ed::PinId pin_id = 0;
 			if (ed::QueryNewNode(&pin_id)) {
 				// figure out if it's an input or output pin
-				PinInput* pin_in = dynamic_cast<PinInput*>(pin_id.AsPointer<PinInput>());
+				IPinInput* pin_in = dynamic_cast<IPinInput*>(pin_id.AsPointer<IPinInput>());
 				if (pin_in != nullptr) {
-					new_link_pin = pin_in->pin;
+					new_link_pin = pin_in;
 				} else {
 					PinOutput* pin_out = dynamic_cast<PinOutput*>(pin_id.AsPointer<PinOutput>());
 					assert(pin_out != nullptr);
@@ -247,7 +257,7 @@ void Editor::GuiDraw() {
 						return link->first == other.first && link->second == other.second;
 					});
 					assert(it != links.end());
-					bool disconnected = Disconnect(&it->second->pin, it->first->pin);
+					bool disconnected = Disconnect(&it->second->pin, it->first);
 					assert(disconnected);
 				}
 			}
@@ -334,10 +344,10 @@ IEventNode* Editor::CreateAndAdd(NodeId node_id) {
 		// leaving this easy for now -- just add each pin and then sort the whole list
 		// nodes probably won't be frequently created, so this doesn't need to be super fast
 		size_t size;
-		PinInput* inputs = node->PinInputs(size);
+		IPinInput** inputs = node->PinInputs(size);
 		for (size_t i = 0; i < size; i++) {
 			PinToNode ptn;
-			ptn.pin = inputs[i].pin;
+			ptn.pin = inputs[i];
 			ptn.node = node;
 			pins_to_nodes.push_back(ptn);
 		}
@@ -370,7 +380,7 @@ bool Editor::Connect(IEventNode* parent, Pin* pin_co, IEventNode* child, Pin* pi
 
 	// find the structs that contain the pins to be connected
 	// also more validations: make sure pin_out is actually an output pin of node_out, and same for the input
-	PinInput* pin_in = FindPinInput(child, pin_ci);
+	IPinInput* pin_in = FindPinInput(child, pin_ci);
 	PinOutput* pin_out = FindPinOutput(parent, pin_co);
 	assert(pin_in && pin_out);
 
@@ -379,7 +389,7 @@ bool Editor::Connect(IEventNode* parent, Pin* pin_co, IEventNode* child, Pin* pi
 	}
 
 	// create the connection
-	pin_out->connections.push_back(*pin_in);
+	pin_out->connections.push_back(pin_in);
 
 	// add to the links list
 	links.push_back(Link(pin_in, pin_out));
@@ -412,7 +422,7 @@ bool Editor::Disconnect(IEventNode* parent, Pin* pin_co, IEventNode* child, Pin*
 	assert((pin_co->flags & PinFlags::OUTPUT) == PinFlags::OUTPUT);
 	assert(pin_co->type == pin_ci->type);
 
-	PinInput* pin_in = FindPinInput(child, pin_ci);
+	IPinInput* pin_in = FindPinInput(child, pin_ci);
 	PinOutput* pin_out = FindPinOutput(parent, pin_co);
 	assert(pin_in && pin_out);
 
@@ -422,7 +432,7 @@ bool Editor::Disconnect(IEventNode* parent, Pin* pin_co, IEventNode* child, Pin*
 
 	// remove from pin_out's connections list
 	{
-		auto it = std::find(pin_out->connections.begin(), pin_out->connections.end(), *pin_in);
+		auto it = std::find(pin_out->connections.begin(), pin_out->connections.end(), pin_in);
 		assert(it != pin_out->connections.end());
 		pin_out->connections.erase(it);
 	}
@@ -567,13 +577,13 @@ IEventNode* Editor::MapPinToNode(Pin* pin) {
 	return it != pins_to_nodes.end() && it->pin == pin ? it->node : nullptr;
 }
 
-PinInput* Editor::FindPinInput(IEventNode* node, Pin* pin) {
-	PinInput* pin_in = nullptr;
+IPinInput* Editor::FindPinInput(IEventNode* node, Pin* pin) {
+	IPinInput* pin_in = nullptr;
 	size_t size;
-	PinInput* pin_inputs = node->PinInputs(size);
+	IPinInput** pin_inputs = node->PinInputs(size);
 	for (size_t i = 0; i < size && pin_in == nullptr; i++) {
-		if (pin_inputs[i].pin == pin) {
-			pin_in = &pin_inputs[i];
+		if (pin_inputs[i] == pin) {
+			pin_in = pin_inputs[i];
 		}
 	}
 	return pin_in;

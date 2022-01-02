@@ -36,7 +36,17 @@ IEventNode* EventNodeFactory::Create(NodeId node_id) {
 	// find the generator
 	auto it = std::lower_bound(generators.begin(), generators.end(), node_id);
 	if (it != generators.end() && it->node_id == node_id) {
-		return it->Create();
+		IEventNode* node = it->Create();
+		assert(node);
+
+		// make sure each input pin has this node set as its parent
+		size_t size;
+		IPinInput** pin_inputs = node->PinInputs(size);
+		for (size_t i = 0; i < size; i++) {
+			pin_inputs[i]->node = node;
+		}
+
+		return node;
 	} else {
 		printf("node with node id %u not found, did you register it?", node_id);
 		return nullptr;
@@ -63,9 +73,9 @@ bool EventNodeFactory::Register(EventNodeFactory::CreateFunc&& Create) {
 
 	// read inputs
 	{
-		PinInput* inputs = n->PinInputs(size);
+		IPinInput** inputs = n->PinInputs(size);
 		for (size_t i = 0; i < size; i++) {
-			PinType type = inputs[i].pin->type;
+			PinType type = inputs[i]->type;
 			// filter only for types that aren't already in the list
 			if (std::find(gen.pin_inputs.begin(), gen.pin_inputs.end(), type) == gen.pin_inputs.end()) {
 				gen.pin_inputs.push_back(type);

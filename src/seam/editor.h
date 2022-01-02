@@ -9,7 +9,7 @@ namespace seam {
 	/// node graph editor manages the event nodes and connections that make up a seam scene
 	class Editor {
 	public:
-		using Link = std::pair<PinInput*, PinOutput*>;
+		using Link = std::pair<IPinInput*, PinOutput*>;
 
 		/// to be called by ofApp::setup()
 		void Setup();
@@ -65,7 +65,7 @@ namespace seam {
 
 		inline IEventNode* MapPinToNode(Pin* pin);
 
-		inline PinInput* FindPinInput(IEventNode* node, Pin* pin_in);
+		inline IPinInput* FindPinInput(IEventNode* node, Pin* pin_in);
 
 		inline PinOutput* FindPinOutput(IEventNode* node, Pin* pin_out);
 

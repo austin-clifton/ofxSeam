@@ -19,49 +19,49 @@ namespace seam {
 
 		bool GuiDrawPropertiesList() override;
 	
-		PinInput* PinInputs(size_t& size) override;
+		IPinInput** PinInputs(size_t& size) override;
 
 		PinOutput* PinOutputs(size_t& size) override;
 	private:
 
 		// nomenclature from http://libnoise.sourceforge.net/glossary/#perlinnoise
 
-		PinInt pin_octaves = PinInt(
+		PinInt<1> pin_octaves = PinInt<1>(
 			"octaves", 
 			"number of iterations of noise",
-			5, 1, 8
+			{ 5 }, 1, 8
 		);
-		PinFloat pin_frequency = PinFloat(
+		PinFloat<1> pin_frequency = PinFloat<1>(
 			"frequency",
 			"initial noise frequency for the first octave",
-			7.19f, 0.001f
+			{ 7.19f }, 0.001f
 		);
-		PinFloat pin_lacunarity = PinFloat(
+		PinFloat<1> pin_lacunarity = PinFloat<1>(
 			"lacunarity",
 			"each octave's frequency is multiplied by this number",
-			2.68f, 
+			{ 2.68f },
 			0.001f
 		);
-		PinFloat pin_amplitude = PinFloat(
+		PinFloat<1> pin_amplitude = PinFloat<1>(
 			"amplitude",
 			"peak value of the first octave",
-			.5f, 
+			{ .5f },
 			0.001f, 
 			1.f
 		);
-		PinFloat pin_persistence = PinFloat(
+		PinFloat<1> pin_persistence = PinFloat<1>(
 			"persistence", 
 			"each octave's amplitude is multiplied by this number",
-			0.6f, 
+			{ 0.6f },
 			0.001f
 		);
 
-		std::array<PinInput, 5> pin_inputs = {
-			SetupPinInput(&pin_octaves, this),
-			SetupPinInput(&pin_frequency, this),
-			SetupPinInput(&pin_lacunarity, this),
-			SetupPinInput(&pin_amplitude, this),
-			SetupPinInput(&pin_persistence, this)
+		std::array<IPinInput*, 5> pin_inputs = {
+			&pin_octaves,
+			&pin_frequency,
+			&pin_lacunarity,
+			&pin_amplitude,
+			&pin_persistence,
 		};
 
 		PinOutput pin_out_tex;
