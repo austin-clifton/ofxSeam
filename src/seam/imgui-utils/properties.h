@@ -1,7 +1,7 @@
 #pragma once
 
 #include "../pin.h"
-#include "../event-nodes/event-node.h"
+#include "../nodes/i-node.h"
 
 namespace seam {
 	namespace props {
@@ -37,7 +37,7 @@ namespace seam {
 		bool DrawPinInput(IPinInput* input);
 
 		/// utility function for drawing all a node's input pins
-		bool DrawPinInputs(IEventNode* node);
+		bool DrawPinInputs(nodes::INode* node);
 
 		// ...TODO
 	}

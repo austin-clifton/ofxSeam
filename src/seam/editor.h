@@ -2,10 +2,13 @@
 
 #include <vector>
 
-#include "event-nodes/event-node.h"
+#include "nodes/i-node.h"
 #include "seam/factory.h"
 
 namespace seam {
+
+	using namespace nodes;
+
 	/// node graph editor manages the event nodes and connections that make up a seam scene
 	class Editor {
 	public:
@@ -25,13 +28,13 @@ namespace seam {
 		/// Uses the node factory to create a node given its node id.
 		/// \param node_id the hash generated from the node's human-readable name by SCHash()
 		/// \return the newly created event node, or nullptr if the NodeId didn't match a registered node type.
-		IEventNode* CreateAndAdd(NodeId node_id);
+		INode* CreateAndAdd(seam::nodes::NodeId node_id);
 
 		/// Helper function, uses the node factory to create a node given its human-readable name.
 		/// If generating many of the same node type, you may want to hash the human name first instead.
 		/// param node_name the human-readable name of the node.
 		/// \return the newly created event node, or nullptr if the node name didn't match a registered node type.
-		IEventNode* CreateAndAdd(const std::string_view node_name);
+		INode* CreateAndAdd(const std::string_view node_name);
 
 		/// Connect an output pin to an input pin.
 		/// \return true if the Pins were successfully connected.
@@ -42,30 +45,30 @@ namespace seam {
 	private:
 		/// recursively traverse a visual node's parent tree and update nodes in order
 		/// also determines the draw list (but not ordering!) for this frame
-		void UpdateVisibleNodeGraph(IEventNode* n);
+		void UpdateVisibleNodeGraph(INode* n);
 		
 		/// recalculate a node and its children's update order
-		int16_t RecalculateUpdateOrder(IEventNode* node);
+		int16_t RecalculateUpdateOrder(INode* node);
 
 		/// recalculate a node and its children's draw order
-		int16_t RecalculateDrawOrder(IEventNode* node);
+		int16_t RecalculateDrawOrder(INode* node);
 
 		/// recalculate the node and its children's update and/or draw orders
-		void InvalidateChildren(IEventNode* node, bool recalc_update, bool recalc_draw);
+		void InvalidateChildren(INode* node, bool recalc_update, bool recalc_draw);
 
 		/// Recalculates the update and/or draw orders of nodes
-		void RecalculateTraversalOrder(IEventNode* node, bool recalc_update, bool recalc_draw);
+		void RecalculateTraversalOrder(INode* node, bool recalc_update, bool recalc_draw);
 
 		void GuiDrawPopups();
 
-		inline IPinInput* FindPinInput(IEventNode* node, Pin* pin_in);
+		inline IPinInput* FindPinInput(INode* node, Pin* pin_in);
 
-		inline PinOutput* FindPinOutput(IEventNode* node, Pin* pin_out);
+		inline PinOutput* FindPinOutput(INode* node, Pin* pin_out);
 
 		// used by GUI interactions to "map" Pins to their Nodes
 		struct PinToNode {
 			Pin* pin;
-			IEventNode* node;
+			INode* node;
 
 			bool operator<(const PinToNode& other) {
 				// compare by pointer value
@@ -88,27 +91,27 @@ namespace seam {
 
 		ax::NodeEditor::EditorContext* node_editor_context;
 
-		EventNodeFactory factory;
+		seam::EventNodeFactory factory;
 
 		// list of all the event nodes the graph will draw
 		// this list does not need to be sorted
-		std::vector<IEventNode*> nodes;
+		std::vector<INode*> nodes;
 
 		// these two are re-calculated each frame, and then sorted for update + draw in that order
-		std::vector<IEventNode*> nodes_to_draw;
+		std::vector<INode*> nodes_to_draw;
 
 		// visible visual nodes dictate which nodes actually get updated and drawn during those loops
-		std::vector<IEventNode*> visible_nodes;
+		std::vector<INode*> visible_nodes;
 
 		// nodes which update every frame (over time) need to be invalidated every frame
-		std::vector<IEventNode*> nodes_update_over_time;
+		std::vector<INode*> nodes_update_over_time;
 
 		// sorted list of all links between pins, mostly for GUI display + interactions
 		std::vector<Link> links;
 
 		// book keeping for GUI interactions
 		Pin* new_link_pin;
-		IEventNode* selected_node = nullptr;
+		INode* selected_node = nullptr;
 
 		bool show_create_dialog = false;
 	};

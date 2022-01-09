@@ -1,35 +1,36 @@
-#include "node-shader.h"
+#include "shader.h"
 #include "../imgui-utils/properties.h"
 #include "../shader-utils.h"
 
 using namespace seam;
+using namespace seam::nodes;
 
-ShaderNode::ShaderNode() : IEventNode("Shader Material") {
+Shader::Shader() : INode("Shader Material") {
 	flags = (NodeFlags)(flags | NodeFlags::IS_VISUAL);
 
 	// define output pin... this should be doable in the constructor...
 	pin_out_material.pin = SetupOutputPin(this, PinType::MATERIAL, "material");
 }
 
-ShaderNode::~ShaderNode() {
+Shader::~Shader() {
 	// TODO dealloc pin input names
 }
 
-IPinInput** ShaderNode::PinInputs(size_t& size) {
+IPinInput** Shader::PinInputs(size_t& size) {
 	size = pin_inputs.size();
 	return pin_inputs.data();
 }
 
-PinOutput* ShaderNode::PinOutputs(size_t& size) {
+PinOutput* Shader::PinOutputs(size_t& size) {
 	size = 1;
 	return &pin_out_material;
 }
 
-void ShaderNode::Draw() {
+void Shader::Draw() {
 	// TODO set uniforms
 }
 
-bool ShaderNode::GuiDrawPropertiesList() {
+bool Shader::GuiDrawPropertiesList() {
 	if (props::DrawShaderPath("shader name", shader_name)
 		&& ShaderUtils::LoadShader(shader, shader_name)
 	) {

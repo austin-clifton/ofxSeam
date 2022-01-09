@@ -1,24 +1,24 @@
 #include "factory.h"
 #include "hash.h"
 
-#include "event-nodes/texgen-perlin.h"
-#include "event-nodes/cos.h"
-#include "event-nodes/node-shader.h"
+#include "nodes/texgen-perlin.h"
+#include "nodes/cos.h"
+#include "nodes/shader.h"
 
 using namespace seam;
 
 EventNodeFactory::EventNodeFactory() {
 	// register seam-internal nodes here
 	Register([] {
-		return new seam::TexgenPerlin();
+		return new seam::nodes::TexgenPerlin();
 	});
 
 	Register([] {
-		return new seam::Cos();
+		return new seam::nodes::Cos();
 	});
 
 	Register([] {
-		return new seam::ShaderNode();
+		return new seam::nodes::Shader();
 	});
 
 	// TODO register more seam internal generators here
@@ -28,7 +28,7 @@ EventNodeFactory::~EventNodeFactory() {
 	// nothing to do?
 }
 
-IEventNode* EventNodeFactory::Create(NodeId node_id) {
+nodes::INode* EventNodeFactory::Create(seam::nodes::NodeId node_id) {
 	if (!generators_sorted) {
 		std::sort(generators.begin(), generators.end());
 		generators_sorted = true;
@@ -36,7 +36,7 @@ IEventNode* EventNodeFactory::Create(NodeId node_id) {
 	// find the generator
 	auto it = std::lower_bound(generators.begin(), generators.end(), node_id);
 	if (it != generators.end() && it->node_id == node_id) {
-		IEventNode* node = it->Create();
+		nodes::INode* node = it->Create();
 		assert(node);
 
 		// make sure each input pin has this node set as its parent
@@ -57,7 +57,7 @@ bool EventNodeFactory::Register(EventNodeFactory::CreateFunc&& Create) {
 	Generator gen;
 	// TODO it'd be nice to stack alloc dummy nodes instead but probably doesn't matter that much;
 	// this should only run once per node type
-	std::unique_ptr<IEventNode> n(Create());
+	std::unique_ptr<nodes::INode> n(Create());
 	gen.node_name = n->NodeName();
 	gen.node_id = SCHash(gen.node_name.data(), gen.node_name.length());
 
@@ -99,14 +99,14 @@ bool EventNodeFactory::Register(EventNodeFactory::CreateFunc&& Create) {
 	return true;
 }
 
-NodeId EventNodeFactory::DrawCreatePopup(PinType input_type, PinType output_type) {
+seam::nodes::NodeId EventNodeFactory::DrawCreatePopup(PinType input_type, PinType output_type) {
 	if (!generators_sorted) {
 		std::sort(generators.begin(), generators.end());
 	}
 
 	// loop through each Generator that's been registered with the EventNodeFactory,
 	// and make a selectable menu item for it
-	NodeId new_node_id = 0;
+	nodes::NodeId new_node_id = 0;
 	for (auto gen : generators) {
 		// TODO filter input / output types, only enable items which match the filter
 

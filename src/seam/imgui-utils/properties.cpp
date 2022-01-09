@@ -90,7 +90,7 @@ namespace seam::props {
 		}
 	}
 
-	bool DrawPinInputs(IEventNode* node) {
+	bool DrawPinInputs(nodes::INode* node) {
 		bool changed = false;
 		size_t size;
 		IPinInput** inputs = node->PinInputs(size);

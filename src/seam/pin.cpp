@@ -1,7 +1,7 @@
 #include "pin.h"
 
 namespace seam {
-	Pin SetupOutputPin(IEventNode* node, PinType type, std::string_view name, PinFlags flags) {
+	Pin SetupOutputPin(nodes::INode* node, PinType type, std::string_view name, PinFlags flags) {
 		assert(node != nullptr);
 		Pin pin;
 		pin.node = node;
@@ -11,7 +11,7 @@ namespace seam {
 		return pin;
 	}
 
-	std::vector<IPinInput*> UniformsToPinInputs(ofShader& shader, IEventNode* node) {
+	std::vector<IPinInput*> UniformsToPinInputs(ofShader& shader, nodes::INode* node) {
 		// sanity check there were no errors before now
 		assert(glGetError() == GL_NO_ERROR);
 

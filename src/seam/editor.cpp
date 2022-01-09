@@ -21,7 +21,7 @@ void Editor::Setup() {
 
 void Editor::Draw() {
 
-	std::sort(nodes_to_draw.begin(), nodes_to_draw.end(), &IEventNode::CompareDrawOrder);
+	std::sort(nodes_to_draw.begin(), nodes_to_draw.end(), &INode::CompareDrawOrder);
 	for (auto n : nodes_to_draw) {
 		n->Draw();
 	}
@@ -34,7 +34,7 @@ void Editor::Draw() {
 	// probably want multiple viewports / docking?
 }
 
-void Editor::UpdateVisibleNodeGraph(IEventNode* n) {
+void Editor::UpdateVisibleNodeGraph(INode* n) {
 	// traverse parents and update them before traversing this node
 	// parents are sorted by update order, so that any "shared parents" are updated first
 	int16_t last_update_order = -1;
@@ -92,7 +92,7 @@ void Editor::GuiDrawPopups() {
 		NodeId new_node_id = factory.DrawCreatePopup();
 		if (new_node_id != 0) {
 			show_create_dialog = false;
-			IEventNode* node = CreateAndAdd(new_node_id);
+			INode* node = CreateAndAdd(new_node_id);
 			ed::SetNodePosition((ed::NodeId)node, open_popup_position);
 
 
@@ -142,7 +142,7 @@ void Editor::GuiDraw() {
 	int nodes_count = ed::GetSelectedNodes(selected_nodes.data(), static_cast<int>(selected_nodes.size()));
 	if (nodes_count) {
 		// the last selected node is the one we'll show in the properties editor
-		selected_node = selected_nodes.back().AsPointer<IEventNode>();
+		selected_node = selected_nodes.back().AsPointer<INode>();
 	} else {
 		selected_node = nullptr;
 	}
@@ -312,8 +312,8 @@ void Editor::GuiDraw() {
 	im::End();
 }
 
-IEventNode* Editor::CreateAndAdd(NodeId node_id) {
-	IEventNode* node = factory.Create(node_id);
+INode* Editor::CreateAndAdd(NodeId node_id) {
+	INode* node = factory.Create(node_id);
 	if (node != nullptr) {
 		// handle book keeping for the new node
 
@@ -324,7 +324,7 @@ IEventNode* Editor::CreateAndAdd(NodeId node_id) {
 
 		if (node->IsVisual()) {
 			// probably temporary: add to the list of visible nodes up front
-			auto it = std::upper_bound(visible_nodes.begin(), visible_nodes.end(), node, &IEventNode::CompareDrawOrder);
+			auto it = std::upper_bound(visible_nodes.begin(), visible_nodes.end(), node, &INode::CompareDrawOrder);
 			visible_nodes.insert(it, node);
 		}
 
@@ -336,7 +336,7 @@ IEventNode* Editor::CreateAndAdd(NodeId node_id) {
 	return node;
 }
 
-IEventNode* Editor::CreateAndAdd(const std::string_view node_name) {
+INode* Editor::CreateAndAdd(const std::string_view node_name) {
 	return CreateAndAdd(SCHash(node_name.data(), node_name.length()));
 }
 
@@ -348,8 +348,8 @@ bool Editor::Connect(Pin* pin_co, Pin* pin_ci) {
 	assert((pin_co->flags & PinFlags::OUTPUT) == PinFlags::OUTPUT);
 	assert(pin_co->type == pin_ci->type);
 
-	IEventNode* parent = pin_co->node;
-	IEventNode* child = pin_ci->node;
+	INode* parent = pin_co->node;
+	INode* child = pin_ci->node;
 
 	// find the structs that contain the pins to be connected
 	// also more validations: make sure pin_out is actually an output pin of node_out, and same for the input
@@ -386,8 +386,8 @@ bool Editor::Disconnect(Pin* pin_co, Pin* pin_ci) {
 	assert((pin_co->flags & PinFlags::OUTPUT) == PinFlags::OUTPUT);
 	assert(pin_co->type == pin_ci->type);
 
-	IEventNode* parent = pin_co->node;
-	IEventNode* child = pin_ci->node;
+	INode* parent = pin_co->node;
+	INode* child = pin_ci->node;
 
 	IPinInput* pin_in = FindPinInput(child, pin_ci);
 	PinOutput* pin_out = FindPinOutput(parent, pin_co);
@@ -446,7 +446,7 @@ bool Editor::Disconnect(Pin* pin_co, Pin* pin_ci) {
 	return true;
 }
 
-int16_t Editor::RecalculateUpdateOrder(IEventNode* node) {
+int16_t Editor::RecalculateUpdateOrder(INode* node) {
 	// update order is always max of parents' update order + 1
 	if (node->update_order != -1) {
 		return node->update_order;
@@ -473,7 +473,7 @@ int16_t Editor::RecalculateUpdateOrder(IEventNode* node) {
 	return node->update_order;
 }
 
-int16_t Editor::RecalculateDrawOrder(IEventNode* node) {
+int16_t Editor::RecalculateDrawOrder(INode* node) {
 	// the draw order of a node is the max of its parents' draw order,
 	// plus 1 IF this node is a visual node
 	if (node->draw_order != -1) {
@@ -500,7 +500,7 @@ int16_t Editor::RecalculateDrawOrder(IEventNode* node) {
 	return node->draw_order;
 }
 
-void Editor::InvalidateChildren(IEventNode* node, bool recalc_update, bool recalc_draw) {
+void Editor::InvalidateChildren(INode* node, bool recalc_update, bool recalc_draw) {
 	{
 		// if this node has already been invalidated, don't go over it again
 		bool needs_update_invalidated = recalc_update && node->update_order != -1;
@@ -518,7 +518,7 @@ void Editor::InvalidateChildren(IEventNode* node, bool recalc_update, bool recal
 	}
 }
 
-void Editor::RecalculateTraversalOrder(IEventNode* node, bool recalc_update, bool recalc_draw) {
+void Editor::RecalculateTraversalOrder(INode* node, bool recalc_update, bool recalc_draw) {
 	// invalidate this node and its children
 	InvalidateChildren(node, recalc_update, recalc_draw);
 
@@ -531,7 +531,7 @@ void Editor::RecalculateTraversalOrder(IEventNode* node, bool recalc_update, boo
 	}
 }
 
-IPinInput* Editor::FindPinInput(IEventNode* node, Pin* pin) {
+IPinInput* Editor::FindPinInput(INode* node, Pin* pin) {
 	IPinInput* pin_in = nullptr;
 	size_t size;
 	IPinInput** pin_inputs = node->PinInputs(size);
@@ -543,7 +543,7 @@ IPinInput* Editor::FindPinInput(IEventNode* node, Pin* pin) {
 	return pin_in;
 }
 
-PinOutput* Editor::FindPinOutput(IEventNode* node, Pin* pin) {
+PinOutput* Editor::FindPinOutput(INode* node, Pin* pin) {
 	PinOutput* pin_out = nullptr;
 	size_t size;
 	PinOutput* pin_outputs = node->PinOutputs(size);

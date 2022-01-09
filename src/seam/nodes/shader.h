@@ -1,17 +1,16 @@
 #pragma once
 
-#include "event-node.h"
+#include "i-node.h"
 
-namespace seam {
+namespace seam::nodes {
 	/// Generic custom shader node.
 	/// Once its shader name has been set, it will load (or reload) its GLSL files,
 	/// and create PinInputs for each uniform variable.
 	/// "Outputs" the shader as a Material PinOutput
-	// TODO I'm having a naming crisis
-	class ShaderNode : public IEventNode {
+	class Shader : public INode {
 	public:
-		ShaderNode();
-		~ShaderNode();
+		Shader();
+		~Shader();
 
 		void Draw() override;
 

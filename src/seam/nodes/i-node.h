@@ -12,6 +12,11 @@
 namespace ed = ax::NodeEditor;
 
 namespace seam {
+	class EventNodeFactory;
+	class Editor;
+}
+
+namespace seam::nodes {
 
 	using NodeId = uint32_t;
 
@@ -27,9 +32,9 @@ namespace seam {
 	};
 
 	/// Base class for all nodes that use the eventing system
-	class IEventNode {
+	class INode {
 	public:
-		IEventNode(const char* _name) 
+		INode(const char* _name) 
 			: node_name (_name) 
 		{
 			// if quickly creating and destroying nodes this may be a bad idea
@@ -37,7 +42,7 @@ namespace seam {
 			instance_name = std::string(node_name);
 		}
 
-		virtual ~IEventNode() { }
+		virtual ~INode() { }
 
 		/// \param size should be set to the size (in elements) of the returned array
 		/// \return a pointer to the array of pointers to pin inputs
@@ -111,33 +116,33 @@ namespace seam {
 		int16_t draw_order = 0;
 
 		// TODO remove me?
-		seam::NodeId id;
+		seam::nodes::NodeId id;
 
 	private:
 		struct NodeConnection {
-			IEventNode* node = nullptr;
+			INode* node = nullptr;
 			// number of connections to this node,
 			// since there may be more than one Pin connecting the nodes together
 			uint16_t conn_count = 0;
 
-			bool operator==(const IEventNode* other) {
+			bool operator==(const INode* other) {
 				return node == other;
 			}
 
-			bool operator<(const IEventNode* other) {
+			bool operator<(const INode* other) {
 				return node < other;
 			}
 		};
 
-		static bool CompareDrawOrder(const IEventNode* l, const IEventNode* r);
-		static bool CompareUpdateOrder(const IEventNode* l, const IEventNode* r);
+		static bool CompareDrawOrder(const INode* l, const INode* r);
+		static bool CompareUpdateOrder(const INode* l, const INode* r);
 		static bool CompareConnUpdateOrder(const NodeConnection& l, const NodeConnection& r);
 
 		/// \return true if this is a new parent node
-		bool AddParent(IEventNode* parent);
+		bool AddParent(INode* parent);
 
 		/// \return true if this is a new child node
-		bool AddChild(IEventNode* child);
+		bool AddChild(INode* child);
 
 		void SortParents();
 

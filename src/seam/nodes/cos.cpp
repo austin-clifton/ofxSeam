@@ -1,8 +1,9 @@
 #include "cos.h"
 
 using namespace seam;
+using namespace seam::nodes;
 
-Cos::Cos() : IEventNode("Cosine") {
+Cos::Cos() : INode("Cosine") {
 	flags = (NodeFlags)(flags | NodeFlags::UPDATES_OVER_TIME);
 
 	// define output pin

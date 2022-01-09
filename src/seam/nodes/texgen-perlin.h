@@ -1,10 +1,10 @@
 #pragma once
 
-#include "event-node.h"
+#include "i-node.h"
 
-namespace seam {
+namespace seam::nodes {
 
-	class TexgenPerlin : public IEventNode {
+	class TexgenPerlin : public INode {
 	public:
 		TexgenPerlin();
 

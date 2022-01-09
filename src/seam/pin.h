@@ -8,7 +8,9 @@
 
 namespace seam {
 
-	class IEventNode;
+	namespace nodes {
+		class INode;
+	}
 
 	enum PinType : uint8_t {
 		// invalid pin type
@@ -78,7 +80,7 @@ namespace seam {
 
 		// Pins keep track of the node they are associated with;
 		// is expected to have a valid pointer value
-		IEventNode* node = nullptr;
+		nodes::INode* node = nullptr;
 
 		PinFlags flags = (PinFlags)0;
 	};
@@ -268,12 +270,12 @@ namespace seam {
 	// TODO this is bad nomenclature (SetupPinOutput doesn't return a PinOutput)
 	// probably need to redo the PinInput and PinOutput nomenclature
 
-	Pin SetupOutputPin(IEventNode* node, PinType type, std::string_view name, PinFlags flags = (PinFlags)0);
+	Pin SetupOutputPin(nodes::INode* node, PinType type, std::string_view name, PinFlags flags = (PinFlags)0);
 
 	/// Queries a linked shader program's active uniforms and creates a PinInput list from them.
 	/// \param shader The linked shader program to query the uniforms of.
 	/// \param node The node the shader's Pins will be added to. 
 	/// \return The list of PinInputs which maps to the uniforms in the shader.
 	/// All IPinInput structs are heap-allocated, and must be freed when no longer in use.
-	std::vector<IPinInput*> UniformsToPinInputs(ofShader& shader, IEventNode* node);
+	std::vector<IPinInput*> UniformsToPinInputs(ofShader& shader, nodes::INode* node);
 };

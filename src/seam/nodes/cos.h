@@ -1,10 +1,10 @@
 #pragma once
 
-#include "event-node.h"
+#include "i-node.h"
 
-namespace seam {
+namespace seam::nodes {
 	/// Cosine signal generator
-	class Cos : public IEventNode {
+	class Cos : public INode {
 	public:
 		Cos();
 		~Cos();

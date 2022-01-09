@@ -217,12 +217,12 @@
     <ClCompile Include="..\..\..\addons\ofxMidi\src\ofxMidiTimecode.cpp" />
     <ClCompile Include="..\..\..\addons\ofxMidi\libs\rtmidi\RtMidi.cpp" />
     <ClCompile Include="src\seam\editor.cpp" />
-    <ClCompile Include="src\seam\event-nodes\cos.cpp" />
-    <ClCompile Include="src\seam\event-nodes\event-node.cpp" />
-    <ClCompile Include="src\seam\event-nodes\node-shader.cpp" />
-    <ClCompile Include="src\seam\event-nodes\texgen-perlin.cpp" />
     <ClCompile Include="src\seam\factory.cpp" />
     <ClCompile Include="src\seam\imgui-utils\properties.cpp" />
+    <ClCompile Include="src\seam\nodes\cos.cpp" />
+    <ClCompile Include="src\seam\nodes\i-node.cpp" />
+    <ClCompile Include="src\seam\nodes\shader.cpp" />
+    <ClCompile Include="src\seam\nodes\texgen-perlin.cpp" />
     <ClCompile Include="src\seam\pin.cpp" />
     <ClCompile Include="src\seam\shader-utils.cpp" />
   </ItemGroup>
@@ -266,13 +266,13 @@
     <ClInclude Include="..\..\..\addons\ofxMidi\src\ofxMidiTypes.h" />
     <ClInclude Include="..\..\..\addons\ofxMidi\libs\rtmidi\RtMidi.h" />
     <ClInclude Include="src\seam\editor.h" />
-    <ClInclude Include="src\seam\event-nodes\cos.h" />
-    <ClInclude Include="src\seam\event-nodes\event-node.h" />
-    <ClInclude Include="src\seam\event-nodes\node-shader.h" />
-    <ClInclude Include="src\seam\event-nodes\texgen-perlin.h" />
     <ClInclude Include="src\seam\factory.h" />
     <ClInclude Include="src\seam\hash.h" />
     <ClInclude Include="src\seam\imgui-utils\properties.h" />
+    <ClInclude Include="src\seam\nodes\cos.h" />
+    <ClInclude Include="src\seam\nodes\i-node.h" />
+    <ClInclude Include="src\seam\nodes\shader.h" />
+    <ClInclude Include="src\seam\nodes\texgen-perlin.h" />
     <ClInclude Include="src\seam\notes.h" />
     <ClInclude Include="src\seam\pin.h" />
     <ClInclude Include="src\seam\shader-utils.h" />

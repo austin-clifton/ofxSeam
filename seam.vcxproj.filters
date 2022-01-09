@@ -88,9 +88,6 @@
     <ClCompile Include="src\seam\editor.cpp">
       <Filter>src\seam</Filter>
     </ClCompile>
-    <ClCompile Include="src\seam\event-nodes\event-node.cpp">
-      <Filter>src\seam\event-nodes</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\..\addons\ofxImGui-1.75\libs\imgui\src\imgui_tables.cpp">
       <Filter>addons\ofxImGui-1.75\libs\imgui\src</Filter>
     </ClCompile>
@@ -103,26 +100,29 @@
     <ClCompile Include="..\..\..\addons\ofxImGui-1.75\libs\imgui\src\blueprints\drawing.cpp">
       <Filter>addons\ofxImGui-1.75\libs\imgui\src\blueprints</Filter>
     </ClCompile>
-    <ClCompile Include="src\seam\event-nodes\texgen-perlin.cpp">
-      <Filter>src\seam\event-nodes</Filter>
-    </ClCompile>
     <ClCompile Include="src\seam\pin.cpp">
       <Filter>src\seam</Filter>
     </ClCompile>
     <ClCompile Include="src\seam\factory.cpp">
       <Filter>src\seam</Filter>
     </ClCompile>
-    <ClCompile Include="src\seam\event-nodes\cos.cpp">
-      <Filter>src\seam\event-nodes</Filter>
-    </ClCompile>
     <ClCompile Include="src\seam\imgui-utils\properties.cpp">
       <Filter>src\seam\imgui-utils</Filter>
     </ClCompile>
-    <ClCompile Include="src\seam\event-nodes\node-shader.cpp">
-      <Filter>src\seam\event-nodes</Filter>
-    </ClCompile>
     <ClCompile Include="src\seam\shader-utils.cpp">
       <Filter>src\seam</Filter>
+    </ClCompile>
+    <ClCompile Include="src\seam\nodes\texgen-perlin.cpp">
+      <Filter>src\seam\nodes</Filter>
+    </ClCompile>
+    <ClCompile Include="src\seam\nodes\cos.cpp">
+      <Filter>src\seam\nodes</Filter>
+    </ClCompile>
+    <ClCompile Include="src\seam\nodes\i-node.cpp">
+      <Filter>src\seam\nodes</Filter>
+    </ClCompile>
+    <ClCompile Include="src\seam\nodes\shader.cpp">
+      <Filter>src\seam\nodes</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -165,14 +165,14 @@
     <Filter Include="src\seam">
       <UniqueIdentifier>{1080a212-c06c-4508-ad2d-870f9c1e58c2}</UniqueIdentifier>
     </Filter>
-    <Filter Include="src\seam\event-nodes">
-      <UniqueIdentifier>{c80c7f3a-f25f-45f7-a46d-336a7450f72a}</UniqueIdentifier>
-    </Filter>
     <Filter Include="addons\ofxImGui-1.75\libs\imgui\src\blueprints">
       <UniqueIdentifier>{8a8fe114-f35d-4887-9c0a-542b99c39491}</UniqueIdentifier>
     </Filter>
     <Filter Include="src\seam\imgui-utils">
       <UniqueIdentifier>{141637d0-e409-4f32-afae-d720a27c2922}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\seam\nodes">
+      <UniqueIdentifier>{c80c7f3a-f25f-45f7-a46d-336a7450f72a}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -287,9 +287,6 @@
     <ClInclude Include="src\seam\notes.h">
       <Filter>src\seam</Filter>
     </ClInclude>
-    <ClInclude Include="src\seam\event-nodes\event-node.h">
-      <Filter>src\seam\event-nodes</Filter>
-    </ClInclude>
     <ClInclude Include="src\seam\editor.h">
       <Filter>src\seam</Filter>
     </ClInclude>
@@ -302,26 +299,29 @@
     <ClInclude Include="..\..\..\addons\ofxImGui-1.75\libs\imgui\src\blueprints\builders.h">
       <Filter>addons\ofxImGui-1.75\libs\imgui\src\blueprints</Filter>
     </ClInclude>
-    <ClInclude Include="src\seam\event-nodes\texgen-perlin.h">
-      <Filter>src\seam\event-nodes</Filter>
-    </ClInclude>
     <ClInclude Include="src\seam\factory.h">
       <Filter>src\seam</Filter>
     </ClInclude>
     <ClInclude Include="src\seam\hash.h">
       <Filter>src\seam</Filter>
     </ClInclude>
-    <ClInclude Include="src\seam\event-nodes\cos.h">
-      <Filter>src\seam\event-nodes</Filter>
-    </ClInclude>
     <ClInclude Include="src\seam\imgui-utils\properties.h">
       <Filter>src\seam\imgui-utils</Filter>
     </ClInclude>
-    <ClInclude Include="src\seam\event-nodes\node-shader.h">
-      <Filter>src\seam\event-nodes</Filter>
-    </ClInclude>
     <ClInclude Include="src\seam\shader-utils.h">
       <Filter>src\seam</Filter>
+    </ClInclude>
+    <ClInclude Include="src\seam\nodes\texgen-perlin.h">
+      <Filter>src\seam\nodes</Filter>
+    </ClInclude>
+    <ClInclude Include="src\seam\nodes\cos.h">
+      <Filter>src\seam\nodes</Filter>
+    </ClInclude>
+    <ClInclude Include="src\seam\nodes\i-node.h">
+      <Filter>src\seam\nodes</Filter>
+    </ClInclude>
+    <ClInclude Include="src\seam\nodes\shader.h">
+      <Filter>src\seam\nodes</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

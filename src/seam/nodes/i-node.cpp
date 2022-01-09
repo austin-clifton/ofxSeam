@@ -1,8 +1,9 @@
-#include "event-node.h"
+#include "i-node.h"
 #include "imgui/src/imgui.h"
 #include "imgui/src/blueprints/widgets.h"
 
 using namespace seam;
+using namespace seam::nodes;
 namespace im = ImGui;
 namespace ed = ax::NodeEditor;
 
@@ -64,28 +65,28 @@ namespace {
 
 }
 
-bool IEventNode::CompareDrawOrder(const IEventNode* l, const IEventNode* r) {
+bool INode::CompareDrawOrder(const INode* l, const INode* r) {
 	return l->draw_order < r->draw_order;
 }
 
-bool IEventNode::CompareUpdateOrder(const IEventNode* l, const IEventNode* r) {
+bool INode::CompareUpdateOrder(const INode* l, const INode* r) {
 	return l->update_order < r->update_order;
 }
 
-bool IEventNode::CompareConnUpdateOrder(const NodeConnection& l, const NodeConnection& r) {
+bool INode::CompareConnUpdateOrder(const NodeConnection& l, const NodeConnection& r) {
 	return l.node->update_order < r.node->update_order;
 }
 
-void IEventNode::SortParents() {
-	std::sort(parents.begin(), parents.end(), &IEventNode::CompareConnUpdateOrder);
+void INode::SortParents() {
+	std::sort(parents.begin(), parents.end(), &INode::CompareConnUpdateOrder);
 }
 
-bool IEventNode::AddParent(IEventNode* parent) {
+bool INode::AddParent(INode* parent) {
 	// the parents list is sorted to keep update traversal in order without any further sorting
 	// insert to a sorted list, if this parent isn't already in the parents list
 	NodeConnection conn;
 	conn.node = parent;
-	auto it = std::lower_bound(parents.begin(), parents.end(), conn, &IEventNode::CompareConnUpdateOrder);
+	auto it = std::lower_bound(parents.begin(), parents.end(), conn, &INode::CompareConnUpdateOrder);
 	if (it == parents.end() || it->node != parent) {
 		// new parent, add the new NodeConnection for it
 		conn.conn_count = 1;
@@ -98,7 +99,7 @@ bool IEventNode::AddParent(IEventNode* parent) {
 	}
 }
 
-bool IEventNode::AddChild(IEventNode* child) {
+bool INode::AddChild(INode* child) {
 	// the children list is not sorted for now, don't think there is any reason to sort it
 	auto it = std::find(children.begin(), children.end(), child);
 	if (it == children.end()) {
@@ -115,7 +116,7 @@ bool IEventNode::AddChild(IEventNode* child) {
 	}
 }
 
-void IEventNode::SetDirty() {
+void INode::SetDirty() {
 	dirty = true;
 	// dirtying a node dirties its children
 	// need to clean up those dirty kids!
@@ -124,7 +125,7 @@ void IEventNode::SetDirty() {
 	}
 }
 
-void IEventNode::GuiDraw( ed::Utilities::BlueprintNodeBuilder& builder ) {
+void INode::GuiDraw( ed::Utilities::BlueprintNodeBuilder& builder ) {
 	builder.Begin(ed::NodeId(this));
 
 	size_t size;

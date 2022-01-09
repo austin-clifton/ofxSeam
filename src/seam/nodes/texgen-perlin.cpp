@@ -3,8 +3,9 @@
 #include "../shader-utils.h"
 
 using namespace seam;
+using namespace seam::nodes;
 
-TexgenPerlin::TexgenPerlin() : IEventNode("Perlin Noise") {
+TexgenPerlin::TexgenPerlin() : INode("Perlin Noise") {
 	flags = (NodeFlags)(flags | NodeFlags::IS_VISUAL);
 
 	// define the output pin
