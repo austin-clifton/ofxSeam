@@ -199,7 +199,7 @@ void Editor::GuiDraw() {
 				} else {
 					showLabel("+ Create Link", ImColor(32, 45, 32, 180));
 					if (ed::AcceptNewItem(ImColor(128, 255, 128), 4.0f)) {
-						bool connected = Connect(pin_out->node, pin_out, pin_in->node, pin_in);
+						bool connected = Connect(pin_out, pin_in);
 						assert(connected);
 					}
 				}
@@ -340,13 +340,16 @@ IEventNode* Editor::CreateAndAdd(const std::string_view node_name) {
 	return CreateAndAdd(SCHash(node_name.data(), node_name.length()));
 }
 
-bool Editor::Connect(IEventNode* parent, Pin* pin_co, IEventNode* child, Pin* pin_ci) {
+bool Editor::Connect(Pin* pin_co, Pin* pin_ci) {
 	// pin_co == pin connection out
 	// pin_ci == pin connection in
 	// names are hard :(
 	assert((pin_ci->flags & PinFlags::INPUT) == PinFlags::INPUT);
 	assert((pin_co->flags & PinFlags::OUTPUT) == PinFlags::OUTPUT);
 	assert(pin_co->type == pin_ci->type);
+
+	IEventNode* parent = pin_co->node;
+	IEventNode* child = pin_ci->node;
 
 	// find the structs that contain the pins to be connected
 	// also more validations: make sure pin_out is actually an output pin of node_out, and same for the input
@@ -378,10 +381,13 @@ bool Editor::Connect(IEventNode* parent, Pin* pin_co, IEventNode* child, Pin* pi
 	return true;
 }
 
-bool Editor::Disconnect(IEventNode* parent, Pin* pin_co, IEventNode* child, Pin* pin_ci) {
+bool Editor::Disconnect(Pin* pin_co, Pin* pin_ci) {
 	assert((pin_ci->flags & PinFlags::INPUT) == PinFlags::INPUT);
 	assert((pin_co->flags & PinFlags::OUTPUT) == PinFlags::OUTPUT);
 	assert(pin_co->type == pin_ci->type);
+
+	IEventNode* parent = pin_co->node;
+	IEventNode* child = pin_ci->node;
 
 	IPinInput* pin_in = FindPinInput(child, pin_ci);
 	PinOutput* pin_out = FindPinOutput(parent, pin_co);
@@ -438,14 +444,6 @@ bool Editor::Disconnect(IEventNode* parent, Pin* pin_co, IEventNode* child, Pin*
 	}
 
 	return true;
-}
-
-bool Editor::Disconnect(Pin* pin_out, Pin* pin_in) {
-	IEventNode* node_out = pin_out->node;
-	IEventNode* node_in = pin_in->node;
-	assert(node_out && node_in);
-	
-	return Disconnect(node_out, pin_out, node_in, pin_in);
 }
 
 int16_t Editor::RecalculateUpdateOrder(IEventNode* node) {

@@ -35,9 +35,7 @@ namespace seam {
 
 		/// Connect an output pin to an input pin.
 		/// \return true if the Pins were successfully connected.
-		bool Connect(IEventNode* node_out, Pin* pin_out, IEventNode* node_in, Pin* pin_in);
-
-		bool Disconnect(IEventNode* node_out, Pin* pin_out, IEventNode* node_in, Pin* pin_in);
+		bool Connect(Pin* pin_out, Pin* pin_in);
 
 		bool Disconnect(Pin* pin_out, Pin* pin_in);
 	
