@@ -2,8 +2,12 @@
 
 #include "i-node.h"
 
-namespace seam::nodes {
+#include "../pins/pin-float.h"
+#include "../pins/pin-int.h"
 
+using namespace seam::pins;
+
+namespace seam::nodes {
 	class TexgenPerlin : public INode {
 	public:
 		TexgenPerlin();
@@ -18,7 +22,7 @@ namespace seam::nodes {
 		void GuiDrawNodeView() override;
 
 		bool GuiDrawPropertiesList() override;
-	
+
 		IPinInput** PinInputs(size_t& size) override;
 
 		PinOutput* PinOutputs(size_t& size) override;
@@ -27,34 +31,34 @@ namespace seam::nodes {
 		// nomenclature from http://libnoise.sourceforge.net/glossary/#perlinnoise
 
 		PinInt<1> pin_octaves = PinInt<1>(
-			"octaves", 
+			"octaves",
 			"number of iterations of noise",
 			{ 5 }, 1, 8
-		);
+			);
 		PinFloat<1> pin_frequency = PinFloat<1>(
 			"frequency",
 			"initial noise frequency for the first octave",
 			{ 7.19f }, 0.001f
-		);
+			);
 		PinFloat<1> pin_lacunarity = PinFloat<1>(
 			"lacunarity",
 			"each octave's frequency is multiplied by this number",
 			{ 2.68f },
 			0.001f
-		);
+			);
 		PinFloat<1> pin_amplitude = PinFloat<1>(
 			"amplitude",
 			"peak value of the first octave",
 			{ .5f },
-			0.001f, 
+			0.001f,
 			1.f
-		);
+			);
 		PinFloat<1> pin_persistence = PinFloat<1>(
-			"persistence", 
+			"persistence",
 			"each octave's amplitude is multiplied by this number",
 			{ 0.6f },
 			0.001f
-		);
+			);
 
 		std::array<IPinInput*, 5> pin_inputs = {
 			&pin_octaves,

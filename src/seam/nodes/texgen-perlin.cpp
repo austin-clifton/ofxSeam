@@ -9,7 +9,7 @@ TexgenPerlin::TexgenPerlin() : INode("Perlin Noise") {
 	flags = (NodeFlags)(flags | NodeFlags::IS_VISUAL);
 
 	// define the output pin
-	pin_out_tex.pin = SetupOutputPin(this, PinType::TEXTURE, "texture");
+	pin_out_tex.pin = pins::SetupOutputPin(this, pins::PinType::TEXTURE, "texture");
 
 	// TODO this shouldn't be an RGB buffer if only using one color channel
 	ofFbo::Settings settings;

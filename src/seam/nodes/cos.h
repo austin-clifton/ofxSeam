@@ -2,6 +2,10 @@
 
 #include "i-node.h"
 
+#include "../pins/pin-float.h"
+
+using namespace seam::pins;
+
 namespace seam::nodes {
 	/// Cosine signal generator
 	class Cos : public INode {

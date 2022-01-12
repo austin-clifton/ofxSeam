@@ -4,6 +4,8 @@
 
 #include "properties.h"
 
+using namespace seam::pins;
+
 namespace seam::props {
 
 	bool Draw(
@@ -47,7 +49,7 @@ namespace seam::props {
 		return refresh_requested || name_changed;
 	}
 
-	bool DrawPin(std::string_view name, PinFloatMeta* pin, float* channels, const size_t size, float speed) {
+	bool DrawPin(std::string_view name, pins::PinFloatMeta* pin, float* channels, const size_t size, float speed) {
 		bool changed = false;
 		std::string chan_name;
 		for (size_t i = 0; i < size; i++) {
@@ -59,7 +61,7 @@ namespace seam::props {
 		return changed;
 	}
 
-	bool DrawPin(std::string_view name, PinIntMeta* pin, int* channels, const size_t size, float speed) {
+	bool DrawPin(std::string_view name, pins::PinIntMeta* pin, int* channels, const size_t size, float speed) {
 		bool changed = false;
 		std::string chan_name;
 		for (size_t i = 0; i < size; i++) {

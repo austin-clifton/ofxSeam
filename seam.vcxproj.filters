@@ -100,9 +100,6 @@
     <ClCompile Include="..\..\..\addons\ofxImGui-1.75\libs\imgui\src\blueprints\drawing.cpp">
       <Filter>addons\ofxImGui-1.75\libs\imgui\src\blueprints</Filter>
     </ClCompile>
-    <ClCompile Include="src\seam\pin.cpp">
-      <Filter>src\seam</Filter>
-    </ClCompile>
     <ClCompile Include="src\seam\factory.cpp">
       <Filter>src\seam</Filter>
     </ClCompile>
@@ -123,6 +120,12 @@
     </ClCompile>
     <ClCompile Include="src\seam\nodes\shader.cpp">
       <Filter>src\seam\nodes</Filter>
+    </ClCompile>
+    <ClCompile Include="src\seam\pins\push.cpp">
+      <Filter>src\seam\pins</Filter>
+    </ClCompile>
+    <ClCompile Include="src\seam\pins\pin.cpp">
+      <Filter>src\seam\pins</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -173,6 +176,9 @@
     </Filter>
     <Filter Include="src\seam\nodes">
       <UniqueIdentifier>{c80c7f3a-f25f-45f7-a46d-336a7450f72a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\seam\pins">
+      <UniqueIdentifier>{bd724983-3ffa-4efa-9e21-2be50e43a5b0}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -281,9 +287,6 @@
     <ClInclude Include="..\..\..\addons\ofxMidi\libs\rtmidi\RtMidi.h">
       <Filter>addons\ofxMidi\libs\rtmidi</Filter>
     </ClInclude>
-    <ClInclude Include="src\seam\pin.h">
-      <Filter>src\seam</Filter>
-    </ClInclude>
     <ClInclude Include="src\seam\notes.h">
       <Filter>src\seam</Filter>
     </ClInclude>
@@ -322,6 +325,21 @@
     </ClInclude>
     <ClInclude Include="src\seam\nodes\shader.h">
       <Filter>src\seam\nodes</Filter>
+    </ClInclude>
+    <ClInclude Include="src\seam\pins\push.h">
+      <Filter>src\seam\pins</Filter>
+    </ClInclude>
+    <ClInclude Include="src\seam\pins\pin.h">
+      <Filter>src\seam\pins</Filter>
+    </ClInclude>
+    <ClInclude Include="src\seam\pins\pin-flow.h">
+      <Filter>src\seam\pins</Filter>
+    </ClInclude>
+    <ClInclude Include="src\seam\pins\pin-float.h">
+      <Filter>src\seam\pins</Filter>
+    </ClInclude>
+    <ClInclude Include="src\seam\pins\pin-int.h">
+      <Filter>src\seam\pins</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

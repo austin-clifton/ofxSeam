@@ -8,6 +8,7 @@
 namespace seam {
 
 	using namespace nodes;
+	using namespace pins;
 
 	/// node graph editor manages the event nodes and connections that make up a seam scene
 	class Editor {

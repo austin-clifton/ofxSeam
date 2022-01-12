@@ -1,6 +1,8 @@
 #include "pin.h"
+#include "pin-int.h"
+#include "pin-float.h"
 
-namespace seam {
+namespace seam::pins {
 	Pin SetupOutputPin(nodes::INode* node, PinType type, std::string_view name, PinFlags flags) {
 		assert(node != nullptr);
 		Pin pin;

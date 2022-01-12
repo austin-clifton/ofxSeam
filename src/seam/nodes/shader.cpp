@@ -9,7 +9,7 @@ Shader::Shader() : INode("Shader Material") {
 	flags = (NodeFlags)(flags | NodeFlags::IS_VISUAL);
 
 	// define output pin... this should be doable in the constructor...
-	pin_out_material.pin = SetupOutputPin(this, PinType::MATERIAL, "material");
+	pin_out_material.pin = pins::SetupOutputPin(this, pins::PinType::MATERIAL, "material");
 }
 
 Shader::~Shader() {

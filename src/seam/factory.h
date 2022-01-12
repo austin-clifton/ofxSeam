@@ -16,10 +16,10 @@ namespace seam {
 			std::string_view node_name;
 
 			/// list of unique input types
-			std::vector<PinType> pin_inputs;
+			std::vector<pins::PinType> pin_inputs;
 
 			/// list of unique output types
-			std::vector<PinType> pin_outputs;
+			std::vector<pins::PinType> pin_outputs;
 
 			/// can create a unique instance of the node described by this struct
 			CreateFunc Create;
@@ -41,11 +41,13 @@ namespace seam {
 
 		~EventNodeFactory();
 
-
 		nodes::INode* Create(seam::nodes::NodeId node_id);
 
 		/// \return the NodeId of the new node to create, or 0 if no new node was requested
-		seam::nodes::NodeId DrawCreatePopup(PinType input_type = PinType::NONE, PinType output_type = PinType::NONE);
+		seam::nodes::NodeId DrawCreatePopup(
+			pins::PinType input_type = pins::PinType::NONE, 
+			pins::PinType output_type = pins::PinType::NONE
+		);
 
 		/// creates a node and puts its metadata into a generator
 		/// \return false if the node id is already registered, otherwise true

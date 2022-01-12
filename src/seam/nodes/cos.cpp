@@ -7,19 +7,19 @@ Cos::Cos() : INode("Cosine") {
 	flags = (NodeFlags)(flags | NodeFlags::UPDATES_OVER_TIME);
 
 	// define output pin
-	pin_out_fval.pin = SetupOutputPin(this, PinType::FLOAT, "output");
+	pin_out_fval.pin = pins::SetupOutputPin(this, pins::PinType::FLOAT, "output");
 }
 
 Cos::~Cos() {
 
 }
 
-IPinInput** Cos::PinInputs(size_t& size) {
+pins::IPinInput** Cos::PinInputs(size_t& size) {
 	size = pin_inputs.size();
 	return pin_inputs.data();
 }
 
-PinOutput* Cos::PinOutputs(size_t& size) {
+pins::PinOutput* Cos::PinOutputs(size_t& size) {
 	size = 1;
 	return &pin_out_fval;
 }

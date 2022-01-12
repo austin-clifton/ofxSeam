@@ -1,6 +1,9 @@
 #pragma once
 
 #include "i-node.h"
+#include "../pins/pin.h"
+
+using namespace seam::pins;
 
 namespace seam::nodes {
 	/// Generic custom shader node.

@@ -1,6 +1,8 @@
 #pragma once
 
-#include "../pin.h"
+#include "../pins/pin.h"
+#include "../pins/pin-float.h"
+#include "../pins/pin-int.h"
 #include "../nodes/i-node.h"
 
 namespace seam {
@@ -28,13 +30,12 @@ namespace seam {
 		/// draws a reload button in addition to providing a path setter
 		bool DrawShaderPath(std::string_view label, std::string& path);
 
-		bool DrawPin(std::string_view name, PinFloatMeta* pin, float* channels, size_t len_channels, float speed = 0.01f);
+		bool DrawPin(std::string_view name, pins::PinFloatMeta* pin, float* channels, size_t len_channels, float speed = 0.01f);
 		
-		bool DrawPin(std::string_view name, PinIntMeta* pin, int* channels, size_t len_channels, float speed = 0.01f);
-
+		bool DrawPin(std::string_view name, pins::PinIntMeta* pin, int* channels, size_t len_channels, float speed = 0.01f);
 
 		/// generic for drawing different input pin types
-		bool DrawPinInput(IPinInput* input);
+		bool DrawPinInput(pins::IPinInput* input);
 
 		/// utility function for drawing all a node's input pins
 		bool DrawPinInputs(nodes::INode* node);

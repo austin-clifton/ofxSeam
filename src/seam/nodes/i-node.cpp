@@ -4,6 +4,7 @@
 
 using namespace seam;
 using namespace seam::nodes;
+using namespace seam::pins;
 namespace im = ImGui;
 namespace ed = ax::NodeEditor;
 

@@ -6,7 +6,7 @@
 #include <atomic>
 #include <string>
 
-#include "seam/pin.h"
+#include "seam/pins/pin.h"
 
 #include "imgui/src/blueprints/builders.h"
 namespace ed = ax::NodeEditor;
@@ -46,11 +46,11 @@ namespace seam::nodes {
 
 		/// \param size should be set to the size (in elements) of the returned array
 		/// \return a pointer to the array of pointers to pin inputs
-		virtual IPinInput** PinInputs(size_t& size) = 0;
+		virtual pins::IPinInput** PinInputs(size_t& size) = 0;
 
 		/// \param size should be set to the size (in elements) of the returned array
 		/// \return a pointer to the array of pin outputs
-		virtual PinOutput* PinOutputs(size_t& size) = 0;
+		virtual pins::PinOutput* PinOutputs(size_t& size) = 0;
 
 		// draw configurable and display-only properties that are internal to the node
 		// and should be exposed for editing.
