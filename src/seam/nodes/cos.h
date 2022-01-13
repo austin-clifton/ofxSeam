@@ -13,7 +13,7 @@ namespace seam::nodes {
 		Cos();
 		~Cos();
 
-		void Update(float time) override;
+		void Update(UpdateParams* params) override;
 
 		IPinInput** PinInputs(size_t& size) override;
 

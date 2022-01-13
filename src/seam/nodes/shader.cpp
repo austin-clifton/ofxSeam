@@ -26,7 +26,7 @@ PinOutput* Shader::PinOutputs(size_t& size) {
 	return &pin_out_material;
 }
 
-void Shader::Draw() {
+void Shader::Draw(DrawParams* params) {
 	// TODO set uniforms
 }
 

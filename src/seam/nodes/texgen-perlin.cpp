@@ -30,7 +30,7 @@ TexgenPerlin::~TexgenPerlin() {
 
 }
 
-void TexgenPerlin::Draw() {
+void TexgenPerlin::Draw(DrawParams* params) {
 	fbo.begin();
 	shader.begin();
 

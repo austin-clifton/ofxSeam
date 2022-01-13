@@ -14,7 +14,7 @@ namespace seam::nodes {
 
 		~TexgenPerlin();
 
-		void Draw() override;
+		void Draw(DrawParams* params) override;
 
 		void DrawToScreen() override;
 

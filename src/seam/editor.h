@@ -46,7 +46,7 @@ namespace seam {
 	private:
 		/// recursively traverse a visual node's parent tree and update nodes in order
 		/// also determines the draw list (but not ordering!) for this frame
-		void UpdateVisibleNodeGraph(INode* n);
+		void UpdateVisibleNodeGraph(INode* n, UpdateParams* params);
 		
 		/// recalculate a node and its children's update order
 		int16_t RecalculateUpdateOrder(INode* node);
@@ -93,6 +93,8 @@ namespace seam {
 		ax::NodeEditor::EditorContext* node_editor_context;
 
 		seam::EventNodeFactory factory;
+
+		PushPatterns push_patterns;
 
 		// list of all the event nodes the graph will draw
 		// this list does not need to be sorted

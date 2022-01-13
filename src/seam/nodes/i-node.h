@@ -7,6 +7,7 @@
 #include <string>
 
 #include "seam/pins/pin.h"
+#include "seam/pins/push.h"
 
 #include "imgui/src/blueprints/builders.h"
 namespace ed = ax::NodeEditor;
@@ -29,6 +30,18 @@ namespace seam::nodes {
 		// if a node uses time as an update parameter it updates every frame
 		// if a node wants to use time as an argument, it should mark itself with this flag
 		UPDATES_OVER_TIME = 1 << 1,
+	};
+
+	struct UpdateParams {
+		float delta_time;
+		float time;
+		seam::pins::PushPatterns* push_patterns;
+	};
+
+	struct DrawParams {
+		float delta_time;
+		float time;
+		// not sure what else is needed here yet
 	};
 
 	/// Base class for all nodes that use the eventing system
@@ -57,11 +70,11 @@ namespace seam::nodes {
 		virtual bool GuiDrawPropertiesList() { return false; }
 
 		/// to be called during OF's update() loop
-		virtual void Update(float time) { }
+		virtual void Update(UpdateParams* params) { }
 
 		/// to be called during OF's draw() loop
 		/// should be overridden by visual nodes
-		virtual void Draw() { }
+		virtual void Draw(DrawParams* params) { }
 
 		virtual void DrawToScreen() { }
 

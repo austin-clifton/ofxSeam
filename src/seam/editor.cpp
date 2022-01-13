@@ -21,9 +21,16 @@ void Editor::Setup() {
 
 void Editor::Draw() {
 
+	DrawParams params;
+	params.time = ofGetElapsedTimef();
+	// not sure if this is truly delta time?
+	params.delta_time = ofGetLastFrameTime();
+
+	// TODO you don't need to sort nodes for drawing if they were already sorted for update order...
+
 	std::sort(nodes_to_draw.begin(), nodes_to_draw.end(), &INode::CompareDrawOrder);
 	for (auto n : nodes_to_draw) {
-		n->Draw();
+		n->Draw(&params);
 	}
 
 	if (selected_node && selected_node->IsVisual()) {
@@ -34,19 +41,19 @@ void Editor::Draw() {
 	// probably want multiple viewports / docking?
 }
 
-void Editor::UpdateVisibleNodeGraph(INode* n) {
+void Editor::UpdateVisibleNodeGraph(INode* n, UpdateParams* params) {
 	// traverse parents and update them before traversing this node
 	// parents are sorted by update order, so that any "shared parents" are updated first
 	int16_t last_update_order = -1;
 	for (auto p : n->parents) {
 		assert(last_update_order <= p.node->update_order);
 		last_update_order = p.node->update_order;
-		UpdateVisibleNodeGraph(p.node);
+		UpdateVisibleNodeGraph(p.node, params);
 	}
 
 	// now, this node can update, if it's dirty
 	if (n->dirty) {
-		n->Update(ofGetElapsedTimef());
+		n->Update(params);
 		n->dirty = false;
 
 		// if this is a visual node, it will need to be re-drawn now
@@ -68,8 +75,13 @@ void Editor::Update() {
 		n->dirty = true;
 	}
 
+	UpdateParams params;
+	params.push_patterns = &push_patterns;
+	params.time = ofGetElapsedTimef();
+	params.delta_time = ofGetLastFrameTime();
+
 	for (auto n : visible_nodes) {
-		UpdateVisibleNodeGraph(n);
+		UpdateVisibleNodeGraph(n, &params);
 	}
 }
 

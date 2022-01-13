@@ -15,7 +15,7 @@ namespace seam::nodes {
 		Shader();
 		~Shader();
 
-		void Draw() override;
+		void Draw(DrawParams* params) override;
 
 		bool GuiDrawPropertiesList() override;
 

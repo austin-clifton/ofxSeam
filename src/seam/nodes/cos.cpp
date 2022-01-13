@@ -32,8 +32,8 @@ float Cos::Calculate(float t) {
 	return pin_amplitude_shift[0] + pin_amplitude[0] * cos(period_mul * t + pin_phase_shift[0]);
 }
 
-void Cos::Update(float time) {
-	float v = Calculate(time);
+void Cos::Update(UpdateParams* params) {
+	float v = Calculate(params->time);
 	// TODO generalize "propagation" (template function?)
 	for (size_t i = 0; i < pin_out_fval.connections.size(); i++) {
 		size_t chans_size;
