@@ -51,14 +51,11 @@ namespace seam {
 		/// recalculate a node and its children's update order
 		int16_t RecalculateUpdateOrder(INode* node);
 
-		/// recalculate a node and its children's draw order
-		int16_t RecalculateDrawOrder(INode* node);
-
 		/// recalculate the node and its children's update and/or draw orders
-		void InvalidateChildren(INode* node, bool recalc_update, bool recalc_draw);
+		void InvalidateChildren(INode* node);
 
 		/// Recalculates the update and/or draw orders of nodes
-		void RecalculateTraversalOrder(INode* node, bool recalc_update, bool recalc_draw);
+		void RecalculateTraversalOrder(INode* node);
 
 		void GuiDrawPopups();
 

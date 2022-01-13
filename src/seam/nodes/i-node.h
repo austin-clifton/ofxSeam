@@ -124,10 +124,6 @@ namespace seam::nodes {
 		// update order == max(transmitters' update order) + 1
 		int16_t update_order = 0;
 
-		// visual nodes must be drawn in dependency order,
-		// meaning a node using a texture from a previous node must be drawn after the previous.
-		int16_t draw_order = 0;
-
 		// TODO remove me?
 		seam::nodes::NodeId id;
 
@@ -147,7 +143,6 @@ namespace seam::nodes {
 			}
 		};
 
-		static bool CompareDrawOrder(const INode* l, const INode* r);
 		static bool CompareUpdateOrder(const INode* l, const INode* r);
 		static bool CompareConnUpdateOrder(const NodeConnection& l, const NodeConnection& r);
 

@@ -26,9 +26,6 @@ void Editor::Draw() {
 	// not sure if this is truly delta time?
 	params.delta_time = ofGetLastFrameTime();
 
-	// TODO you don't need to sort nodes for drawing if they were already sorted for update order...
-
-	std::sort(nodes_to_draw.begin(), nodes_to_draw.end(), &INode::CompareDrawOrder);
 	for (auto n : nodes_to_draw) {
 		n->Draw(&params);
 	}
@@ -304,7 +301,7 @@ void Editor::GuiDraw() {
 		ImGui::PushStyleColor(ImGuiCol_Border, ImVec4(0.5f, 0.5f, 0.5f, 0.5f));
 
 		if (im::BeginChild(WINDOW_NAME_NODE_MENU, child_size, true)) {
-			ImGui::Text("Update: %d, Draw: %d", selected_node->update_order, selected_node->draw_order);
+			ImGui::Text("Update: %d", selected_node->update_order);
 			ImGui::Text("Pins:");
 			bool dirty = props::DrawPinInputs(selected_node);
 			ImGui::Text("Properties:");
@@ -336,7 +333,7 @@ INode* Editor::CreateAndAdd(NodeId node_id) {
 
 		if (node->IsVisual()) {
 			// probably temporary: add to the list of visible nodes up front
-			auto it = std::upper_bound(visible_nodes.begin(), visible_nodes.end(), node, &INode::CompareDrawOrder);
+			auto it = std::upper_bound(visible_nodes.begin(), visible_nodes.end(), node, &INode::CompareUpdateOrder);
 			visible_nodes.insert(it, node);
 		}
 
@@ -387,7 +384,7 @@ bool Editor::Connect(Pin* pin_co, Pin* pin_ci) {
 	const bool rearranged = is_new_parent || is_new_child;
 
 	if (rearranged) {
-		RecalculateTraversalOrder(child, true, true);
+		RecalculateTraversalOrder(child);
 	}
 
 	return true;
@@ -452,7 +449,7 @@ bool Editor::Disconnect(Pin* pin_co, Pin* pin_ci) {
 
 	if (rearranged) {
 		// the child node and its children need to recalculate draw and update order now
-		RecalculateTraversalOrder(child, true, true);
+		RecalculateTraversalOrder(child);
 	}
 
 	return true;
@@ -485,62 +482,24 @@ int16_t Editor::RecalculateUpdateOrder(INode* node) {
 	return node->update_order;
 }
 
-int16_t Editor::RecalculateDrawOrder(INode* node) {
-	// the draw order of a node is the max of its parents' draw order,
-	// plus 1 IF this node is a visual node
-	if (node->draw_order != -1) {
-		return node->draw_order;
-	}
-
-	// TODO handle feedback pins (they should not be traversed for this purpose)
-
-	int16_t max_parents_draw_order = 0;
-	for (auto parent : node->parents) {
-		max_parents_draw_order = std::max(
-			max_parents_draw_order, 
-			RecalculateDrawOrder(parent.node)
-		);
-	}
-	bool is_visual = (node->flags & NodeFlags::IS_VISUAL);
-	node->draw_order = max_parents_draw_order + is_visual;
-	
-	// recursively update children
-	for (auto child : node->children) {
-		RecalculateDrawOrder(child.node);
-	}
-
-	return node->draw_order;
-}
-
-void Editor::InvalidateChildren(INode* node, bool recalc_update, bool recalc_draw) {
+void Editor::InvalidateChildren(INode* node) {
 	{
 		// if this node has already been invalidated, don't go over it again
-		bool needs_update_invalidated = recalc_update && node->update_order != -1;
-		bool needs_draw_invalidated = recalc_draw && node->draw_order != -1;
-		if (!needs_update_invalidated && !needs_draw_invalidated) {
+		if (node->update_order == -1) {
 			return;
 		}
 	}
 
-	node->update_order = recalc_update ? -1 : node->update_order;
-	node->draw_order = recalc_draw ? -1 : node->draw_order;
-
+	node->update_order = -1;
 	for (auto child : node->children) {
-		InvalidateChildren(child.node, recalc_update, recalc_draw);
+		InvalidateChildren(child.node);
 	}
 }
 
-void Editor::RecalculateTraversalOrder(INode* node, bool recalc_update, bool recalc_draw) {
+void Editor::RecalculateTraversalOrder(INode* node) {
 	// invalidate this node and its children
-	InvalidateChildren(node, recalc_update, recalc_draw);
-
-	if (recalc_update) {
-		RecalculateUpdateOrder(node);
-	}
-
-	if (recalc_draw) {
-		RecalculateDrawOrder(node);
-	}
+	InvalidateChildren(node);
+	RecalculateUpdateOrder(node);
 }
 
 IPinInput* Editor::FindPinInput(INode* node, Pin* pin) {

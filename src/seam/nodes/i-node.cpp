@@ -66,10 +66,6 @@ namespace {
 
 }
 
-bool INode::CompareDrawOrder(const INode* l, const INode* r) {
-	return l->draw_order < r->draw_order;
-}
-
 bool INode::CompareUpdateOrder(const INode* l, const INode* r) {
 	return l->update_order < r->update_order;
 }
