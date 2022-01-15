@@ -376,6 +376,9 @@ bool Editor::Connect(Pin* pin_co, Pin* pin_ci) {
 	// add to the links list
 	links.push_back(Link(pin_in, pin_out));
 
+	// give the input pin the default push pattern
+	pin_in->push_id = push_patterns.Default().id;
+
 	// add to each node's parents and children list
 	// if this connection rearranged the node graph, 
 	// its traversal order will need to be recalculated

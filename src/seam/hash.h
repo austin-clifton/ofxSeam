@@ -22,4 +22,8 @@ namespace seam {
 
 		return hash;
 	}
+
+	inline uint32_t SCHash(std::string_view key) {
+		return SCHash(key.data(), key.length());
+	}
 }

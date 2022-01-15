@@ -46,12 +46,21 @@ PushPatterns::PushPatterns() {
 			}
 		}
 	}));
+
+	SetDefault("repeat");
 }
 
 bool PushPatterns::Register(Pusher&& pusher) {
 	auto it = std::lower_bound(push_patterns.begin(), push_patterns.end(), pusher);
 	bool overwrote = it != push_patterns.end() && it->id == pusher.id;
-	push_patterns.insert(it, std::move(pusher));
+	if (overwrote) {
+		*it = std::move(pusher);
+		if (&(*it) == default_pattern) {
+			printf("default pattern %s has been overwritten\n", pusher.name.data());
+		}
+	} else {
+		push_patterns.insert(it, std::move(pusher));
+	}
 	return overwrote;
 }
 
@@ -67,39 +76,21 @@ Pusher& PushPatterns::Get(PushId push_id) {
 }
 
 Pusher& PushPatterns::Get(std::string_view name) {
-	return Get(SCHash(name.data(), name.length()));
+	return Get(SCHash(name));
 }
 
-template <typename T>
-void PushPatterns::Push(const PinOutput& pin_out, T* data, size_t len) {
-	const bool is_event_queue_pin =
-		(pin_out.pin.flags & pins::PinFlags::EVENT_QUEUE) == pins::PinFlags::EVENT_QUEUE;
-	// event queue pins don't use push patterns, they just push to the input pins' vectors
-	if (is_event_queue_pin) {
-		
-		for (IPinInput* ipin_in : pin_out.connections) {
-			// safe cast and make sure this is the right type...
-			PinInput<T, 0>* pin_in = dynamic_cast<PinInput<T, 0>>(ipin_in);
-			// ...but explode if it isn't
-			assert(pin_in != nullptr);
-			// event queue input pins should always be event queue pins themselves
-			assert((pin_in->flags & pins::PinFlags::EVENT_QUEUE) == pins::PinFlags::EVENT_QUEUE);
-			// push the output pin's data to the back of the input pin's vector
-			pin_in->channels.insert(pin_in->channels.end(), data);
-		}
-	} else {
-		for (IPinInput* pin_in : pin_out.connections) {
-			// find the push pattern, and expect it to exist
-			auto pp = std::lower_bound(push_patterns.begin(), push_patterns.end(), pin_in->push_id);
-			assert(pp->id == pin_in->push_id);
-			// grab the destination data
-			size_t dst_size;
-			char* dst = pin_in->GetChannels(dst_size);
-			// call the push pattern 
-			pp->func((char*)data, len * sizeof(T), dst, dst_size * sizeof(T));
-		}
-	}
+Pusher& PushPatterns::Default() {
+	assert(default_pattern != nullptr);
+	return *default_pattern;
+}
 
+void PushPatterns::SetDefault(PushId push_id) {
+	Pusher& pusher = Get(push_id);
+	default_pattern = &pusher;
+}
+
+void PushPatterns::SetDefault(std::string_view name) {
+	SetDefault(SCHash(name));
 }
 
 #if RUN_DOCTEST
@@ -117,7 +108,9 @@ namespace {
 		const uint32_t end_guard_pos = sizeof(uint32_t) + data_len;
 		*((uint32_t*)(output + end_guard_pos)) = GUARD;
 		
-		// now run the push pattern, starting past the beginning guard on the output
+		// now run the push pattern, 
+		// starting past the beginning guard on the output, 
+		// and wrtiting until the end guard
 		pusher.func(
 			(char*)input.data(), 
 			input.size() * sizeof(T), 

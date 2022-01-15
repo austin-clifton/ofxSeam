@@ -38,10 +38,7 @@ void Cos::Update(UpdateParams* params) {
 	for (size_t i = 0; i < pin_out_fval.connections.size(); i++) {
 		size_t chans_size;
 		float* channels = (float*)pin_out_fval.connections[i]->GetChannels(chans_size);
-		pin_out_fval.connections[i]->node->SetDirty();
 
-		for (size_t c = 0; c < chans_size; c++) {
-			channels[c] = v;
-		}
+		params->push_patterns->Push(pin_out_fval, &v, 1);
 	}
 }
