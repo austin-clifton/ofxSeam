@@ -8,7 +8,8 @@ namespace seam::pins {
 		char* src, 
 		size_t src_size_bytes, 
 		char* dst, 
-		size_t dst_size_bytes
+		size_t dst_size_bytes,
+		size_t element_size
 	)>;
 
 	/// Describes a pattern or strategy for pushing values from an output pin to an input pin.
@@ -30,6 +31,10 @@ namespace seam::pins {
 			return id < other.id;
 		}
 
+		bool operator<(const PushId other_id) {
+			return id < other_id;
+		}
+
 		bool operator==(const Pusher& other) {
 			return id == other.id;
 		}
@@ -49,6 +54,9 @@ namespace seam::pins {
 		/// \param array_len the number of elements in the data array
 		template <typename T>
 		void Push(const PinOutput& pin, T* data_array, size_t array_len);
+
+		Pusher& Get(PushId push_id);
+		Pusher& Get(std::string_view name);
 		
 	private:
 		// push patterns are sorted by pusher id

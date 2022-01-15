@@ -1,6 +1,13 @@
 #include "ofMain.h"
 #include "ofApp.h"
 
+#if RUN_DOCTEST
+
+#define DOCTEST_CONFIG_IMPLEMENT_WITH_MAIN
+#include "doctest.h"
+
+#else
+
 //========================================================================
 int main( ){
 	ofGLFWWindowSettings settings;
@@ -14,3 +21,5 @@ int main( ){
 	ofRunApp(new ofApp());
 
 }
+
+#endif // RUN_DOCTEST
