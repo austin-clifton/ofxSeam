@@ -104,17 +104,6 @@ namespace seam {
 
 		// TODO pin allocs should maybe come from a pool
 
-
-		// struct PinNoteOn : public PinInput<
-
-		/*
-		struct PinNoteOn : Pin {
-			PinNoteOn() {
-				type = PinType::NOTE_ON;
-			}
-		};
-		*/
-
 		class IPinInput;
 
 		struct PinOutput {
