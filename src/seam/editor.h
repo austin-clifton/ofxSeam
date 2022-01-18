@@ -4,6 +4,7 @@
 
 #include "nodes/i-node.h"
 #include "seam/factory.h"
+#include "frame-pool.h"
 
 namespace seam {
 
@@ -92,6 +93,7 @@ namespace seam {
 		seam::EventNodeFactory factory;
 
 		PushPatterns push_patterns;
+		FramePool alloc_pool = FramePool(8192);
 
 		// list of all the event nodes the graph will draw
 		// this list does not need to be sorted

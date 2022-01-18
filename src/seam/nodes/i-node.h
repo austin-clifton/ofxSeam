@@ -35,6 +35,7 @@ namespace seam::nodes {
 	struct UpdateParams {
 		float delta_time;
 		float time;
+		FramePool* alloc_pool;
 		seam::pins::PushPatterns* push_patterns;
 	};
 

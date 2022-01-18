@@ -72,11 +72,17 @@ void Editor::Update() {
 		n->dirty = true;
 	}
 
+	// clear the per-frame allocation pool
+	alloc_pool.Clear();
+
+	// assemble update parameters
 	UpdateParams params;
 	params.push_patterns = &push_patterns;
+	params.alloc_pool = &alloc_pool;
 	params.time = ofGetElapsedTimef();
 	params.delta_time = ofGetLastFrameTime();
 
+	// traverse the visible node graph and update nodes that need to be updated
 	for (auto n : visible_nodes) {
 		UpdateVisibleNodeGraph(n, &params);
 	}
