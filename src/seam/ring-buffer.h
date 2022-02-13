@@ -13,7 +13,7 @@ public:
 	}
 
 	~RingBuffer() {
-		delete arr;
+		delete[] arr;
 	}
 
 	/// push (write) to the tail
