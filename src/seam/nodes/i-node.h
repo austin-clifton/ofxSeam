@@ -8,6 +8,7 @@
 
 #include "seam/pins/pin.h"
 #include "seam/pins/push.h"
+#include "seam/frame-pool.h"
 
 #include "imgui/src/blueprints/builders.h"
 namespace ed = ax::NodeEditor;
@@ -27,9 +28,17 @@ namespace seam::nodes {
 		// and visible visual nodes dictate each frame's update and draw workloads
 		IS_VISUAL = 1 << 0,
 
-		// if a node uses time as an update parameter it updates every frame
-		// if a node wants to use time as an argument, it should mark itself with this flag
+		// if a node uses time as an update parameter and should update every frame,
+		// it should mark itself with this flag.
+		// Nodes with this flag which are not part of an active visible chain will not update.
+		// If you want to update regardless, use UPDATES_EVERY_FRAME.
 		UPDATES_OVER_TIME = 1 << 1,
+
+		// Nodes which receive events from external sources (MIDI for instance)
+		// should mark themselves with this flag.
+		// Nodes with this flag will Update() every frame, 
+		// regardless of whether they are in a visual chain or not.
+		UPDATES_EVERY_FRAME = 1 << 2,
 	};
 
 	struct UpdateParams {
@@ -102,6 +111,10 @@ namespace seam::nodes {
 
 		inline bool UpdatesOverTime() {
 			return (flags & NodeFlags::UPDATES_OVER_TIME) == NodeFlags::UPDATES_OVER_TIME;
+		}
+
+		inline bool UpdatesEveryFrame() {
+			return (flags & NodeFlags::UPDATES_EVERY_FRAME) == NodeFlags::UPDATES_EVERY_FRAME;
 		}
 
 		inline bool IsVisual() {

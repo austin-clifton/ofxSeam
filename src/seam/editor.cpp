@@ -67,7 +67,7 @@ void Editor::Update() {
 	// before traversing the graphs of visible nodes, dirty nodes which update every frame
 	for (auto n : nodes_update_over_time) {
 		// set the dirty flag directly so children aren't affected;
-		// just because the node updates over time doesn't mean it will be dirtied every frame,
+		// just because the node updates over time doesn't mean it will change every frame,
 		// for instance in the case of a timer which fires every XX seconds
 		n->dirty = true;
 	}
@@ -81,6 +81,15 @@ void Editor::Update() {
 	params.alloc_pool = &alloc_pool;
 	params.time = ofGetElapsedTimef();
 	params.delta_time = ofGetLastFrameTime();
+
+	// traverse Nodes which must be updated every frame;
+	// these are usually nodes which handle some kind of external input and/or can be dirtied by other threads
+	for (auto n : nodes_update_every_frame) {
+		// assume the node will dirty itself if it needs to Update()
+		if (n->dirty) {
+			n->Update(&params);
+		}
+	}
 
 	// traverse the visible node graph and update nodes that need to be updated
 	for (auto n : visible_nodes) {
@@ -343,7 +352,11 @@ INode* Editor::CreateAndAdd(NodeId node_id) {
 			visible_nodes.insert(it, node);
 		}
 
-		if (node->UpdatesOverTime()) {
+		assert(!(node->UpdatesEveryFrame() && node->UpdatesOverTime()));
+
+		if (node->UpdatesEveryFrame()) {
+			nodes_update_every_frame.push_back(node);
+		} else if (node->UpdatesOverTime()) {
 			nodes_update_over_time.push_back(node);
 		}
 	}

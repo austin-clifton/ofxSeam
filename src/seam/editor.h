@@ -105,8 +105,12 @@ namespace seam {
 		// visible visual nodes dictate which nodes actually get updated and drawn during those loops
 		std::vector<INode*> visible_nodes;
 
-		// nodes which update every frame (over time) need to be invalidated every frame
+		// nodes which update over time need to be invalidated every frame
 		std::vector<INode*> nodes_update_over_time;
+
+		// nodes which update every frame need to Update() no matter what,
+		// even if they are not part of a visible visual chain
+		std::vector<INode*> nodes_update_every_frame;
 
 		// sorted list of all links between pins, mostly for GUI display + interactions
 		std::vector<Link> links;
