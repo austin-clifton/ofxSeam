@@ -24,7 +24,7 @@ namespace seam {
 				pool.resize(pool.size() * 2);
 			}
 			// calculate the pointer position of the "allocation"
-			T* ptr = pool.data() + pos;
+			T* ptr = (T*)(pool.data() + pos);
 			// run the default constructor for the given type 
 			*ptr = T();
 			// increment position for next "alloc"
