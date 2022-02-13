@@ -29,6 +29,6 @@ namespace seam::nodes {
 		
 		// input pins are dynamically created based on the shader's uniforms
 		std::vector<IPinInput*> pin_inputs;
-		PinOutput pin_out_material;
+		PinOutput pin_out_material = pins::SetupOutputPin(this, pins::PinType::MATERIAL, "material");
 	};
 }

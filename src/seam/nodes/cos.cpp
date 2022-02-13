@@ -5,9 +5,6 @@ using namespace seam::nodes;
 
 Cos::Cos() : INode("Cosine") {
 	flags = (NodeFlags)(flags | NodeFlags::UPDATES_OVER_TIME);
-
-	// define output pin
-	pin_out_fval.pin = pins::SetupOutputPin(this, pins::PinType::FLOAT, "output");
 }
 
 Cos::~Cos() {

@@ -3,14 +3,21 @@
 #include "pin-float.h"
 
 namespace seam::pins {
-	Pin SetupOutputPin(nodes::INode* node, PinType type, std::string_view name, PinFlags flags) {
+	PinOutput SetupOutputPin(
+		nodes::INode* node, 
+		PinType type, 
+		std::string_view name, 
+		PinFlags flags,
+		void* userp
+	) {
 		assert(node != nullptr);
-		Pin pin;
-		pin.node = node;
-		pin.type = type;
-		pin.name = name;
-		pin.flags = (PinFlags)(flags | PinFlags::OUTPUT);
-		return pin;
+		PinOutput pin_out;
+		pin_out.pin.node = node;
+		pin_out.pin.type = type;
+		pin_out.pin.name = name;
+		pin_out.pin.flags = (PinFlags)(flags | PinFlags::OUTPUT);
+		pin_out.userp = userp;
+		return pin_out;
 	}
 
 	std::vector<IPinInput*> UniformsToPinInputs(ofShader& shader, nodes::INode* node) {

@@ -68,7 +68,7 @@ namespace seam::nodes {
 			&pin_persistence,
 		};
 
-		PinOutput pin_out_tex;
+		PinOutput pin_out_tex = pins::SetupOutputPin(this, pins::PinType::TEXTURE, "texture");
 
 		// TODO this should be an editable property, but not a pin (resolution shouldn't be changing)
 		glm::ivec2 tex_size = glm::ivec2(512, 512);

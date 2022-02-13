@@ -48,6 +48,6 @@ namespace seam::nodes {
 			&pin_phase_shift,
 		};
 
-		PinOutput pin_out_fval;
+		PinOutput pin_out_fval = pins::SetupOutputPin(this, pins::PinType::FLOAT, "output");
 	};
 }

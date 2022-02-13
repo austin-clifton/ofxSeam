@@ -18,7 +18,7 @@ namespace seam {
 		enum PinType : uint8_t {
 			// invalid pin type
 			// used internally but should not be used for actual pins
-			NONE,
+			TYPE_NONE,
 
 			// flow pins are stateless triggers which just dirty any nodes that use them as inputs
 			FLOW,
@@ -37,20 +37,14 @@ namespace seam {
 			// a material is really just a shader with specific uniform value settings
 			MATERIAL,
 
-			// Note* events are somewhat special: they use a base BasicNote struct which may be masked as a more complex struct.
-			// the BasicNote type contains velocity and pitch, but you can create other note types that inherit BasicNote,
-			// and then make other Nodes that are capable of handling the more complex Note type
-
-			// just about all note types should support note on and off
-			NOTE_ON,
-			NOTE_OFF,
-			// MIDI notes don't support this
-			// for SC notes and possibly other inputs?
-			NOTE_CHANGED,
+			// note events send a pointer to a struct from notes.h, 
+			// or a struct that inherits one of those structs
+			NOTE_EVENT,
 		};
 
 		// a bitmask enum for marking boolean properties of a Pin
 		enum PinFlags : uint16_t {
+			FLAGS_NONE = 0,
 			///  input pins must have this flag raised;
 			/// incompatible with PinFlags::OUTPUT
 			INPUT = 1 << 0,
@@ -111,6 +105,8 @@ namespace seam {
 			// use the base struct
 			Pin pin;
 			std::vector<IPinInput*> connections;
+			// user data, if any is needed
+			void* userp = nullptr;
 		};
 
 		/// Abstract class for input pins.
@@ -167,6 +163,8 @@ namespace seam {
 		class PinInput<T, 0> : public IPinInput {
 		public:
 			PinInput(const std::vector<T>& init_vals = {}) {
+				// raise the event queue flag
+				flags = (PinFlags)(flags | PinFlags::EVENT_QUEUE);
 				channels = init_vals;
 			}
 
@@ -174,13 +172,12 @@ namespace seam {
 
 			inline void* GetChannels(size_t& size) override {
 				size = channels.size();
-				// return the address of the first element in the vector
-				return &channels[0];
+				return channels.data();
 			}
 
 			inline T& operator[](size_t index) {
 				assert(index < channels.size());
-				return channels[i];
+				return channels[index];
 			}
 
 			std::vector<T> channels;
@@ -213,10 +210,13 @@ namespace seam {
 			ofShader* shader = nullptr;
 		};
 
-		// TODO this is bad nomenclature (SetupPinOutput doesn't return a PinOutput)
-		// probably need to redo the PinInput and PinOutput nomenclature
-
-		Pin SetupOutputPin(nodes::INode* node, PinType type, std::string_view name, PinFlags flags = (PinFlags)0);
+		PinOutput SetupOutputPin(
+			nodes::INode* node, 
+			PinType type, 
+			std::string_view name, 
+			PinFlags flags = PinFlags::FLAGS_NONE,
+			void* userp = nullptr
+		);
 
 		/// Queries a linked shader program's active uniforms and creates a PinInput list from them.
 		/// \param shader The linked shader program to query the uniforms of.
