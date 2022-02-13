@@ -25,7 +25,7 @@ namespace seam::pins {
 			name = _name;
 			description = _description;
 			type = PinType::INT;
-			flags = _flags;
+			flags = PinFlags(flags | _flags);
 			min = _min;
 			max = _max;
 			range_type = _range_type;

@@ -2,6 +2,7 @@
 
 #include "pin.h"
 #include "../hash.h"
+#include "../flags-helper.h"
 
 namespace seam::pins {
 	using PushFunc = std::function<void(
@@ -54,8 +55,11 @@ namespace seam::pins {
 		/// \param array_len the number of elements in the data array
 		template <typename T>
 		void Push(const PinOutput& pin_out, T* data, size_t len) {
-			const bool is_event_queue_pin =
-				(pin_out.pin.flags & pins::PinFlags::EVENT_QUEUE) == pins::PinFlags::EVENT_QUEUE;
+			const bool is_event_queue_pin = flags::AreRaised(
+				pin_out.pin.flags, 
+				pins::PinFlags::EVENT_QUEUE
+			);
+
 			// event queue pins don't use push patterns, they just push to the input pins' vectors
 			if (is_event_queue_pin) {
 

@@ -4,22 +4,27 @@
 #include "nodes/texgen-perlin.h"
 #include "nodes/cos.h"
 #include "nodes/shader.h"
+#include "nodes/midi-in.h"
+#include "nodes/notes-printer.h"
 
 using namespace seam;
 
+namespace {
+	template <typename T>
+	EventNodeFactory::CreateFunc MakeCreate() {
+		return [] {
+			return new T();
+		};
+	}
+}
+
 EventNodeFactory::EventNodeFactory() {
 	// register seam-internal nodes here
-	Register([] {
-		return new seam::nodes::TexgenPerlin();
-	});
-
-	Register([] {
-		return new seam::nodes::Cos();
-	});
-
-	Register([] {
-		return new seam::nodes::Shader();
-	});
+	Register(MakeCreate<nodes::TexgenPerlin>());
+	Register(MakeCreate<nodes::Cos>());
+	Register(MakeCreate<nodes::Shader>());
+	Register(MakeCreate<nodes::MidiIn>());
+	Register(MakeCreate<nodes::NotesPrinter>());
 
 	// TODO register more seam internal generators here
 }

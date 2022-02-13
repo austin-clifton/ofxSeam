@@ -19,7 +19,7 @@ namespace {
 	{
 		switch (type) {
 		default:
-		case PinType::NONE:
+		case PinType::TYPE_NONE:
 		case PinType::FLOW:     return ImColor(255, 255, 255);
 		case PinType::BOOL:     return ImColor(220, 48, 48);
 		case PinType::INT:      return ImColor(68, 201, 156);
@@ -39,18 +39,19 @@ namespace {
 		ImColor color = GetIconColor(pin.type);
 		color.Value.w = alpha;
 		switch (pin.type) {
-		case PinType::FLOW:     icon_type = IconType::Flow;   break;
-		case PinType::BOOL:     icon_type = IconType::Circle; break;
-		case PinType::INT:      icon_type = IconType::Circle; break;
-		case PinType::FLOAT:    icon_type = IconType::Circle; break;
-		case PinType::STRING:   icon_type = IconType::Circle; break;
-		case PinType::TEXTURE:	icon_type = IconType::Square; break;
-		case PinType::MATERIAL: icon_type = IconType::Square; break;
+		case PinType::FLOW:		   icon_type = IconType::Flow;   break;
+		case PinType::BOOL:			icon_type = IconType::Circle; break;
+		case PinType::INT:			icon_type = IconType::Circle; break;
+		case PinType::FLOAT:		icon_type = IconType::Circle; break;
+		case PinType::STRING:		icon_type = IconType::Circle; break;
+		case PinType::TEXTURE:		icon_type = IconType::Square; break;
+		case PinType::MATERIAL:		icon_type = IconType::Square; break;
+		case PinType::NOTE_EVENT:	icon_type = IconType::Grid; break;
 
 		// case PinType::Object:   icon_type = IconType::Circle; break;
 		// case PinType::Function: icon_type = IconType::Circle; break;
 		// case PinType::Delegate: icon_type = IconType::Square; break;
-		case PinType::NONE:
+		case PinType::TYPE_NONE:
 			// pins which are drawn should not have type none
 			// did you forget to set it?
 			assert(false);

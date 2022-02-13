@@ -229,6 +229,8 @@
     <ClCompile Include="src\seam\imgui-utils\properties.cpp" />
     <ClCompile Include="src\seam\nodes\cos.cpp" />
     <ClCompile Include="src\seam\nodes\i-node.cpp" />
+    <ClCompile Include="src\seam\nodes\midi-in.cpp" />
+    <ClCompile Include="src\seam\nodes\notes-printer.cpp" />
     <ClCompile Include="src\seam\nodes\shader.cpp" />
     <ClCompile Include="src\seam\nodes\texgen-perlin.cpp" />
     <ClCompile Include="src\seam\pins\pin.cpp" />
@@ -276,18 +278,24 @@
     <ClInclude Include="..\..\..\addons\ofxMidi\libs\rtmidi\RtMidi.h" />
     <ClInclude Include="src\seam\editor.h" />
     <ClInclude Include="src\seam\factory.h" />
+    <ClInclude Include="src\seam\flags-helper.h" />
+    <ClInclude Include="src\seam\frame-pool.h" />
     <ClInclude Include="src\seam\hash.h" />
     <ClInclude Include="src\seam\imgui-utils\properties.h" />
     <ClInclude Include="src\seam\nodes\cos.h" />
     <ClInclude Include="src\seam\nodes\i-node.h" />
+    <ClInclude Include="src\seam\nodes\midi-in.h" />
+    <ClInclude Include="src\seam\nodes\notes-printer.h" />
     <ClInclude Include="src\seam\nodes\shader.h" />
     <ClInclude Include="src\seam\nodes\texgen-perlin.h" />
     <ClInclude Include="src\seam\notes.h" />
     <ClInclude Include="src\seam\pins\pin-float.h" />
     <ClInclude Include="src\seam\pins\pin-flow.h" />
     <ClInclude Include="src\seam\pins\pin-int.h" />
+    <ClInclude Include="src\seam\pins\pin-note-event.h" />
     <ClInclude Include="src\seam\pins\pin.h" />
     <ClInclude Include="src\seam\pins\push.h" />
+    <ClInclude Include="src\seam\ring-buffer.h" />
     <ClInclude Include="src\seam\shader-utils.h" />
   </ItemGroup>
   <ItemGroup>

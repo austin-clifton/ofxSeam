@@ -127,6 +127,12 @@
     <ClCompile Include="src\seam\pins\pin.cpp">
       <Filter>src\seam\pins</Filter>
     </ClCompile>
+    <ClCompile Include="src\seam\nodes\midi-in.cpp">
+      <Filter>src\seam\nodes</Filter>
+    </ClCompile>
+    <ClCompile Include="src\seam\nodes\notes-printer.cpp">
+      <Filter>src\seam\nodes</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="src">
@@ -340,6 +346,24 @@
     </ClInclude>
     <ClInclude Include="src\seam\pins\pin-int.h">
       <Filter>src\seam\pins</Filter>
+    </ClInclude>
+    <ClInclude Include="src\seam\frame-pool.h">
+      <Filter>src\seam</Filter>
+    </ClInclude>
+    <ClInclude Include="src\seam\pins\pin-note-event.h">
+      <Filter>src\seam\pins</Filter>
+    </ClInclude>
+    <ClInclude Include="src\seam\ring-buffer.h">
+      <Filter>src\seam</Filter>
+    </ClInclude>
+    <ClInclude Include="src\seam\nodes\midi-in.h">
+      <Filter>src\seam\nodes</Filter>
+    </ClInclude>
+    <ClInclude Include="src\seam\flags-helper.h">
+      <Filter>src\seam</Filter>
+    </ClInclude>
+    <ClInclude Include="src\seam\nodes\notes-printer.h">
+      <Filter>src\seam\nodes</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

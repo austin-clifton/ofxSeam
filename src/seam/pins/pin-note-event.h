@@ -6,7 +6,7 @@
 namespace seam::pins {
 	struct PinNoteEventMeta {
 		/// specifies what note event types this input pin accepts
-		notes::EventType note_types;
+		notes::EventTypes note_types;
 	};
 
 	template <std::size_t N>
@@ -14,15 +14,16 @@ namespace seam::pins {
 		PinNoteEvent(
 			std::string_view _name = "note event",
 			std::string_view _description = "",
-			notes::EventType _note_types = notes::EventType::ON,
+			notes::EventTypes _note_types = notes::EventTypes::ON,
 			PinFlags _flags = PinFlags::INPUT
 		)
 			: PinInput<notes::NoteEvent*, N>()
 		{
 			name = _name;
 			description = _description;
+			type = PinType::NOTE_EVENT;
 			note_types = _note_types;
-			flags = _flags;
+			flags = PinFlags(flags | _flags);
 		}
 	};
 }
