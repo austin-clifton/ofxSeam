@@ -42,6 +42,7 @@ namespace {
 		case PinType::FLOW:		   icon_type = IconType::Flow;   break;
 		case PinType::BOOL:			icon_type = IconType::Circle; break;
 		case PinType::INT:			icon_type = IconType::Circle; break;
+		case PinType::UINT:			icon_type = IconType::Circle; break;
 		case PinType::FLOAT:		icon_type = IconType::Circle; break;
 		case PinType::STRING:		icon_type = IconType::Circle; break;
 		case PinType::TEXTURE:		icon_type = IconType::Square; break;

@@ -58,11 +58,7 @@ PinOutput* TexgenPerlin::PinOutputs(size_t& size) {
 }
 
 void TexgenPerlin::GuiDrawNodeView() {
-	ImVec2 wsize = ImGui::GetContentRegionAvail();
-	// oof
-	// https://forum.openframeworks.cc/t/how-to-draw-an-offbo-in-ofximgui-window/33174/2
-	ImTextureID texture_id = (ImTextureID)(uintptr_t)fbo.getTexture().getTextureData().textureID;
-	ImGui::Image(texture_id, ImVec2(256, 256));
+	props::DrawFbo(fbo);
 }
 
 bool TexgenPerlin::GuiDrawPropertiesList() {

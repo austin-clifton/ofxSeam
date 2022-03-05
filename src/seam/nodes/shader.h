@@ -19,13 +19,22 @@ namespace seam::nodes {
 
 		bool GuiDrawPropertiesList() override;
 
+		void GuiDrawNodeView() override;
+
+		void DrawToScreen() override;
+
 		IPinInput** PinInputs(size_t& size) override;
 
 		PinOutput* PinOutputs(size_t& size) override;
 
 	private:
-		std::string shader_name;
+		bool AttemptShaderLoad(const std::string& shader_name );
+
+		std::string shader_name = "force-grid";
 		ofShader shader;
+		ofFbo fbo;
+
+		glm::ivec2 tex_size = glm::ivec2(1920, 1080);
 		
 		// input pins are dynamically created based on the shader's uniforms
 		std::vector<IPinInput*> pin_inputs;

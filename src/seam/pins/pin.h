@@ -28,6 +28,7 @@ namespace seam {
 			BOOL,
 			CHAR,
 			INT,
+			UINT,
 			FLOAT,
 			STRING,
 
@@ -172,7 +173,7 @@ namespace seam {
 
 			inline void* GetChannels(size_t& size) override {
 				size = channels.size();
-				return channels.data();
+				return &channels[0];
 			}
 
 			inline T& operator[](size_t index) {
@@ -183,13 +184,23 @@ namespace seam {
 			std::vector<T> channels;
 		};
 
-
 		// these belong in their own headers, probably
 
 		template <std::size_t N>
 		struct PinBool : public PinInput<bool, N> {
-			PinBool() {
+			PinBool(
+				std::string_view _name = "bool",
+				std::string_view _description = "",
+				std::array<bool, N> init_vals = { 0 },
+				PinFlags _flags = PinFlags::INPUT
+			
+			) 
+				: PinInput<bool, N>(init_vals)
+			{
+				name = _name;
+				description = _description;
 				type = PinType::BOOL;
+				flags = (PinFlags)(flags | _flags);
 			}
 			// bool value = false;
 		};

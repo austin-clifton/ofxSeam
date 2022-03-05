@@ -1,6 +1,9 @@
 #pragma once
 
 #include "pin.h"
+#include "pin-int.h"
+#include "pin-flow.h"
+#include "pin-float.h"
 #include "../hash.h"
 #include "../flags-helper.h"
 
@@ -62,7 +65,6 @@ namespace seam::pins {
 
 			// event queue pins don't use push patterns, they just push to the input pins' vectors
 			if (is_event_queue_pin) {
-
 				for (IPinInput* ipin_in : pin_out.connections) {
 					PinInput<T, 0>* pin_in = (PinInput<T, 0>*)ipin_in;
 					// dirty the input node
@@ -86,6 +88,23 @@ namespace seam::pins {
 					pp->func((char*)data, len * sizeof(T), dst, dst_size * sizeof(T), sizeof(T));
 				}
 			}
+		}
+
+		template <size_t N>
+		void Push(const PinOutput& pin_out, PinFloat<N>* pin_in) {
+			// TODO!
+			assert(false);
+		}
+
+		template <size_t N>
+		void Push(const PinOutput& pin_out, PinInt<N>* pin_in) {
+			// TODO!
+			assert(false);
+		}
+
+		void Push(const PinOutput& pin_out, PinFlow* pin_in) {
+			assert(pin_out.pin.type == PinType::FLOW && pin_in->type == PinType::FLOW);
+			pin_in->Callback();
 		}
 
 		Pusher& Get(PushId push_id);
