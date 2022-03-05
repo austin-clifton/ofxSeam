@@ -233,6 +233,7 @@
     <ClCompile Include="src\seam\nodes\notes-printer.cpp" />
     <ClCompile Include="src\seam\nodes\shader.cpp" />
     <ClCompile Include="src\seam\nodes\texgen-perlin.cpp" />
+    <ClCompile Include="src\seam\nodes\timer.cpp" />
     <ClCompile Include="src\seam\pins\pin.cpp" />
     <ClCompile Include="src\seam\pins\push.cpp" />
     <ClCompile Include="src\seam\shader-utils.cpp" />
@@ -288,6 +289,7 @@
     <ClInclude Include="src\seam\nodes\notes-printer.h" />
     <ClInclude Include="src\seam\nodes\shader.h" />
     <ClInclude Include="src\seam\nodes\texgen-perlin.h" />
+    <ClInclude Include="src\seam\nodes\timer.h" />
     <ClInclude Include="src\seam\notes.h" />
     <ClInclude Include="src\seam\pins\pin-float.h" />
     <ClInclude Include="src\seam\pins\pin-flow.h" />

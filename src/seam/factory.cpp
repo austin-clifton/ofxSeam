@@ -1,11 +1,12 @@
 #include "factory.h"
 #include "hash.h"
 
-#include "nodes/texgen-perlin.h"
 #include "nodes/cos.h"
-#include "nodes/shader.h"
 #include "nodes/midi-in.h"
 #include "nodes/notes-printer.h"
+#include "nodes/shader.h"
+#include "nodes/texgen-perlin.h"
+#include "nodes/timer.h"
 
 using namespace seam;
 
@@ -20,11 +21,12 @@ namespace {
 
 EventNodeFactory::EventNodeFactory() {
 	// register seam-internal nodes here
-	Register(MakeCreate<nodes::TexgenPerlin>());
 	Register(MakeCreate<nodes::Cos>());
-	Register(MakeCreate<nodes::Shader>());
 	Register(MakeCreate<nodes::MidiIn>());
 	Register(MakeCreate<nodes::NotesPrinter>());
+	Register(MakeCreate<nodes::Shader>());
+	Register(MakeCreate<nodes::TexgenPerlin>());
+	Register(MakeCreate<nodes::Timer>());
 
 	// TODO register more seam internal generators here
 }

@@ -133,6 +133,9 @@
     <ClCompile Include="src\seam\nodes\notes-printer.cpp">
       <Filter>src\seam\nodes</Filter>
     </ClCompile>
+    <ClCompile Include="src\seam\nodes\timer.cpp">
+      <Filter>src\seam\nodes</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="src">
@@ -363,6 +366,9 @@
       <Filter>src\seam</Filter>
     </ClInclude>
     <ClInclude Include="src\seam\nodes\notes-printer.h">
+      <Filter>src\seam\nodes</Filter>
+    </ClInclude>
+    <ClInclude Include="src\seam\nodes\timer.h">
       <Filter>src\seam\nodes</Filter>
     </ClInclude>
   </ItemGroup>
