@@ -2,6 +2,9 @@
 
 //--------------------------------------------------------------
 void ofApp::setup(){
+	// globally disable arbitrary texture sizes for now.
+	// ImGUI seems to have trouble drawing arb rects...?
+	ofDisableArbTex();
 	gui.setup(nullptr, false);
 	seam_editor.Setup();
 }
