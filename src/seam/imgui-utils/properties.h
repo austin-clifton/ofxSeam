@@ -3,6 +3,7 @@
 #include "../pins/pin.h"
 #include "../pins/pin-float.h"
 #include "../pins/pin-int.h"
+#include "../pins/pin-uint.h"
 #include "../nodes/i-node.h"
 
 namespace seam {
@@ -41,6 +42,9 @@ namespace seam {
 
 		/// utility function for drawing all a node's input pins
 		bool DrawPinInputs(nodes::INode* node);
+
+		// this probably doesn't belong here long-term
+		void DrawFbo(const ofFbo& fbo);
 
 		// ...TODO
 	}

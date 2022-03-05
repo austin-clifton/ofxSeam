@@ -45,6 +45,20 @@ namespace seam::props {
 				0
 			);
 		}
+		case PinType::UINT: {
+			PinUintMeta* meta = dynamic_cast<PinUintMeta*>(input);
+			return ImGui::DragScalarN(
+				input->name.c_str(),
+				ImGuiDataType_U32,
+				channels,
+				num_channels,
+				0.05f,
+				&meta->min,
+				&meta->max,
+				"%u",
+				0
+			);
+		}
 		case PinType::FLOAT: {
 			PinFloatMeta* meta = dynamic_cast<PinFloatMeta*>(input);
 			return ImGui::DragScalarN(
@@ -58,6 +72,17 @@ namespace seam::props {
 				"%.3f",
 				0
 			);
+		}
+		case PinType::BOOL: {
+			// TODO how to draw more than one bool?
+			assert(num_channels == 1);
+			return ImGui::Checkbox(input->name.c_str(), (bool*)channels);
+		}
+		case PinType::FLOW: {
+			if (ImGui::Button(input->name.c_str())) {
+				((PinFlow*)input)->Callback();
+				return true;
+			}
 		}
 		case PinType::NOTE_EVENT: {
 			// TODO maybe allow note events to be "mocked" here;
@@ -81,4 +106,11 @@ namespace seam::props {
 		return changed;
 	}
 
+	void DrawFbo(const ofFbo& fbo) {
+		ImVec2 wsize = ImGui::GetContentRegionAvail();
+		// oof
+		// https://forum.openframeworks.cc/t/how-to-draw-an-offbo-in-ofximgui-window/33174/2
+		ImTextureID texture_id = (ImTextureID)(uintptr_t)fbo.getTexture().getTextureData().textureID;
+		ImGui::Image(texture_id, ImVec2(256, 256));
+	}
 }
