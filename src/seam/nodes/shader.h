@@ -19,10 +19,6 @@ namespace seam::nodes {
 
 		bool GuiDrawPropertiesList() override;
 
-		void GuiDrawNodeView() override;
-
-		void DrawToScreen() override;
-
 		IPinInput** PinInputs(size_t& size) override;
 
 		PinOutput* PinOutputs(size_t& size) override;

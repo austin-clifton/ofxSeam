@@ -16,11 +16,6 @@ namespace seam::nodes {
 
 		void Draw(DrawParams* params) override;
 
-		void DrawToScreen() override;
-
-		// TODO make this a utility function so any texture drawing node can use it
-		void GuiDrawNodeView() override;
-
 		bool GuiDrawPropertiesList() override;
 
 		IPinInput** PinInputs(size_t& size) override;

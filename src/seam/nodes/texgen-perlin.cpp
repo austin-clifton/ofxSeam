@@ -21,6 +21,8 @@ TexgenPerlin::TexgenPerlin() : INode("Perlin Noise") {
 		// tell the shader what the image resolution is
 		shader.setUniform2iv("resolution", &tex_size[0]);
 	}
+
+	gui_display_fbo = &fbo;
 }
 
 TexgenPerlin::~TexgenPerlin() {
@@ -43,10 +45,6 @@ void TexgenPerlin::Draw(DrawParams* params) {
 	fbo.end();
 }
 
-void TexgenPerlin::DrawToScreen() {
-	fbo.draw(0, 0);
-}
-
 IPinInput** TexgenPerlin::PinInputs(size_t& size) {
 	size = pin_inputs.size();
 	return pin_inputs.data();
@@ -55,10 +53,6 @@ IPinInput** TexgenPerlin::PinInputs(size_t& size) {
 PinOutput* TexgenPerlin::PinOutputs(size_t& size) {
 	size = 1;
 	return &pin_out_tex;
-}
-
-void TexgenPerlin::GuiDrawNodeView() {
-	props::DrawFbo(fbo);
 }
 
 bool TexgenPerlin::GuiDrawPropertiesList() {

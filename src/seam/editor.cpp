@@ -30,8 +30,12 @@ void Editor::Draw() {
 		n->Draw(&params);
 	}
 
+	// draw the selected node's display FBO if it's a visual node
 	if (selected_node && selected_node->IsVisual()) {
-		selected_node->DrawToScreen();
+		// visual nodes should set an FBO for GUI display!
+		// TODO this assert should be placed elsewhere (it shouldn't only fire when selected)
+		assert(selected_node->gui_display_fbo != nullptr);
+		selected_node->gui_display_fbo->draw(0, 0);
 	}
 
 	// TODO draw a final image to the screen

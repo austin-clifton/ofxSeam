@@ -1,6 +1,7 @@
 #include "i-node.h"
 #include "imgui/src/imgui.h"
 #include "imgui/src/blueprints/widgets.h"
+#include "../imgui-utils/properties.h"
 
 using namespace seam;
 using namespace seam::nodes;
@@ -157,7 +158,10 @@ void INode::GuiDraw( ed::Utilities::BlueprintNodeBuilder& builder ) {
 	builder.Middle();
 	// TODO how does spring really work...?
 	// im::Spring(1, 0);
-	GuiDrawNodeView();
+	if (gui_display_fbo != nullptr) {
+		props::DrawFbo(*gui_display_fbo);
+	}
+
 	// im::Spring(1, 0);
 
 	// draw the output pins

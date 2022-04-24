@@ -86,8 +86,6 @@ namespace seam::nodes {
 		/// should be overridden by visual nodes
 		virtual void Draw(DrawParams* params) { }
 
-		virtual void DrawToScreen() { }
-
 		void GuiDraw( ed::Utilities::BlueprintNodeBuilder& builder );
 
 		inline NodeFlags Flags() {
@@ -122,11 +120,10 @@ namespace seam::nodes {
 		}
 
 	protected:
-		// draw the center of the node (the contextual bits)
-		// should be overridden if the node's center should display something in the GUI
-		virtual void GuiDrawNodeView() { }
+		// nodes which draw to FBOs can set this member so the FBO is drawn as part of the node's center view.
+		ofFbo* gui_display_fbo = nullptr;
 
-		// for GUI drawing, must be unique to this node **type**
+		// for GUI drawing and hashing, must be unique to this node **type**
 		const std::string_view node_name;
 
 		// display name, editable

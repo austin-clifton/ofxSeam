@@ -11,15 +11,12 @@ Shader::Shader() : INode("Shader Material") {
 	fbo.allocate(tex_size.x, tex_size.y);
 
 	AttemptShaderLoad(shader_name);
+
+	gui_display_fbo = &fbo;
 }
 
 Shader::~Shader() {
 	// TODO dealloc pin input names
-}
-
-// temp
-void Shader::DrawToScreen() {
-	fbo.draw(0, 0);
 }
 
 IPinInput** Shader::PinInputs(size_t& size) {
@@ -97,8 +94,4 @@ bool Shader::GuiDrawPropertiesList() {
 	// if the shader paths changes, then also attempt re-loading the shader.
 	return props::DrawShaderPath("shader name", shader_name)
 		&& AttemptShaderLoad(shader_name);
-}
-
-void Shader::GuiDrawNodeView() {
-	props::DrawFbo(fbo);
 }
