@@ -17,7 +17,7 @@ namespace seam::pins {
 			notes::EventTypes _note_types = notes::EventTypes::ON,
 			PinFlags _flags = PinFlags::INPUT
 		)
-			: PinInput<notes::NoteEvent*, N>()
+			: PinInput<notes::NoteEvent*, N>({})
 		{
 			name = _name;
 			description = _description;

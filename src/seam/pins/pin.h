@@ -173,7 +173,7 @@ namespace seam {
 
 			inline void* GetChannels(size_t& size) override {
 				size = channels.size();
-				return &channels[0];
+				return size ? &channels[0] : nullptr;
 			}
 
 			inline T& operator[](size_t index) {
