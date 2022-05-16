@@ -7,6 +7,9 @@
 #include "nodes/shader.h"
 #include "nodes/texgen-perlin.h"
 #include "nodes/timer.h"
+#include "nodes/force-grid.h"
+#include "nodes/compute-particles.h"
+#include "nodes/percussive-trigger.h"
 
 using namespace seam;
 
@@ -21,9 +24,12 @@ namespace {
 
 EventNodeFactory::EventNodeFactory() {
 	// register seam-internal nodes here
+	Register(MakeCreate<nodes::ComputeParticles>());
 	Register(MakeCreate<nodes::Cos>());
+	Register(MakeCreate<nodes::ForceGrid>());
 	Register(MakeCreate<nodes::MidiIn>());
 	Register(MakeCreate<nodes::NotesPrinter>());
+	Register(MakeCreate<nodes::PercussiveTrigger>());
 	Register(MakeCreate<nodes::Shader>());
 	Register(MakeCreate<nodes::TexgenPerlin>());
 	Register(MakeCreate<nodes::Timer>());

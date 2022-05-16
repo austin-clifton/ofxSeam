@@ -136,6 +136,15 @@
     <ClCompile Include="src\seam\nodes\timer.cpp">
       <Filter>src\seam\nodes</Filter>
     </ClCompile>
+    <ClCompile Include="src\seam\nodes\force-grid.cpp">
+      <Filter>src\seam\nodes</Filter>
+    </ClCompile>
+    <ClCompile Include="src\seam\nodes\compute-particles.cpp">
+      <Filter>src\seam\nodes</Filter>
+    </ClCompile>
+    <ClCompile Include="src\seam\nodes\percussive-trigger.cpp">
+      <Filter>src\seam\nodes</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="src">
@@ -369,6 +378,15 @@
       <Filter>src\seam\nodes</Filter>
     </ClInclude>
     <ClInclude Include="src\seam\nodes\timer.h">
+      <Filter>src\seam\nodes</Filter>
+    </ClInclude>
+    <ClInclude Include="src\seam\nodes\force-grid.h">
+      <Filter>src\seam\nodes</Filter>
+    </ClInclude>
+    <ClInclude Include="src\seam\nodes\compute-particles.h">
+      <Filter>src\seam\nodes</Filter>
+    </ClInclude>
+    <ClInclude Include="src\seam\nodes\percussive-trigger.h">
       <Filter>src\seam\nodes</Filter>
     </ClInclude>
   </ItemGroup>
