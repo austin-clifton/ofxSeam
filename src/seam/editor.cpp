@@ -395,6 +395,7 @@ bool Editor::Connect(Pin* pin_co, Pin* pin_ci) {
 
 	// create the connection
 	pin_out->connections.push_back(pin_in);
+	pin_in->connection = pin_out;
 
 	// add to the links list
 	links.push_back(Link(pin_in, pin_out));
@@ -431,6 +432,8 @@ bool Editor::Disconnect(Pin* pin_co, Pin* pin_ci) {
 	if (pin_in == nullptr || pin_out == nullptr) {
 		return false;
 	}
+
+	pin_in->connection = nullptr;
 
 	// remove from pin_out's connections list
 	{
