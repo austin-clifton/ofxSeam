@@ -50,5 +50,6 @@ namespace seam::nodes {
 		};
 
 		PinOutput pin_out_time = pins::SetupOutputPin(this, pins::PinType::FLOAT, "time");
+		PinOutput pin_out_delta_time = pins::SetupOutputPin(this, pins::PinType::FLOAT, "delta time");
 	};
 }

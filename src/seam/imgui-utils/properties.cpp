@@ -7,7 +7,7 @@
 using namespace seam::pins;
 
 namespace seam::props {
-	bool Draw(std::string_view label, std::string& v) {
+	bool DrawTextInput(std::string_view label, std::string& v) {
 		char buf[256] = { 0 };
 		// TODO not strcpy
 		strncpy(buf, v.c_str(), std::min(v.size(), 256ULL));
@@ -23,7 +23,7 @@ namespace seam::props {
 	bool DrawShaderPath(std::string_view label, std::string& path) {
 		// refresh button needs a logo
 		bool refresh_requested = ImGui::Button("refresh shader");
-		bool name_changed = Draw(label, path);
+		bool name_changed = DrawTextInput(label, path);
 		return refresh_requested || name_changed;
 	}
 

@@ -19,7 +19,9 @@ IPinInput** Timer::PinInputs(size_t& size) {
 }
 
 PinOutput* Timer::PinOutputs(size_t& size) {
-	size = 1;
+	// DANGER ZONE? there ARE two pin outputs, declared next to each other in the class.
+	// so this should be safe...?
+	size = 2;
 	return &pin_out_time;
 }
 

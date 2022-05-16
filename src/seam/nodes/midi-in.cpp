@@ -80,7 +80,7 @@ bool MidiIn::AddNotePin(uint32_t midi_note) {
 			this,
 			pins::PinType::NOTE_EVENT,
 			pin_name,
-			PinFlags::FLAGS_NONE,
+			PinFlags::EVENT_QUEUE,
 			// wheehoo
 			// cast midi_note to a size_t, and then mask it as a void* ;
 			// it is treated as a size_t internally
@@ -184,11 +184,14 @@ void MidiIn::Update(UpdateParams* params) {
 			// push to all notes stream and notes on stream
 			params->push_patterns->Push(pin_outputs[0], &ev, 1);
 			params->push_patterns->Push(pin_outputs[1], &ev, 1);
+			AttemptPushToNotePin(params, ev, msg.pitch);
+
 		} else if (msg.status == MIDI_NOTE_OFF && flags::AreRaised(listening_event_types, EventTypes::OFF)) {
 			notes::NoteOffEvent* ev = MidiToNoteOffEvent(msg, params->alloc_pool);
 			// push to all notes stream and notes off stream
 			params->push_patterns->Push(pin_outputs[0], &ev, 1);
 			params->push_patterns->Push(pin_outputs[2], &ev, 1);
+			AttemptPushToNotePin(params, ev, msg.pitch);
 		}
 	}
 }

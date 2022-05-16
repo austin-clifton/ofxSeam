@@ -42,8 +42,6 @@ namespace seam::nodes {
 
 		static bool CompareNotePin(const PinOutput& pin_out, const uint32_t note);
 
-		// notes::NoteEvent* MidiToNoteEvent(ofxMidiMessage& msg, FramePool* alloc_pool);
-
 		notes::NoteOnEvent* MidiToNoteOnEvent(ofxMidiMessage& msg, FramePool* alloc_pool);
 		notes::NoteOffEvent* MidiToNoteOffEvent(ofxMidiMessage& msg, FramePool* alloc_pool);
 		void AttemptPushToNotePin(UpdateParams* params, notes::NoteEvent* ev, int pitch);

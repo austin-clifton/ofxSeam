@@ -28,11 +28,11 @@ namespace seam {
 			// draw the label and input box
 			// note we don't care if the value changed; 
 			// the value only matters when the button was pressed
-			Draw(label, out_val, min, max, speed, flags);
+			DrawTextInput(label, out_val, min, max, speed, flags);
 			return pressed;
 		}
 
-		bool Draw(std::string_view label, std::string& v);
+		bool DrawTextInput(std::string_view label, std::string& v);
 
 		/// draws a reload button in addition to providing a path setter
 		bool DrawShaderPath(std::string_view label, std::string& path);
