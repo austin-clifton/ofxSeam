@@ -8,7 +8,6 @@ using namespace seam::notes;
 namespace {
 	// calculate local position within a torus
 	glm::vec3 CalculateTorusPosition(glm::vec3 torus_center, float torus_radius, float torus_thickness, float theta, glm::vec2 offset) {
-		theta = theta * 2 * PI;
 		const glm::vec3 base_pos_in_torus = torus_center + torus_radius * glm::vec3(cos(theta), 0.f, sin(theta));
 
 		// figure out what the forward vector is so we can find the right vector for the offset
@@ -27,6 +26,25 @@ namespace {
 		const std::filesystem::path shader_path = std::filesystem::current_path() / "data" / "shaders" / shader_name;
 		return compute_shader.setupShaderFromFile(GL_COMPUTE_SHADER, shader_path) && compute_shader.linkProgram();
 	}
+
+	bool LoadGeometryShader(
+		const std::filesystem::path& vert_path,
+		const std::filesystem::path& frag_path,
+		const std::filesystem::path& geo_path,
+		ofShader& shader
+	) {
+		return shader.load(vert_path, frag_path, geo_path);
+	}
+}
+
+bool ComputeParticles::ReloadGeometryShader() {
+	const std::filesystem::path shader_path = std::filesystem::current_path() / "data" / "shaders";
+	return LoadGeometryShader(
+		shader_path / "compute-particles.vert",
+		shader_path / "compute-particles.frag",
+		shader_path / "geometry-point-to-billboard.glsl",
+		billboard_shader
+	);
 }
 
 ComputeParticles::ComputeParticles() : INode("Compute Particles") {
@@ -40,6 +58,15 @@ ComputeParticles::ComputeParticles() : INode("Compute Particles") {
 	if (!LoadComputeShader(compute_shader_name, compute_shader)) {
 		printf("failed to load particles shader!\n");
 	}
+
+	// load billboard shader
+	{
+		billboard_shader.setGeometryInputType(GL_POINTS);
+		billboard_shader.setGeometryOutputType(GL_TRIANGLE_STRIP);
+		billboard_shader.setGeometryOutputCount(4);
+		ReloadGeometryShader();
+	}
+	
 
 	// TEMP from example
 	camera.setFarClip(ofGetWidth() * 10.f);
@@ -55,7 +82,8 @@ ComputeParticles::ComputeParticles() : INode("Compute Particles") {
 		p.pos = glm::vec4(ppos.x, ppos.y, ppos.z, 1);
 		p.vel = glm::vec4(0);
 		p.theta = theta;
-		p.mass = ofRandom(0.1, 5.0);
+		p.mass = ofRandom(1.0, 5.0);
+		p.size = 1.0f;
 	}
 
 	// allocate and seed initialize buffer objects
@@ -63,8 +91,10 @@ ComputeParticles::ComputeParticles() : INode("Compute Particles") {
 	particles_buffer2.allocate(particles, GL_DYNAMIC_DRAW);
 
 	// tell the VBO where to source its data from
+
 	vbo.setVertexBuffer(particles_buffer, 4, sizeof(Particle));
 	vbo.setColorBuffer(particles_buffer, sizeof(Particle), sizeof(glm::vec4) * 2);
+
 	vbo.enableColors();
 
 	// TODO size
@@ -87,10 +117,24 @@ ComputeParticles::~ComputeParticles() {
 }
 
 void ComputeParticles::Update(UpdateParams* params) {
+	// update camera's position and rotation
+	// TODO up vector should use the torus's transform (you need to make a torus transform...)
+	camera_theta += params->delta_time * pin_camera_speed[0];
+	// restrict to range [-PI, PI], flip from PI to -PI when past PI or -PI
+	camera_theta = camera_theta > PI ? -PI * 2 + camera_theta
+		: camera_theta < -PI ? PI * 2 + camera_theta : camera_theta;
+
+	glm::vec3 camera_pos = CalculateTorusPosition(torus_center, torus_radius, torus_thickness, camera_theta, glm::vec2(0));
+	camera.setPosition(camera_pos);
+	camera_forward = glm::cross(glm::vec3(0, 1, 0), glm::normalize(torus_center - camera_pos));
+
 	compute_shader.begin();
 
+	compute_shader.setUniform1f("camera_theta", camera_theta);
+	compute_shader.setUniform1f("camera_theta_tolerance", pin_camera_theta_tolerance[0]);
 	compute_shader.setUniform1f("timeLastFrame", ofGetLastFrameTime());
 	compute_shader.setUniform1f("elapsedTime", ofGetElapsedTimef());
+	compute_shader.setUniform1f("global_fbm_offset", pin_fbm_offset[0]);
 
 	// since each work group has a local_size of 1024 (this is defined in the shader)
 	// we only have to issue 1 / 1024 workgroups to cover the full workload.
@@ -108,22 +152,17 @@ void ComputeParticles::Draw(DrawParams* params) {
 	fbo.begin();
 	fbo.clearColorBuffer(0);
 
-	// update camera's position and rotation
-	// TODO up vector should use the torus's transform (you need to make a torus transform...)
-	camera_theta += params->delta_time * pin_camera_speed[0];
-	glm::vec3 camera_pos = CalculateTorusPosition(torus_center, torus_radius, torus_thickness, camera_theta, glm::vec2(0));
-	camera.setPosition(camera_pos);
-
-	glm::vec3 forward = glm::cross(glm::vec3(0, 1, 0), glm::normalize(torus_center - camera_pos));
 	// I can't figure out how else to do this in OF; I want to set the camera's forward vector to the forward I just calculated...
 	// use lookat instead I guess
-	camera.lookAt(camera_pos + forward);
+	camera.lookAt(camera.getPosition() + camera_forward);
 
 	// this is "wrong", but looks cool regardless
-	// camera.setOrientation(glm::quat(forward));
+	// camera.setOrientation(glm::quat(camera_forward));
 
 	ofEnableBlendMode(OF_BLENDMODE_ADD);
 	camera.begin();
+
+	billboard_shader.begin();
 
 	ofSetColor(255, 70);
 	glPointSize(2);
@@ -132,11 +171,18 @@ void ComputeParticles::Draw(DrawParams* params) {
 	glPointSize(1);
 	vbo.draw(GL_POINTS, 0, total_particles);
 
+	billboard_shader.end();
+
+	glm::vec3 camera_pos = CalculateTorusPosition(torus_center, torus_radius, torus_thickness, camera_theta, glm::vec2(0));
+	// ofSphere(camera_pos, 10);
+
 	camera.end();
 
-	camera.lookAt(camera_pos - forward);
+	camera.lookAt(camera.getPosition() - camera_forward);
 
 	camera.begin();
+
+	billboard_shader.begin();
 
 	ofSetColor(255, 70);
 	glPointSize(2);
@@ -147,6 +193,8 @@ void ComputeParticles::Draw(DrawParams* params) {
 
 	ofEnableBlendMode(OF_BLENDMODE_ALPHA);
 	ofSetColor(255);
+
+	billboard_shader.end();
 
 	camera.end();
 
@@ -159,6 +207,8 @@ bool ComputeParticles::GuiDrawPropertiesList() {
 			printf("compute shader failed to reload!\n");
 			return false;
 		}
+		ReloadGeometryShader();
+
 		return true;
 	}
 	return false;

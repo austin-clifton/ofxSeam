@@ -8,7 +8,7 @@ struct Particle{
 	vec4 color;
 	float theta;
 	float mass;
-	float unused1;
+	float size;
 	float unused2;
 };
 
@@ -22,23 +22,19 @@ layout(std140, binding=1) buffer particleBack{
 
 uniform float timeLastFrame = 0.f;
 uniform float elapsedTime = 0.f;
-uniform vec3 attractor1 = vec3(800.f, 0.f, 5000.f);
-uniform vec3 attractor2 = vec3(400.f, 10.f, 5000.f);
-uniform vec3 attractor3 = vec3(1200.f, 0.f, 5000.f);
-uniform float attraction = 0.18f;
-uniform float cohesion = 0.05f;
-uniform float repulsion = 0.7f;
-uniform float max_speed = 2500.0f;
-uniform float attr1_force = 800.f;
-uniform float attr2_force = 800.f;
-uniform float attr3_force = 1200.f;
 
 uniform float torus_radius = 500.0f;
 uniform float torus_thickness = 50.0f;
+uniform vec3 torus_center = vec3(0);
 
 // TODO: this should map to an array of note forces
 uniform float angular_velocity = 1.0f;
 uniform float torus_gravity = 1.0f;
+
+uniform float global_fbm_offset = 0.0f;
+
+uniform float camera_theta = 0;
+uniform float camera_theta_tolerance = PI/4;
 
 // https://gist.github.com/patriciogonzalezvivo/670c22f3966e662d2f83
 float mod289(float x){return x - floor(x * (1.0 / 289.0)) * 289.0;}
@@ -83,6 +79,20 @@ float fbm( in vec3 x, in float H, in int octaves )
     return t;
 }
 
+
+vec3 CalculateBasePosInTorus(float theta) {
+	return torus_center + torus_radius * vec3(cos(theta), 0, sin(theta));
+}
+
+// smallest distance between two angles on range [-PI, PI]
+// https://stackoverflow.com/a/7869457
+float AngleBetween(float a, float b) {
+	float d = a - b;
+	return d + ( (d > PI) ? -2 * PI
+		: (d < -PI) ? 2 * PI
+		: 0 );
+}
+
 layout(local_size_x = 1024, local_size_y = 1, local_size_z = 1) in;
 void main(){
 	// grab the read and write particles
@@ -91,25 +101,45 @@ void main(){
 
 	const float mass_inverse = 1 / pr.mass;
 
-	const vec3 torus_center = vec3(0);
 	const vec3 up = vec3(0,1,0);
-	const float max_vel = 4.f * mass_inverse;
+	const float max_vel = 16.f * mass_inverse;
+
+	float theta = pr.theta;
+	// our new position is the current position + last calculated velocity
+	vec3 pos = pr.pos.xyz + pr.vel.xyz;
+	vec3 force = vec3(0);
+
+	vec3 camera_pos = CalculateBasePosInTorus(camera_theta);
+	vec3 camera_dir = normalize(camera_pos - torus_center); 
+	vec3 camera_forward = cross(camera_dir, -up);
+
+	{
+		// respect camera theta; if the particle is too far away radially from the camera,
+		// warp it to the opposite end of the torus
+		float theta_diff = AngleBetween(camera_theta, theta);
+
+		if (theta_diff > camera_theta_tolerance && dot(camera_forward, pos - camera_pos) > 0) {
+			// calculate the particle's current offset from center before overwriting its position
+			vec3 current_offset = pos - CalculateBasePosInTorus(theta);
+			theta = camera_theta + camera_theta_tolerance;
+			pos = CalculateBasePosInTorus(theta) + current_offset;
+		}
+	}
 
 	// calculate the forward and right vectors given the current theta
-	const vec3 base_pos_in_torus = torus_center + torus_radius * vec3(cos(pr.theta), 0, sin(pr.theta));
+	const vec3 base_pos_in_torus = CalculateBasePosInTorus(theta);
 	const vec3 to_center = normalize(torus_center - base_pos_in_torus);
 	const vec3 forward = cross(to_center, up);
 	const vec3 right = cross(forward, up);
 
-	vec3 force = vec3(0.0);
-
-	const int layers = 8;
+	const int layers = 64;
 
 	const float fbm_offset = (gl_GlobalInvocationID.x % layers) * 113.84f
-		+ (gl_GlobalInvocationID.x % layers) / layers * 2.f;
+		+ (gl_GlobalInvocationID.x % layers) / layers * 2.f
+		+ global_fbm_offset;
 
 	vec3 force_fbm;
-	vec3 normalized_pos = normalize(pr.pos.xyz);
+	vec3 normalized_pos = normalize(pos);
 	float nt = elapsedTime * 0.1 + fbm_offset;
 	force_fbm.x = fbm(normalized_pos + nt, 0.5, 4);
 	force_fbm.y = fbm(force_fbm.x + normalized_pos + nt, 0.5, 4);
@@ -127,29 +157,13 @@ void main(){
 	force += right * force_fbm.y * mass_inverse;
 	force += up * force_fbm.z * mass_inverse;
 
+	// add back to center factor:
 	// apply some force back towards the particle's center position within the torus,
 	// dependent on how far away from center the particle is
-	float b2c_factor = distance(pr.pos.xyz, base_pos_in_torus) / torus_thickness;
+	float b2c_factor = distance(pos, base_pos_in_torus) / torus_thickness;
 	// calculate the direction back towards the torus's center
 	vec3 back_to_center = normalize(base_pos_in_torus - pw.pos.xyz);
 	force += back_to_center * mass_inverse * b2c_factor;
-
-
-	/*
-	// push the particle back into the torus if it leaves its radius within the torus
-	if (distance(pr.pos.xyz, base_pos_in_torus) > torus_thickness) {
-		
-		force += back_to_center * mass_inverse * 2.f;
-
-
-
-		// move to the opposite edge of the torus at theta
-		// this looks kinda... bad
-		// vec3 opposite_edge_dir = normalize(base_pos_in_torus - pw.pos.xyz);
-		// vec3 opposite_edge = base_pos_in_torus + opposite_edge_dir * torus_thickness;
-		// pw.pos.xyz = opposite_edge;
-	}
-	*/
 
 	// calculate new velocity
 	pw.vel.xyz += force;
@@ -159,62 +173,11 @@ void main(){
 		pw.vel.xyz = normalize(pw.vel.xyz) * max_vel;
 	}
 
-	// calculate new position
-	pw.pos.xyz += pr.vel.xyz;
+	pw.pos.xyz = pos;
 
 	// calculate and store new theta
-	vec3 normalized_dir = normalize(pw.pos.xyz - torus_center);
-	// pw.theta = pw.theta + 0.0001 > 1.0 ? 0.0 : pw.theta + 0.0001;
+	vec3 normalized_dir = normalize(pos - torus_center);
 	pw.theta = atan(normalized_dir.z, normalized_dir.x);
 
-	// pw.pos = pr.pos + 0.0001f;
-
 	p[gl_GlobalInvocationID.x] = pw;
-
-	return;
-
-	/*
-	vec3 acc = vec3(0.0,0.0,0.0);
-	uint m = uint(1024.0*8.0*elapsedTime);
-	uint start = m%(1024*8-512);
-	uint end = start + 512;
-	float minDist;
-	uint first = 1;
-	for(uint i=start;i<end;i++){
-		if(i!=gl_GlobalInvocationID.x){
-			acc += rule1(particle,p2[i].pos.xyz) * repulsion;
-			acc += rule2(particle,p2[i].pos.xyz, p2[gl_GlobalInvocationID.x].vel.xyz, p2[i].vel.xyz) * cohesion;
-			acc += rule3(particle,p2[i].pos.xyz) * attraction;
-		}
-	}
-	
-	p[gl_GlobalInvocationID.x].pos.xyz += p[gl_GlobalInvocationID.x].vel.xyz*timeLastFrame;
-	
-	if(gl_GlobalInvocationID.x%2==1){
-		vec3 dir = attractor1 - particle;
-		acc += normalize(dir)*attr1_force;
-	}
-	
-	
-	if(gl_GlobalInvocationID.x%2==0){
-		vec3 dir = attractor2 - particle;
-		acc += normalize(dir)*attr2_force;
-	}
-	
-	vec3 dir = attractor3 - particle;
-	acc += normalize(dir)*attr3_force;
-	
-	p[gl_GlobalInvocationID.x].vel.xyz += acc*timeLastFrame;
-	p[gl_GlobalInvocationID.x].vel.xyz *= 0.99;
-	
-	dir = normalize(p[gl_GlobalInvocationID.x].vel.xyz);
-	
-	if(length(p[gl_GlobalInvocationID.x].vel.xyz)>max_speed){
-		p[gl_GlobalInvocationID.x].vel.xyz = dir * max_speed;
-	}
-	
-	float max_component = max(max(dir.x,dir.y),dir.z);
-	p[gl_GlobalInvocationID.x].color.rgb = dir/max_component;
-	p[gl_GlobalInvocationID.x].color.a = 0.4;
-	*/
 }

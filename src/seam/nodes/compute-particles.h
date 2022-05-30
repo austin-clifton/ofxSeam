@@ -22,6 +22,8 @@ namespace seam::nodes {
 		PinOutput* PinOutputs(size_t& size) override;
 
 	private:
+		bool ReloadGeometryShader();
+
 		// we use vec4 here for position and velocity instead of vec3 because it aligns well with std140:
 		// https://encreative.blogspot.com/2019/06/opengl-buffers-in-openframeworks.html
 		struct Particle {
@@ -30,13 +32,13 @@ namespace seam::nodes {
 			ofFloatColor color;
 			float theta;
 			float mass;
-			float unused1;	// for std140 alignment?
+			float size;	// for std140 alignment?
 			float unused2;
 		};
 
 		// TODO: ideally this would be instantiation-time editable
 		// (not a pin input, but maybe a constructor arg somehow...?)
-		const int total_particles = 1024 * 32;
+		const int total_particles = 1024 * 1024;
 
 		// GPU-side particles front buffer and back buffer (one is written to while the other is read from)
 		ofBufferObject particles_buffer, particles_buffer2;
@@ -49,6 +51,8 @@ namespace seam::nodes {
 
 		// TODO use a normal camera!
 		ofEasyCam camera;
+		glm::vec3 camera_forward;
+
 		// camera's torus angular offset
 		float camera_theta = 0.f;
 
@@ -63,11 +67,18 @@ namespace seam::nodes {
 		const std::string compute_shader_name = "compute-particles.glsl";
 		ofShader compute_shader;
 
+		ofShader billboard_shader;
+
+
+		PinFloat<1> pin_fbm_offset = PinFloat<1>("fbm_offset");
 		PinFloat<1> pin_time = PinFloat<1>("time");
-		PinFloat<1> pin_camera_speed = PinFloat<1>("camera speed", "", { 0.01f });
-		std::array<IPinInput*, 2> pin_inputs = {
+		PinFloat<1> pin_camera_speed = PinFloat<1>("camera speed", "", { -0.1f });
+		PinFloat<1> pin_camera_theta_tolerance = PinFloat<1>("camera theta tolerance", "", { PI/2 });
+		std::array<IPinInput*, 4> pin_inputs = {
 			&pin_time,
-			&pin_camera_speed
+			&pin_camera_speed,
+			&pin_fbm_offset,
+			&pin_camera_theta_tolerance
 		};
 
 		PinOutput pin_out_material = pins::SetupOutputPin(this, pins::PinType::MATERIAL, "material");
