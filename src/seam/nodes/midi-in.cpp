@@ -19,7 +19,7 @@ MidiIn::MidiIn() : INode("MIDI In") {
 	flags = (NodeFlags)(flags | NodeFlags::UPDATES_EVERY_FRAME);
 	custom_pins_index = pin_outputs.size();
 
-	ListenOnPort(1);
+	ListenOnPort(midi_port);
 
 	midi_in.addListener(this);
 	// TODO make this settable

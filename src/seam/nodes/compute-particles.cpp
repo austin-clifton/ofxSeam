@@ -94,6 +94,13 @@ ComputeParticles::ComputeParticles() : INode("Compute Particles") {
 
 	vbo.setVertexBuffer(particles_buffer, 4, sizeof(Particle));
 	vbo.setColorBuffer(particles_buffer, sizeof(Particle), sizeof(glm::vec4) * 2);
+	vbo.setAttributeBuffer(
+		billboard_shader.getAttributeLocation("size"),
+		particles_buffer,
+		1,
+		sizeof(Particle),
+		sizeof(glm::vec4) * 2 + sizeof(ofFloatColor) + sizeof(float) * 2
+	);
 
 	vbo.enableColors();
 
@@ -125,7 +132,11 @@ void ComputeParticles::Update(UpdateParams* params) {
 		: camera_theta < -PI ? PI * 2 + camera_theta : camera_theta;
 
 	glm::vec3 camera_pos = CalculateTorusPosition(torus_center, torus_radius, torus_thickness, camera_theta, glm::vec2(0));
-	camera.setPosition(camera_pos);
+
+	if (!free_camera) {
+		camera.setPosition(camera_pos);
+	}
+
 	camera_forward = glm::cross(glm::vec3(0, 1, 0), glm::normalize(torus_center - camera_pos));
 
 	compute_shader.begin();
@@ -135,6 +146,10 @@ void ComputeParticles::Update(UpdateParams* params) {
 	compute_shader.setUniform1f("timeLastFrame", ofGetLastFrameTime());
 	compute_shader.setUniform1f("elapsedTime", ofGetElapsedTimef());
 	compute_shader.setUniform1f("global_fbm_offset", pin_fbm_offset[0]);
+	compute_shader.setUniform1f("max_vel", pin_max_particle_velocity[0]);
+	compute_shader.setUniform1f("fbm_strength", pin_fbm_strength[0]);
+	compute_shader.setUniform1f("global_size_modifier", pin_particle_size_modifier[0]);
+	compute_shader.setUniform1f("angular_size_modifier", pin_particle_wave_distance[0]);
 
 	// since each work group has a local_size of 1024 (this is defined in the shader)
 	// we only have to issue 1 / 1024 workgroups to cover the full workload.
@@ -154,7 +169,9 @@ void ComputeParticles::Draw(DrawParams* params) {
 
 	// I can't figure out how else to do this in OF; I want to set the camera's forward vector to the forward I just calculated...
 	// use lookat instead I guess
-	camera.lookAt(camera.getPosition() + camera_forward);
+	if (!free_camera) {
+		camera.lookAt(camera.getPosition() + camera_forward);
+	}
 
 	// this is "wrong", but looks cool regardless
 	// camera.setOrientation(glm::quat(camera_forward));
@@ -167,9 +184,11 @@ void ComputeParticles::Draw(DrawParams* params) {
 	ofSetColor(255, 70);
 	glPointSize(2);
 	vbo.draw(GL_POINTS, 0, total_particles);
+	/*
 	ofSetColor(255);
 	glPointSize(1);
 	vbo.draw(GL_POINTS, 0, total_particles);
+	*/
 
 	billboard_shader.end();
 
@@ -178,25 +197,29 @@ void ComputeParticles::Draw(DrawParams* params) {
 
 	camera.end();
 
-	camera.lookAt(camera.getPosition() - camera_forward);
+	if (!free_camera) {
+		camera.lookAt(camera.getPosition() - camera_forward);
 
-	camera.begin();
+		camera.begin();
 
-	billboard_shader.begin();
+		billboard_shader.begin();
 
-	ofSetColor(255, 70);
-	glPointSize(2);
-	vbo.draw(GL_POINTS, 0, total_particles);
-	ofSetColor(255);
-	glPointSize(1);
-	vbo.draw(GL_POINTS, 0, total_particles);
+		ofSetColor(255, 70);
+		glPointSize(2);
+		vbo.draw(GL_POINTS, 0, total_particles);
+		/*
+		ofSetColor(255);
+		glPointSize(1);
+		vbo.draw(GL_POINTS, 0, total_particles);
+		*/
 
-	ofEnableBlendMode(OF_BLENDMODE_ALPHA);
-	ofSetColor(255);
+		ofEnableBlendMode(OF_BLENDMODE_ALPHA);
+		ofSetColor(255);
 
-	billboard_shader.end();
+		billboard_shader.end();
 
-	camera.end();
+		camera.end();
+	}
 
 	fbo.end();
 }
@@ -211,7 +234,7 @@ bool ComputeParticles::GuiDrawPropertiesList() {
 
 		return true;
 	}
-	return false;
+	return ImGui::Checkbox("free camera", &free_camera);
 }
 
 IPinInput** ComputeParticles::PinInputs(size_t& size) {

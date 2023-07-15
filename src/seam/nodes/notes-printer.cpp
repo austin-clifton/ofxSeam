@@ -1,4 +1,5 @@
 #include "notes-printer.h"
+#include "seam/containers/octree.h"
 
 using namespace seam;
 using namespace seam::nodes;
@@ -10,6 +11,7 @@ NotesPrinter::NotesPrinter() : INode("Notes Printer") {
 }
 
 NotesPrinter::~NotesPrinter() {
+
 	// no op
 }
 

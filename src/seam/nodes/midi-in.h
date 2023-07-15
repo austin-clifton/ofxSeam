@@ -66,7 +66,7 @@ namespace seam::nodes {
 
 		// receives MIDI messages from external sources
 		ofxMidiIn midi_in;
-		unsigned int midi_port = 1;
+		unsigned int midi_port = 0;
 
 		// these are used only for GUI state tracking
 		int gui_midi_port = 0;

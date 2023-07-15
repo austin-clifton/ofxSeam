@@ -13,6 +13,7 @@ namespace seam {
 	}
 
 	namespace pins {
+		using PinId = uint64_t;
 		using PushId = uint32_t;
 
 		enum PinType : uint8_t {
@@ -31,6 +32,8 @@ namespace seam {
 			UINT,
 			FLOAT,
 			STRING,
+
+			// WTF AUSTIN WHY ARE TEXTURE AND MATERIAL DIFFERENT?????
 
 			// FBO + resolution
 			TEXTURE,
@@ -81,6 +84,8 @@ namespace seam {
 
 		// base struct for pin types, holds metadata about the pin
 		struct Pin {
+			PinId id = 0;
+
 			PinType type;
 
 			// TODO make name and description string-view-ifiable again somehow
@@ -101,6 +106,7 @@ namespace seam {
 
 		class IPinInput;
 
+		// Why doesn't this just inherit Pin...?
 		struct PinOutput {
 			// output pins don't have values, just need to know metadata (name and type)
 			// use the base struct

@@ -20,7 +20,7 @@ namespace seam {
 
 namespace seam::nodes {
 
-	using NodeId = uint32_t;
+	using NodeId = uint64_t;
 
 	/// A bitmask enum for marking boolean properties of a Node
 	enum NodeFlags : uint16_t {
@@ -92,8 +92,8 @@ namespace seam::nodes {
 			return flags;
 		}
 
-		/// the hash number which uniquely identifies this node
-		inline NodeId NodeId() {
+		/// A number which uniquely identifies this node
+		inline NodeId Id() {
 			return id;
 		}
 
@@ -135,8 +135,7 @@ namespace seam::nodes {
 		// update order == max(transmitters' update order) + 1
 		int16_t update_order = 0;
 
-		// TODO remove me?
-		seam::nodes::NodeId id;
+		seam::nodes::NodeId id = 0;
 
 	private:
 		struct NodeConnection {

@@ -24,7 +24,7 @@ namespace seam::nodes {
 	private:
 		bool ReloadGeometryShader();
 
-		// we use vec4 here for position and velocity instead of vec3 because it aligns well with std140:
+		// Use vec4 here for position and velocity instead of vec3 because it aligns well with std140:
 		// https://encreative.blogspot.com/2019/06/opengl-buffers-in-openframeworks.html
 		struct Particle {
 			glm::vec4 pos;
@@ -32,8 +32,8 @@ namespace seam::nodes {
 			ofFloatColor color;
 			float theta;
 			float mass;
-			float size;	// for std140 alignment?
-			float unused2;
+			float size;	
+			float unused2; // for std140 alignment?
 		};
 
 		// TODO: ideally this would be instantiation-time editable
@@ -69,16 +69,32 @@ namespace seam::nodes {
 
 		ofShader billboard_shader;
 
+		ofShader test_shader;
+
+		bool free_camera = true;
 
 		PinFloat<1> pin_fbm_offset = PinFloat<1>("fbm_offset");
+		PinFloat<1> pin_fbm_strength = PinFloat<1>("fbm strength", "", { 3.0f });
 		PinFloat<1> pin_time = PinFloat<1>("time");
-		PinFloat<1> pin_camera_speed = PinFloat<1>("camera speed", "", { -0.1f });
-		PinFloat<1> pin_camera_theta_tolerance = PinFloat<1>("camera theta tolerance", "", { PI/2 });
-		std::array<IPinInput*, 4> pin_inputs = {
+		PinFloat<1> pin_camera_speed = PinFloat<1>("camera speed", "", { 0.1f });
+		PinFloat<1> pin_camera_theta_tolerance = PinFloat<1>("camera theta tolerance", "", { 1.8f });
+		PinFloat<1> pin_max_particle_velocity = PinFloat<1>("max particle velocity", "", { 4.0f });
+		PinFloat<1> pin_particle_size_modifier = PinFloat<1>("particle size modifier", "", { 1.0f });
+		PinFloat<1> pin_particle_wave_distance = PinFloat<1>(
+			"particle wave distance",
+			"[0..PI) particles near the wave will have increased size; values past PI turn the wave off",
+			{ PI },
+			{ 0.f }
+		);
+		std::array<IPinInput*, 8> pin_inputs = {
 			&pin_time,
 			&pin_camera_speed,
 			&pin_fbm_offset,
-			&pin_camera_theta_tolerance
+			&pin_fbm_strength,
+			&pin_camera_theta_tolerance,
+			&pin_max_particle_velocity,
+			&pin_particle_size_modifier,
+			&pin_particle_wave_distance
 		};
 
 		PinOutput pin_out_material = pins::SetupOutputPin(this, pins::PinType::MATERIAL, "material");

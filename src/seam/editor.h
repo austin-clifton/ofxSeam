@@ -43,8 +43,16 @@ namespace seam {
 		bool Connect(Pin* pin_out, Pin* pin_in);
 
 		bool Disconnect(Pin* pin_out, Pin* pin_in);
+
+		/// <summary>
+		///  Clear the current graph.
+		/// </summary>
+		void NewGraph();
 	
 	private:
+		void SaveGraph(const std::string_view filename, const std::vector<INode*>& nodesToSave);
+		void LoadGraph(const std::string_view filename);
+
 		/// recursively traverse a visual node's parent tree and update nodes in order
 		/// also determines the draw list (but not ordering!) for this frame
 		void UpdateVisibleNodeGraph(INode* n, UpdateParams* params);
@@ -120,5 +128,7 @@ namespace seam {
 		INode* selected_node = nullptr;
 
 		bool show_create_dialog = false;
+
+		std::string loaded_file;
 	};
 }

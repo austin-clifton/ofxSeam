@@ -26,7 +26,7 @@ namespace seam::nodes {
 	private:
 		bool AttemptShaderLoad(const std::string& shader_name );
 
-		std::string shader_name = "force-grid";
+		std::string shader_name = "step-grid";
 		ofShader shader;
 		ofFbo fbo;
 

@@ -16,7 +16,7 @@ namespace seam::nodes {
 
 		void Draw(DrawParams* params) override;
 
-		bool GuiDrawPropertiesList() override;
+		// bool GuiDrawPropertiesList() override;
 
 		IPinInput** PinInputs(size_t& size) override;
 
@@ -68,7 +68,7 @@ namespace seam::nodes {
 		// TODO this should be an editable property, but not a pin (resolution shouldn't be changing)
 		glm::ivec2 tex_size = glm::ivec2(512, 512);
 
-		std::string shader_name = "simplex-noise";
+		const std::string shader_name = "simplex-noise";
 
 		ofFbo fbo;
 		ofShader shader;

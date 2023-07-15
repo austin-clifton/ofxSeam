@@ -31,6 +31,7 @@ TexgenPerlin::~TexgenPerlin() {
 
 void TexgenPerlin::Draw(DrawParams* params) {
 	fbo.begin();
+	fbo.clearColorBuffer(0.f);
 	shader.begin();
 
 	shader.setUniform1i("octaves", pin_octaves[0]);
@@ -55,6 +56,7 @@ PinOutput* TexgenPerlin::PinOutputs(size_t& size) {
 	return &pin_out_tex;
 }
 
+/*
 bool TexgenPerlin::GuiDrawPropertiesList() {
 	if ( props::DrawShaderPath("shader name", shader_name) 
 		&& ShaderUtils::LoadShader(shader, shader_name)
@@ -65,3 +67,4 @@ bool TexgenPerlin::GuiDrawPropertiesList() {
 	}
 	return false;
 }
+*/

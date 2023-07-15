@@ -30,8 +30,15 @@ uniform vec3 torus_center = vec3(0);
 // TODO: this should map to an array of note forces
 uniform float angular_velocity = 1.0f;
 uniform float torus_gravity = 1.0f;
+uniform float fbm_strength = 3.0f;
 
 uniform float global_fbm_offset = 0.0f;
+uniform float max_vel = 4.0f;
+
+uniform float global_size_modifier = 1.0f;
+
+uniform float angular_size_modifier = PI + 1.0f;
+uniform float angular_size_strength = 4.f;
 
 uniform float camera_theta = 0;
 uniform float camera_theta_tolerance = PI/4;
@@ -96,13 +103,13 @@ float AngleBetween(float a, float b) {
 layout(local_size_x = 1024, local_size_y = 1, local_size_z = 1) in;
 void main(){
 	// grab the read and write particles
-	Particle pr = p2[gl_GlobalInvocationID.x];
+	Particle pr = p[gl_GlobalInvocationID.x];
 	Particle pw = p2[gl_GlobalInvocationID.x];
 
-	const float mass_inverse = 1 / pr.mass;
+	const float mass_inverse = 1 / (pr.mass + pr.size);
 
 	const vec3 up = vec3(0,1,0);
-	const float max_vel = 16.f * mass_inverse;
+	const float max_pvel = max_vel * mass_inverse;
 
 	float theta = pr.theta;
 	// our new position is the current position + last calculated velocity
@@ -132,20 +139,20 @@ void main(){
 	const vec3 forward = cross(to_center, up);
 	const vec3 right = cross(forward, up);
 
-	const int layers = 64;
+	const int layers = 8;
 
 	const float fbm_offset = (gl_GlobalInvocationID.x % layers) * 113.84f
-		+ (gl_GlobalInvocationID.x % layers) / layers * 2.f
+		+ (gl_GlobalInvocationID.x % layers) / layers * 1.f
 		+ global_fbm_offset;
 
 	vec3 force_fbm;
 	vec3 normalized_pos = normalize(pos);
-	float nt = elapsedTime * 0.1 + fbm_offset;
+	float nt = elapsedTime * 0.05 + fbm_offset;
 	force_fbm.x = fbm(normalized_pos + nt, 0.5, 4);
 	force_fbm.y = fbm(force_fbm.x + normalized_pos + nt, 0.5, 4);
 	force_fbm.z = fbm(force_fbm.y + normalized_pos + nt, 0.5, 4);
-	force_fbm = ( force_fbm - 1.1 ) * 2;
-	force_fbm *= 3.f;
+	force_fbm = ( force_fbm - 1.2 ) * 2;
+	force_fbm *= fbm_strength;
 
 	// add forward force = mass (size) * angular acceleration
 	force += forward * mass_inverse * angular_velocity;
@@ -169,8 +176,8 @@ void main(){
 	pw.vel.xyz += force;
 	// incorporate some drag so things don't speed up forever
 	pw.vel.xyz *= 0.98;
-	if (length(pw.vel.xyz) > max_vel) {
-		pw.vel.xyz = normalize(pw.vel.xyz) * max_vel;
+	if (length(pw.vel.xyz) > max_pvel) {
+		pw.vel.xyz = normalize(pw.vel.xyz) * max_pvel;
 	}
 
 	pw.pos.xyz = pos;
@@ -178,6 +185,24 @@ void main(){
 	// calculate and store new theta
 	vec3 normalized_dir = normalize(pos - torus_center);
 	pw.theta = atan(normalized_dir.z, normalized_dir.x);
+
+	// shrink particle size when particles are near the camera
+	{
+		// forward and backwards diffs
+		float angleF = abs(AngleBetween(camera_theta + angular_size_modifier, pw.theta));
+		float angleB = abs(AngleBetween(camera_theta - angular_size_modifier, pw.theta));
+
+		float angular_modifier = 1 + (angular_size_modifier < PI
+			? (angular_size_strength - 1) 
+				* (1.0 - smoothstep(0, PI/8, min(angleF, angleB)))
+			: 0
+		);
+
+		float theta_diff = AngleBetween(pw.theta, camera_theta);
+		pw.size = max(0.1, smoothstep(0.0f, PI / 4.0f, abs(theta_diff))) 
+			* global_size_modifier
+			* angular_modifier;
+	}
 
 	p[gl_GlobalInvocationID.x] = pw;
 }

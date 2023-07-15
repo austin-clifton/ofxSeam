@@ -8,6 +8,8 @@ using namespace seam::nodes;
 Shader::Shader() : INode("Shader Material") {
 	flags = (NodeFlags)(flags | NodeFlags::IS_VISUAL);
 
+	tex_size = glm::ivec2(ofGetWindowWidth(), ofGetWindowHeight());
+
 	fbo.allocate(tex_size.x, tex_size.y);
 
 	AttemptShaderLoad(shader_name);
@@ -31,6 +33,7 @@ PinOutput* Shader::PinOutputs(size_t& size) {
 
 void Shader::Draw(DrawParams* params) {
 	fbo.begin();
+	fbo.clearColorBuffer(ofFloatColor(0.0f));
 	shader.begin();
 
 	for (size_t i = 0; i < pin_inputs.size(); i++) {
