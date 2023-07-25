@@ -24,6 +24,8 @@ namespace seam {
 
 		void GuiDraw();
 
+		void DrawSelectedNode();
+
 		/// to be called by ofApp::update()
 		void Update();
 

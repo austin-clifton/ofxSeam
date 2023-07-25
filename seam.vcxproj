@@ -233,6 +233,7 @@
     <ClCompile Include="src\seam\nodes\add-store.cpp" />
     <ClCompile Include="src\seam\nodes\compute-particles.cpp" />
     <ClCompile Include="src\seam\nodes\cos.cpp" />
+    <ClCompile Include="src\seam\nodes\feedback.cpp" />
     <ClCompile Include="src\seam\nodes\fireflies.cpp" />
     <ClCompile Include="src\seam\nodes\force-grid.cpp" />
     <ClCompile Include="src\seam\nodes\i-node.cpp" />
@@ -240,6 +241,7 @@
     <ClCompile Include="src\seam\nodes\notes-printer.cpp" />
     <ClCompile Include="src\seam\nodes\percussive-trigger.cpp" />
     <ClCompile Include="src\seam\nodes\range.cpp" />
+    <ClCompile Include="src\seam\nodes\saw.cpp" />
     <ClCompile Include="src\seam\nodes\shader.cpp" />
     <ClCompile Include="src\seam\nodes\texgen-perlin.cpp" />
     <ClCompile Include="src\seam\nodes\timer.cpp" />
@@ -307,6 +309,7 @@
     <ClInclude Include="src\seam\nodes\add-store.h" />
     <ClInclude Include="src\seam\nodes\compute-particles.h" />
     <ClInclude Include="src\seam\nodes\cos.h" />
+    <ClInclude Include="src\seam\nodes\feedback.h" />
     <ClInclude Include="src\seam\nodes\fireflies.h" />
     <ClInclude Include="src\seam\nodes\force-grid.h" />
     <ClInclude Include="src\seam\nodes\i-node.h" />
@@ -314,6 +317,7 @@
     <ClInclude Include="src\seam\nodes\notes-printer.h" />
     <ClInclude Include="src\seam\nodes\percussive-trigger.h" />
     <ClInclude Include="src\seam\nodes\range.h" />
+    <ClInclude Include="src\seam\nodes\saw.h" />
     <ClInclude Include="src\seam\nodes\shader.h" />
     <ClInclude Include="src\seam\nodes\texgen-perlin.h" />
     <ClInclude Include="src\seam\nodes\timer.h" />

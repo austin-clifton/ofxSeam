@@ -3,9 +3,11 @@
 
 #include "nodes/add-store.h"
 #include "nodes/cos.h"
+#include "nodes/feedback.h"
 #include "nodes/fireflies.h"
 #include "nodes/midi-in.h"
 #include "nodes/notes-printer.h"
+#include "nodes/saw.h"
 #include "nodes/shader.h"
 #include "nodes/texgen-perlin.h"
 #include "nodes/timer.h"
@@ -39,6 +41,8 @@ EventNodeFactory::EventNodeFactory() {
 	Register(MakeCreate<nodes::TexgenPerlin>());
 	Register(MakeCreate<nodes::Timer>());
 	Register(MakeCreate<nodes::Fireflies>());
+	Register(MakeCreate<nodes::Feedback>());
+	Register(MakeCreate<nodes::Saw>());
 
 	// TODO register more seam internal generators here
 }

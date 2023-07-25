@@ -43,9 +43,17 @@ namespace seam {
 			auto old_res = FindLeaf(old_pos, root, tree_center, tree_bounds);
 			auto new_res = FindLeaf(new_pos, root, tree_center, tree_bounds);
 			if (old_res.leaf != new_res.leaf) {
+				// printf("update remove/add\n");
+
 				Remove(item, old_pos);
+				ValidateTree(root);
+
+				Add(item, new_pos);
+
 				//Remove(item, old_pos, old_res.branch, old_res.branch_center, old_res.branch_bounds);
-				Add(item, new_pos, new_res.branch, new_res.branch_center, new_res.branch_bounds);
+				// Add(item, new_pos, new_res.branch, new_res.branch_center, new_res.branch_bounds);
+
+				ValidateTree(root);
 			}
 		}
 
@@ -130,10 +138,13 @@ namespace seam {
 				auto new_branch = new OctreeNode(true, res.branch);
 				SplitLeaf(new_branch, leaf, res.leaf_center, res.leaf_bounds);
 				// TODO return leaf to pool
+				memset(leaf, 0, sizeof(OctreeNode));
 				delete leaf;
 				res.branch->branch_children[res.leaf_index] = new_branch;
 
 				Add(item, position, new_branch, res.leaf_center, res.leaf_bounds);
+
+				ValidateTree(root);
 			} else {
 				leaf->items[leaf->count] = item;
 
@@ -176,6 +187,7 @@ namespace seam {
 
 				if (res.branch->count < N/2 && res.branch->parent != nullptr) {
 					CollapseBranch(res.branch, FindChildIndex(res.branch));
+					ValidateTree(root);
 				}
 			}
 		}
@@ -335,6 +347,7 @@ namespace seam {
 				if (node == nullptr) {
 					continue;
 				} else if (node->is_branch) {
+					printf("collapsing inner branch\n");
 					CollapseBranch(node, i);
 				} 
 
@@ -351,6 +364,7 @@ namespace seam {
 			assert(collapsed_leaf->count == branch->count);
 			branch->parent->branch_children[branch_index] = collapsed_leaf;
 
+			memset(branch, 0, sizeof(OctreeNode));
 			delete branch;
 		}
 
@@ -417,6 +431,20 @@ namespace seam {
 					printf("%s (%f, %f, %f)\n", spaces.c_str(), position.x, position.y, position.z);
 				}
 			}
+		}
+
+		void ValidateTree(OctreeNode* node) {
+#if _DEBUG
+			if (node->is_branch) {
+				for (uint8_t i = 0; i < 8; i++) {
+					OctreeNode* child = node->branch_children[i];
+					if (child != nullptr) {
+						assert(child->parent == node);
+						ValidateTree(child);
+					}
+				}
+			} 
+#endif
 		}
 
 		OctreeNode* root;

@@ -17,4 +17,22 @@ namespace seam::ShaderUtils {
 			return true;
 		}
 	}
+
+	bool LoadShader(ofShader& shader, const std::string& vert_name, const std::string& frag_name, const std::string& geo_name) {
+		if (shader.isLoaded()) {
+			shader.unload();
+		}
+
+		// TODO should not need to prefix with the cwd in "normal" OF
+		// something around loading from the bin path was broken with the c++17 update
+		std::filesystem::path vert_path = std::filesystem::current_path() / "data/shaders" / vert_name;
+		std::filesystem::path frag_path = std::filesystem::current_path() / "data/shaders" / frag_name;
+		std::filesystem::path geo_path = geo_name.length() ? std::filesystem::current_path() / "data/shaders" / geo_name : "";
+		if (!shader.load(vert_path, frag_path, geo_path)) {
+			printf("failed to load shader at paths:\n\t%s\t%s\t%s\n", vert_path.c_str(), frag_path.c_str(), geo_path.c_str());
+			return false;
+		} else {
+			return true;
+		}
+	}
 }

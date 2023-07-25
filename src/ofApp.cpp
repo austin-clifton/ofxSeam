@@ -15,8 +15,12 @@ void ofApp::update(){
 }
 
 //--------------------------------------------------------------
-void ofApp::draw(){
-	
+void ofApp::drawOutput(ofEventArgs& args){
+	glfwWindowHint(GLFW_AUTO_ICONIFY, 0);
+	seam_editor.DrawSelectedNode();
+}
+
+void ofApp::draw() {
 	seam_editor.Draw();
 
 	if (show_gui) {

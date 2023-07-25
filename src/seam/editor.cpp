@@ -411,7 +411,7 @@ void Editor::SaveGraph(const std::string_view filename, const std::vector<INode*
 
 			// Bail out of channel serialization if this input type doesn't have serializable state
 			if (pin_in->type == PinType::FLOW
-				|| pin_in->type == PinType::TEXTURE
+				|| pin_in->type == PinType::FBO
 				|| pin_in->type == PinType::MATERIAL
 				|| pin_in->type == PinType::NOTE_EVENT
 			) {
@@ -625,7 +625,19 @@ void Editor::LoadGraph(const std::string_view filename) {
 		}
 	}
 
+	ed::NavigateToContent();
+
 	loaded_file = filename;
+}
+
+void Editor::DrawSelectedNode() {
+	// draw the selected node's display FBO if it's a visual node
+	if (selected_node && selected_node->IsVisual()) {
+		// visual nodes should set an FBO for GUI display!
+		// TODO this assert should be placed elsewhere (it shouldn't only fire when selected)
+		assert(selected_node->gui_display_fbo != nullptr);
+		selected_node->gui_display_fbo->draw(0, 0);
+	}
 }
 
 void Editor::GuiDraw() {

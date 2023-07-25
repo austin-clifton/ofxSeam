@@ -4,12 +4,15 @@ using namespace seam;
 using namespace seam::nodes;
 
 namespace {
-	glm::vec3 PosPtr(glm::vec3* ptr) {
+	glm::vec4 PosPtr(glm::vec4* ptr) {
 		return *ptr;
 	}
 }
 
-Fireflies::Fireflies() : INode("Fireflies"), octree(glm::vec3(0.f), glm::vec3(100.f), PosPtr) {
+Fireflies::Fireflies() : INode("Fireflies"), 
+	ff_octree(glm::vec3(0.f), glm::vec3(512.f), PosPtr),  
+	mom_octree(glm::vec3(0.f), glm::vec3(512.f), PosPtr)
+{
 	flags = (NodeFlags)(flags | NodeFlags::IS_VISUAL);
 
 	// TEMP!!! Until this actually receives time from something....
@@ -17,54 +20,99 @@ Fireflies::Fireflies() : INode("Fireflies"), octree(glm::vec3(0.f), glm::vec3(10
 
 	gui_display_fbo = &fbo;
 
-	std::vector<glm::vec3> ff_directions;
+	// Set up initial directions for fireflies and their moms.
+	// Declare these inline and not as members since the CPU writes directions to mapped buffers later;
+	// these are only needed for initialization.
+	std::vector<glm::vec4> ff_directions;
+	std::vector<glm::vec4> mom_directions;
 
-	ff_positions.resize(fireflies_count);
-	ff_directions.resize(fireflies_count, glm::vec3(0.f));
+	ff_positions.resize(fireflies_count, glm::vec4(0.f, 0.f, 0.f, 1.0f));
+	ff_directions.resize(fireflies_count, glm::vec4(0.f));
+	mom_positions.resize(moms_count, glm::vec4(0.f, 0.f, 0.f, 1.f));
+	mom_directions.resize(moms_count, glm::vec4(0.f));
+
+	// Randomize initial positions of mooooms
+	for (size_t i = 0; i < mom_positions.size(); i++) {
+		glm::vec3 pos = glm::vec3(
+			ofRandomf() * 256.f,
+			ofRandomf() * 10.f + 10.f,
+			ofRandomf() * 256.f
+		);
+		mom_positions[i] = glm::vec4(pos, 1.f);
+		mom_octree.Add(&mom_positions[i], mom_positions[i]);
+	}
 
 	// Randomize initial positions of fireflies
 	for (size_t i = 0; i < ff_positions.size(); i++) {
 		glm::vec3 dir = glm::normalize(glm::vec3((float)rand() / RAND_MAX, (float)rand() / RAND_MAX, (float)rand() / RAND_MAX) - 0.5f);
 		float offset = (float)rand() / RAND_MAX * 90.0f;
 		glm::vec3 pos = dir * offset + glm::vec3(0.001f);
-		printf("%f %f %f\n", pos.x, pos.y, pos.z);
-		ff_positions[i] = pos;
-		octree.Add(&ff_positions[i], ff_positions[i]);
+		ff_positions[i] = glm::vec4(pos, 1.f);
+		ff_octree.Add(&ff_positions[i], ff_positions[i]);
 	}
-
-	printf("%p\n", ff_positions.data());
 
 	// Set up buffers
 	glGenBuffers(1, &ff_positions_ssbo);
 	glGenBuffers(1, &ff_directions_ssbo);
+	glGenBuffers(1, &mom_positions_ssbo);
+	glGenBuffers(1, &mom_directions_ssbo);
 	
 	// Set up immutable storage for positions and directions so we can persistently map and read/write stuff across the cpu/gpu barrier.
 	
 	// We're going to read the position buffer back to CPU for octree operations which influence particle directions,
 	// hence using GL_MAP_READ_BIT here.
 	glBindBuffer(GL_SHADER_STORAGE_BUFFER, ff_positions_ssbo);
-	glBufferStorage(GL_SHADER_STORAGE_BUFFER, ff_positions.size() * sizeof(glm::vec3),
+	glBufferStorage(GL_SHADER_STORAGE_BUFFER, ff_positions.size() * sizeof(glm::vec4),
 		ff_positions.data(), GL_MAP_PERSISTENT_BIT | GL_MAP_READ_BIT);
 	glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
 
 	// We'll write to the direction buffer after octree operations for avoidance behaviors.
 	glBindBuffer(GL_SHADER_STORAGE_BUFFER, ff_directions_ssbo);
-	glBufferStorage(GL_SHADER_STORAGE_BUFFER, ff_directions.size() * sizeof(glm::vec3),
+	glBufferStorage(GL_SHADER_STORAGE_BUFFER, ff_directions.size() * sizeof(glm::vec4),
 		ff_directions.data(), GL_MAP_PERSISTENT_BIT | GL_MAP_WRITE_BIT);
 	glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
 
+	// Do the same thing for moms now.
+	glBindBuffer(GL_SHADER_STORAGE_BUFFER, mom_positions_ssbo);
+	glBufferStorage(GL_SHADER_STORAGE_BUFFER, mom_positions.size() * sizeof(glm::vec4),
+		mom_positions.data(), GL_MAP_PERSISTENT_BIT | GL_MAP_READ_BIT);
+	glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
+
+	glBindBuffer(GL_SHADER_STORAGE_BUFFER, mom_directions_ssbo);
+	glBufferStorage(GL_SHADER_STORAGE_BUFFER, mom_directions.size() * sizeof(glm::vec4),
+		mom_directions.data(), GL_MAP_PERSISTENT_BIT | GL_MAP_WRITE_BIT);
+	glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
+
 	// Map the SSBO position and direction buffers persistently for read and write respectively.
-	ff_posmap = glMapNamedBufferRange(ff_positions_ssbo, 0, ff_positions.size() * sizeof(glm::vec3), GL_MAP_PERSISTENT_BIT | GL_MAP_READ_BIT);
-	ff_dirmap = glMapNamedBufferRange(ff_directions_ssbo, 0, ff_directions.size() * sizeof(glm::vec3), GL_MAP_PERSISTENT_BIT | GL_MAP_WRITE_BIT);
+	ff_posmap = (glm::vec4*)glMapNamedBufferRange(ff_positions_ssbo, 0, ff_positions.size() * sizeof(glm::vec4), GL_MAP_PERSISTENT_BIT | GL_MAP_READ_BIT);
+	ff_dirmap = (glm::vec4*)glMapNamedBufferRange(ff_directions_ssbo, 0, ff_directions.size() * sizeof(glm::vec4), GL_MAP_PERSISTENT_BIT | GL_MAP_WRITE_BIT);
+	mom_posmap = (glm::vec4*)glMapNamedBufferRange(mom_positions_ssbo, 0, mom_positions.size() * sizeof(glm::vec4), GL_MAP_PERSISTENT_BIT | GL_MAP_READ_BIT);
+	mom_dirmap = (glm::vec4*)glMapNamedBufferRange(mom_directions_ssbo, 0, mom_directions.size() * sizeof(glm::vec4), GL_MAP_PERSISTENT_BIT | GL_MAP_WRITE_BIT);
 	assert(ff_posmap != nullptr);
 	assert(ff_dirmap != nullptr);
+	assert(mom_posmap != nullptr);
+	assert(mom_dirmap != nullptr);
 
 	ff_vertex_buffer.allocate(ff_positions, GL_DYNAMIC_DRAW);
+	mom_vertex_buffer.allocate(mom_positions, GL_DYNAMIC_DRAW);
 
 	// Seed compute-only buffers.
+	std::vector<ComputeMomma> moms;
+	moms.resize(moms_count);
+	for (size_t i = 0; i < moms.size(); i++) {
+		auto& mom = moms[i];
+		mom.mass = 1.f;
+		mom.velocity = glm::vec3(0.f);
+		
+		mom.col_a = glm::vec3(0.5);
+		mom.col_b = glm::vec3(0.25);
+		mom.col_c = glm::vec3(1.0);
+		mom.col_d = glm::vec3(0.f, 0.33f, 0.667f);
+	}
+
 	std::vector<ComputeFirefly> fireflies;
 	fireflies.resize(fireflies_count);
-	for (int i = 0; i < fireflies.size(); i++) {
+	for (size_t i = 0; i < fireflies.size(); i++) {
 		auto& ff = fireflies[i];
 		ff.mass = 1.f;
 		ff.luminance = 1.f;
@@ -72,21 +120,30 @@ Fireflies::Fireflies() : INode("Fireflies"), octree(glm::vec3(0.f), glm::vec3(10
 		ff.group_index = i;
 
 		ff.velocity = glm::vec3(0.f);
-		ff.acceleration = glm::vec3(0.f, 0.f, 0.f);
 
-		ff.color = glm::vec4(float(i % 2), float((i + 1) % 2), 0.5, 1.0);
+		ff.color = glm::vec4(1.0);
 	}
 
-	ff_compute_ssbo.allocate(fireflies, GL_DYNAMIC_DRAW);
-	ff_compute_ssbo2.allocate(fireflies, GL_DYNAMIC_DRAW);
+	ff_compute_ssbo_read.allocate(fireflies, GL_DYNAMIC_DRAW);
+	ff_compute_ssbo_write.allocate(fireflies, GL_DYNAMIC_DRAW);
+	mom_compute_ssbo_read.allocate(moms, GL_DYNAMIC_DRAW);
+	mom_compute_ssbo_write.allocate(moms, GL_DYNAMIC_DRAW);
+
+	LoadShaders();
 
 	// Set up the VBO
-	ff_vbo.setVertexBuffer(ff_vertex_buffer, 3, 0); // TODO is stride = 0 right?
-	ff_vbo.setColorBuffer(ff_compute_ssbo, sizeof(ComputeFirefly), sizeof(float) * 2 + sizeof(int) * 2);
-
-	// TODO vbo.setAttributeBuffer() calls
-
+	ff_vbo.setVertexBuffer(ff_vertex_buffer, 4, 0);
+	ff_vbo.setColorBuffer(ff_compute_ssbo_read, sizeof(ComputeFirefly), sizeof(float) * 2 + sizeof(int) * 2);
+	ff_vbo.setAttributeBuffer(
+		ff_geo_shader.getAttributeLocation("velocity"),
+		ff_compute_ssbo_read,
+		3,
+		sizeof(ComputeFirefly),
+		sizeof(float) * 2 + sizeof(int) * 2 + sizeof(glm::vec4)
+	);
 	ff_vbo.enableColors();
+
+	mom_vbo.setVertexBuffer(mom_vertex_buffer, 4, 0);
 
 	// TODO texture size as an input
 	fbo.allocate(1920, 1080);
@@ -94,18 +151,26 @@ Fireflies::Fireflies() : INode("Fireflies"), octree(glm::vec3(0.f), glm::vec3(10
 	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, ff_positions_ssbo);
 	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, ff_directions_ssbo);
 	ff_vertex_buffer.bindBase(GL_SHADER_STORAGE_BUFFER, 2);
-	ff_compute_ssbo.bindBase(GL_SHADER_STORAGE_BUFFER, 3);
-	ff_compute_ssbo2.bindBase(GL_SHADER_STORAGE_BUFFER, 4);
+	ff_compute_ssbo_read.bindBase(GL_SHADER_STORAGE_BUFFER, 3);
+	ff_compute_ssbo_write.bindBase(GL_SHADER_STORAGE_BUFFER, 4);
 
-	assert(ff_positions_ssbo != 0 && ff_directions_ssbo != 0 
-		&& ff_vertex_buffer.getId() != 0 && ff_compute_ssbo.getId() != 0 && ff_compute_ssbo2.getId() != 0);
+	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 5, mom_positions_ssbo);
+	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 6, mom_directions_ssbo);
+	mom_vertex_buffer.bindBase(GL_SHADER_STORAGE_BUFFER, 7);
+	mom_compute_ssbo_read.bindBase(GL_SHADER_STORAGE_BUFFER, 8);
+	mom_compute_ssbo_write.bindBase(GL_SHADER_STORAGE_BUFFER, 9);
 
-	LoadShaders();
+	assert(ff_positions_ssbo != 0 && ff_directions_ssbo != 0 && ff_vertex_buffer.getId() != 0 
+		&& ff_compute_ssbo_read.getId() != 0 && ff_compute_ssbo_write.getId() != 0
+		&& mom_positions_ssbo != 0 && mom_directions_ssbo != 0 
+		&& mom_compute_ssbo_read.getId() != 0 && mom_compute_ssbo_write.getId() != 0);
 
-	camera.setFov(90.f);
+	camera.setFov(120.f);
+	camera.setFarClip(512.f);
+	camera.setAspectRatio(16.f / 9.f);
 
 	box.setPosition(glm::vec3(0.f));
-	box.setScale(glm::vec3(10.f));
+	box.setScale(glm::vec3(0.1f));
 
 	avoidance_thread = std::thread(&Fireflies::AvoidanceLoop, this);
 }
@@ -120,6 +185,8 @@ Fireflies::~Fireflies() {
 
 	glDeleteBuffers(1, &ff_positions_ssbo);
 	glDeleteBuffers(1, &ff_directions_ssbo);
+	glDeleteBuffers(1, &mom_positions_ssbo);
+	glDeleteBuffers(1, &mom_directions_ssbo);
 }
 
 IPinInput** Fireflies::PinInputs(size_t& size) {
@@ -133,59 +200,70 @@ PinOutput* Fireflies::PinOutputs(size_t& size) {
 }
 
 void Fireflies::Update(UpdateParams* params) {
-	ff_compute_shader.begin();
+	mom_compute_shader.begin();
+	mom_compute_shader.setUniform1f("time", params->time);
+	mom_compute_shader.setUniform1f("maxVelocity", pin_max_velocity[0] * 1.1f);
+	mom_compute_shader.dispatchCompute(1, 1, 1);
+	mom_compute_shader.end();
 
-	// TODO here set uniforms
+	mom_compute_ssbo_write.copyTo(mom_compute_ssbo_read);
 	
+	ff_compute_shader.begin();
+	ff_compute_shader.setUniform1f("time", params->time * 0.05);
+	ff_compute_shader.setUniform1f("maxVelocity", pin_max_velocity[0]);
 	ff_compute_shader.dispatchCompute((fireflies_count + 1024 - 1) / 1024, 1, 1);
 	ff_compute_shader.end();
 
 	// Ping-pong copy written compute results back to the compute read buffer.
-	ff_compute_ssbo.copyTo(ff_compute_ssbo2);
+	ff_compute_ssbo_write.copyTo(ff_compute_ssbo_read);
 	// Also ping-pong copy positions back, these are stored separately since positions are mapped for CPU reading.
-	glCopyNamedBufferSubData(ff_vertex_buffer.getId(), ff_positions_ssbo, 0, 0, sizeof(glm::vec3) * fireflies_count);
+	glCopyNamedBufferSubData(ff_vertex_buffer.getId(), ff_positions_ssbo, 0, 0, sizeof(glm::vec4) * fireflies_count);
+	glCopyNamedBufferSubData(mom_vertex_buffer.getId(), mom_positions_ssbo, 0, 0, sizeof(glm::vec4) * moms_count);
 
 	if (invalidate_posmap) {
 		invalidate_posmap = false;
-		/*
-		// Read back positions.
-		glm::vec3* posmap = (glm::vec3*)ff_posmap;
-		for (size_t i = 0; i < 10; i++) {
-			printf("%f, %f, %f\n", posmap[i].x, posmap[i].y, posmap[i].z);
-		}
-		printf("\n");
-		*/
-
 		glMemoryBarrier(GL_CLIENT_MAPPED_BUFFER_BARRIER_BIT);
 	}
 
 	if (invalidate_dirmap) {
 		invalidate_dirmap = false;
-		glFlushMappedNamedBufferRange(ff_directions_ssbo, 0, sizeof(glm::vec3) * fireflies_count);
+		glFlushMappedNamedBufferRange(ff_directions_ssbo, 0, sizeof(glm::vec4) * fireflies_count);
+		glFlushMappedNamedBufferRange(mom_directions_ssbo, 0, sizeof(glm::vec4) * moms_count);
 	}
 
+	// TODO this is inefficient and should be unnecessary...
+	ofFbo* fbos = { &fbo };
+	params->push_patterns->Push<ofFbo*>(pin_out_texture, &fbos, 1);
 }
 
 void Fireflies::Draw(DrawParams* params) {
 	fbo.begin();
-	fbo.clearColorBuffer(0.1f);
+	fbo.clearColorBuffer(0.f);
 	ofEnableBlendMode(OF_BLENDMODE_ADD);
 
 	camera.begin();
 	ff_geo_shader.begin();
 
-	glPointSize(2);
+	float farplane = camera.getFarClip();
+	float nearplane = camera.getNearClip();
+
+	float pulse_distance = camera.getNearClip() 
+		+ pin_pulse_camera_ndistance[0] * (camera.getFarClip() - camera.getNearClip());
+
+	ff_geo_shader.setUniform3f("cameraLeft", camera.getSideDir());
+	ff_geo_shader.setUniform3f("cameraUp", camera.getUpAxis());
+	ff_geo_shader.setUniform1f("pulseDistance", pulse_distance);
+	ff_geo_shader.setUniform1f("pulseRange", pin_pulse_range[0]);
+
+	// Point size doesn't matter(?) since a geo shader is being used.
 	ff_vbo.draw(GL_POINTS, 0, fireflies_count);
 
 	ff_geo_shader.end();
 
-	/*
-	test_shader.begin();
+	// glPointSize(8);
+	// mom_vbo.draw(GL_POINTS, 0, moms_count);
 
-	box.draw();
-
-	test_shader.end();
-	*/
+	// box.draw();
 
 	camera.end();
 	fbo.end();
@@ -196,8 +274,11 @@ bool Fireflies::LoadShaders() {
 	const std::string compute_name("fireflies-compute.glsl");
 	const std::string vert_frag_name("fireflies");
 
-	bool compute_loaded = ff_compute_shader.setupShaderFromFile(GL_COMPUTE_SHADER, shaders_path / compute_name)
+	bool compute_ff_loaded = ff_compute_shader.setupShaderFromFile(GL_COMPUTE_SHADER, shaders_path / compute_name)
 		&& ff_compute_shader.linkProgram();
+
+	bool compute_moms_loaded = mom_compute_shader.setupShaderFromFile(GL_COMPUTE_SHADER, shaders_path / "fireflies-moms-compute.glsl")
+		&& mom_compute_shader.linkProgram();
 
 	ff_geo_shader.setGeometryInputType(GL_POINTS);
 	ff_geo_shader.setGeometryOutputType(GL_TRIANGLE_STRIP);
@@ -206,21 +287,25 @@ bool Fireflies::LoadShaders() {
 	bool geo_loaded = ff_geo_shader.load(
 		shaders_path / (vert_frag_name + ".vert"),
 		shaders_path / (vert_frag_name + ".frag"),
-		shaders_path / (vert_frag_name + ".geo")
+		shaders_path / (vert_frag_name + "-geo.glsl")
 	);
 
 	bool test_loaded = test_shader.load(shaders_path / (vert_frag_name + ".vert"), shaders_path / (vert_frag_name + ".frag"));
 	assert(test_loaded);
 
-	if (!compute_loaded) {
+	if (!compute_ff_loaded) {
 		printf("Failed to load or link fireflies compute shader\n");
+	} 
+
+	if (!compute_moms_loaded) {
+		printf("Failed to load or link fireflies moms compute shader\n");
 	}
 
 	if (!geo_loaded) {
 		printf("Failed to load or link fireflies geo/vert/frag shaders\n");
 	}
 	
-	return compute_loaded && geo_loaded;
+	return compute_ff_loaded && geo_loaded && compute_moms_loaded;
 }
 
 bool Fireflies::GuiDrawPropertiesList() {
@@ -232,63 +317,85 @@ bool Fireflies::GuiDrawPropertiesList() {
 }
 
 void Fireflies::AvoidanceLoop() {
-	assert(ff_posmap != nullptr && ff_dirmap != nullptr);
-	glm::vec3* posmap = (glm::vec3*)ff_posmap;
-	glm::vec3* dirmap = (glm::vec3*)ff_dirmap;
-	std::vector<glm::vec3*> found;
+	assert(ff_posmap != nullptr && ff_dirmap != nullptr && mom_posmap != nullptr && mom_dirmap != nullptr);
+	std::vector<glm::vec4*> found;
 
 	while (!stop) {
 		// Request a refresh of mapped positions.
 		invalidate_posmap = true;
 
-		printf("%p\n", ff_positions.data());
-
 		auto start = std::chrono::high_resolution_clock::now();
 
-		// Update a segment of the avoidance direction map based on current positions.
-		// For each particle, look nearby.
-		for (size_t i = 0; i < fireflies_count; i++) {
-			glm::vec3 dir(0.f);
-			glm::vec3 my_pos = ff_positions[i];
-			octree.FindItems(my_pos, pin_avoidance_radius[0], found);
-			// Each nearby particle exerts a force based on how far away it is.
-			// Closer particles exert more force.-
-			for (size_t j = 0; j < found.size(); j++) {
-				glm::vec3 their_pos = *found[j];
-				glm::vec3 away_from_them = glm::normalize(my_pos - their_pos);
-				float distance = glm::distance(my_pos, their_pos);
-				// When almost at the edge, the force will be very low.
-				float rev_dist01 = (pin_avoidance_radius[0] - distance) / pin_avoidance_radius[0];
-				float force = pow(rev_dist01, 4);
-				dir = dir + away_from_them * force;
-			}
-			dir = dir / std::max(1, (int)found.size());
-
-			dirmap[i] = dir;
-		}
+		UpdateDirections(ff_octree, ff_positions, ff_dirmap, fireflies_count, found, pin_avoidance_radius[0]);
+		UpdateDirections(mom_octree, mom_positions, mom_dirmap, moms_count, found, pin_mom_avoidance_radius[0]);
 
 		auto stop = std::chrono::high_resolution_clock::now();
-		// printf("took %d ms to update directions\n", (stop - start).count() / 100000);
+		// printf("took %llu ms to update directions\n", (stop - start).count() / 100000);
 		
 		// Ask the main thread to flush the segment of the direction buffer we just wrote to.
 		invalidate_dirmap = true;
 
 		start = std::chrono::high_resolution_clock::now();
 
+		for (size_t i = 0; i < moms_count; i++) {
+			glm::vec3 old_pos = mom_positions[i];
+			glm::vec3 new_pos = mom_posmap[i];
+			mom_octree.Update(&mom_positions[i], old_pos, new_pos);
+			// Make sure to update the mom's position now so any re-organization the octree does can reference the new position.
+			mom_positions[i] = glm::vec4(new_pos, 1.f);
+		}
+
 		// Update the octree's positions.
 		for (size_t i = 0; i < fireflies_count; i++) {
 			glm::vec3 old_pos = ff_positions[i];
-			glm::vec3 new_pos = posmap[i];
-			octree.Update(&ff_positions[i], old_pos, new_pos);
+			glm::vec3 new_pos = ff_posmap[i];
+			ff_octree.Update(&ff_positions[i], old_pos, new_pos);
 			// Make sure to update the particle's position now so any re-organization the octree does can reference the new position.
-			ff_positions[i] = new_pos;
+			ff_positions[i] = glm::vec4(new_pos, 1.f);
 		}
 
-		// Copy the current posmap to the CPU's "old" positions list. 
-		// memcpy_s(ff_positions.data(), ff_positions.size() * sizeof(glm::vec3), ff_posmap, fireflies_count * sizeof(glm::vec3));
-
 		stop = std::chrono::high_resolution_clock::now();
-		// printf("took %d ms to update positions\n", (stop - start).count() / 100000);
+		/// printf("took %llu ms to update positions\n", (stop - start).count() / 100000);
+	}
+}
 
+void Fireflies::UpdateDirections(
+	Octree<glm::vec4, 8>& octree,
+	const std::vector<glm::vec4>& positions, 
+	glm::vec4* dirmap, 
+	size_t count,
+	std::vector<glm::vec4*>& found, 
+	float avoidance_radius
+) {
+	float max_force = 0.f;
+	for (size_t i = 0; i < count; i++) {
+		glm::vec3 dir(0.f);
+		glm::vec3 my_pos = positions[i];
+		// For each particle, look nearby.
+		octree.FindItems(my_pos, avoidance_radius, found);
+		// Each nearby particle exerts a force based on how far away it is.
+		// Closer particles exert more force.-
+		for (size_t j = 0; j < found.size(); j++) {
+			// Make sure this particle gets skipped (it will show up in the result).
+			if (&positions[i] == found[j]) {
+				continue;
+			}
+
+			glm::vec3 their_pos = *found[j];
+			glm::vec3 away_from_them = glm::normalize(my_pos - their_pos);
+			float distance = glm::distance(my_pos, their_pos);
+			// When almost at the edge, the force will be very low.
+			float rev_dist01 = (avoidance_radius - distance) / avoidance_radius;
+			float force = pow(rev_dist01, 4);
+			max_force = std::max(force, max_force);
+			dir = dir + away_from_them * force;
+		}
+
+		// If more items than just this one was found...
+		if (found.size() > 1) {
+			dir = glm::normalize(dir) * max_force;
+		}
+
+		dirmap[i] = glm::vec4(dir, 1.f);
 	}
 }

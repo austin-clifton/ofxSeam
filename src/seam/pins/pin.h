@@ -36,7 +36,7 @@ namespace seam {
 			// WTF AUSTIN WHY ARE TEXTURE AND MATERIAL DIFFERENT?????
 
 			// FBO + resolution
-			TEXTURE,
+			FBO,
 
 			// a material is really just a shader with specific uniform value settings
 			MATERIAL,
@@ -74,12 +74,6 @@ namespace seam {
 			LINEAR,
 			// logarithmic
 			LOG,
-		};
-
-
-		struct Texture {
-			glm::ivec2 resolution;
-			ofFbo* fbo = nullptr;
 		};
 
 		// base struct for pin types, holds metadata about the pin
@@ -145,6 +139,7 @@ namespace seam {
 		public:
 			PinInput(const std::array<T, N>& init_vals) {
 				channels = init_vals;
+				flags = (PinFlags)(flags | PinFlags::INPUT);
 			}
 
 			virtual ~PinInput() { }
@@ -212,11 +207,11 @@ namespace seam {
 		};
 
 		template <std::size_t N>
-		struct PinTexture : public PinInput<Texture, N> {
-			PinTexture() {
-				type = PinType::TEXTURE;
+		struct PinFbo : public PinInput<ofFbo*, N> {
+			PinFbo(std::string_view _name = "texture", std::array<ofFbo*, N> init_vals = { 0 }) : PinInput<ofFbo*, N>(init_vals) {
+				type = PinType::FBO;
+				name = _name;
 			}
-			Texture value;
 		};
 
 		template <std::size_t N>

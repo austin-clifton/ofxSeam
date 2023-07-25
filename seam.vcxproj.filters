@@ -157,6 +157,12 @@
     <ClCompile Include="src\seam\nodes\fireflies.cpp">
       <Filter>src\seam\nodes</Filter>
     </ClCompile>
+    <ClCompile Include="src\seam\nodes\feedback.cpp">
+      <Filter>src\seam\nodes</Filter>
+    </ClCompile>
+    <ClCompile Include="src\seam\nodes\saw.cpp">
+      <Filter>src\seam\nodes</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="src">
@@ -459,6 +465,12 @@
       <Filter>src\seam\containers</Filter>
     </ClInclude>
     <ClInclude Include="src\seam\nodes\fireflies.h">
+      <Filter>src\seam\nodes</Filter>
+    </ClInclude>
+    <ClInclude Include="src\seam\nodes\feedback.h">
+      <Filter>src\seam\nodes</Filter>
+    </ClInclude>
+    <ClInclude Include="src\seam\nodes\saw.h">
       <Filter>src\seam\nodes</Filter>
     </ClInclude>
   </ItemGroup>

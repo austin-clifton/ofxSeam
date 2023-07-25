@@ -22,8 +22,6 @@ PinOutput* AddStore::PinOutputs(size_t& size) {
 }
 
 void AddStore::Update(UpdateParams* params) {
-	std::function<glm::vec3(INode*)> get = [](INode* v) -> glm::vec3 { return glm::vec3(25.f); };
-
 	value += pin_incrementer[0];
 	// printf("addstore: %f\n", value);
 	params->push_patterns->Push(pin_out_value, &value, 1);
