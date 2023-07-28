@@ -13,7 +13,7 @@ Timer::~Timer() {
 
 }
 
-IPinInput** Timer::PinInputs(size_t& size) {
+PinInput* Timer::PinInputs(size_t& size) {
 	size = pin_inputs.size();
 	return &pin_inputs[0];
 }
@@ -27,8 +27,8 @@ PinOutput* Timer::PinOutputs(size_t& size) {
 
 void Timer::Update(UpdateParams* params) {
 	// only update if we're not paused
-	if (!pin_pause[0]) {
-		time += params->delta_time * pin_speed[0];
+	if (!pause) {
+		time += params->delta_time * speed;
 
 		params->push_patterns->Push(pin_out_time, &time, 1);
 	}

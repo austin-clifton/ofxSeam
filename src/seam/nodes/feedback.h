@@ -16,7 +16,7 @@ namespace seam::nodes {
 
 		void Draw(DrawParams* params) override;
 
-		IPinInput** PinInputs(size_t& size) override;
+		PinInput* PinInputs(size_t& size) override;
 
 		PinOutput* PinOutputs(size_t& size) override;
 
@@ -35,16 +35,18 @@ namespace seam::nodes {
 		GLuint bound_texture_id = 0;
 		bool bound_texture_dirty = false;
 
-		PinFbo<1> pin_in_texture = PinFbo<1>("input texture");
-		PinFloat<1> pin_in_decay = PinFloat<1>("decay", "", { 0.05f }, 0.f, 1.f);
-		PinFloat<4> pin_in_filter_color = PinFloat<4>("filter color", "", { 1.0f, 1.0f, 1.0f, 1.0f }, 0.f, 1.f);
-		PinFloat<2> pin_in_feedback_offset = PinFloat<2>("feedback offset", "", { 0.f, 0.f });
+		ofFbo* inTexture = nullptr;
+		float decay = 0.05f;
+		glm::vec4 filterColor = glm::vec4(1.f);
+		glm::vec2 feedbackOffset = glm::vec2(0.f);
+
+		PinFloatMeta decayMeta = PinFloatMeta(0.f, 1.f);
 			
-		std::array<IPinInput*, 4> pin_inputs = {
-			&pin_in_texture,
-			&pin_in_decay,
-			&pin_in_filter_color,
-			&pin_in_feedback_offset,
+		std::array<PinInput, 4> pin_inputs = {
+			pins::SetupInputPin(PinType::FBO, this, &inTexture, 1, "Input Texture", sizeof(ofFbo*)),
+			pins::SetupInputPin(PinType::FLOAT, this, &decay, 1, "Decay", sizeof(float), &decayMeta),
+			pins::SetupInputPin(PinType::FLOAT, this, &filterColor, 4, "Filter Color", sizeof(glm::vec4)),
+			pins::SetupInputPin(PinType::FLOAT, this, &feedbackOffset, 2, "Feedback Offset", sizeof(glm::vec2)),
 		};
 
 		PinOutput pin_out_texture = pins::SetupOutputPin(this, pins::PinType::FBO, "output");

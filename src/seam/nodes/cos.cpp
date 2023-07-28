@@ -11,7 +11,7 @@ Cos::~Cos() {
 
 }
 
-pins::IPinInput** Cos::PinInputs(size_t& size) {
+pins::PinInput* Cos::PinInputs(size_t& size) {
 	size = pin_inputs.size();
 	return pin_inputs.data();
 }
@@ -25,8 +25,8 @@ float Cos::Calculate(float t) {
 	// TODO modulating frequency makes this go whacko
 
 	// frequency of 1 == period multiplier of 2PI
-	float period_mul = 2.f * PI * pin_frequency[0];
-	return pin_amplitude_shift[0] + pin_amplitude[0] * cos(period_mul * t + pin_phase_shift[0]);
+	float period_mul = 2.f * PI * frequency;
+	return amplitude_shift + amplitude * cos(period_mul * t + phase_shift);
 }
 
 void Cos::Update(UpdateParams* params) {

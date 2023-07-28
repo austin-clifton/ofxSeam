@@ -17,21 +17,17 @@ namespace seam::nodes {
 
 		void Update(UpdateParams* params) override;
 
-		IPinInput** PinInputs(size_t& size) override;
+		PinInput* PinInputs(size_t& size) override;
 
 		PinOutput* PinOutputs(size_t& size) override;
 
 	private:
+		float inc = 0.f;
 		float value = 0.f;
 
-		PinFloat<1> pin_incrementer = PinFloat<1>(
-			"incrementer",
-			"will be added to the output value every frame",
-			{ 0.0f }
-		);
-
-		std::array<IPinInput*, 1> pin_inputs = {
-			&pin_incrementer
+		std::array<PinInput, 1> pin_inputs = {
+			pins::SetupInputPin(PinType::FLOAT, this, &inc, 1,
+				"incrementer", sizeof(float), nullptr, "will be added to the output value every frame"),
 		};
 
 		PinOutput pin_out_value = pins::SetupOutputPin(this, pins::PinType::FLOAT, "value");

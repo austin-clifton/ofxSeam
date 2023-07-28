@@ -126,7 +126,7 @@ ComputeParticles::~ComputeParticles() {
 void ComputeParticles::Update(UpdateParams* params) {
 	// update camera's position and rotation
 	// TODO up vector should use the torus's transform (you need to make a torus transform...)
-	camera_theta += params->delta_time * pin_camera_speed[0];
+	camera_theta += params->delta_time * camera_speed;
 	// restrict to range [-PI, PI], flip from PI to -PI when past PI or -PI
 	camera_theta = camera_theta > PI ? -PI * 2 + camera_theta
 		: camera_theta < -PI ? PI * 2 + camera_theta : camera_theta;
@@ -142,14 +142,14 @@ void ComputeParticles::Update(UpdateParams* params) {
 	compute_shader.begin();
 
 	compute_shader.setUniform1f("camera_theta", camera_theta);
-	compute_shader.setUniform1f("camera_theta_tolerance", pin_camera_theta_tolerance[0]);
+	compute_shader.setUniform1f("camera_theta_tolerance",  camera_theta_tolerance);
 	compute_shader.setUniform1f("timeLastFrame", ofGetLastFrameTime());
 	compute_shader.setUniform1f("elapsedTime", ofGetElapsedTimef());
-	compute_shader.setUniform1f("global_fbm_offset", pin_fbm_offset[0]);
-	compute_shader.setUniform1f("max_vel", pin_max_particle_velocity[0]);
-	compute_shader.setUniform1f("fbm_strength", pin_fbm_strength[0]);
-	compute_shader.setUniform1f("global_size_modifier", pin_particle_size_modifier[0]);
-	compute_shader.setUniform1f("angular_size_modifier", pin_particle_wave_distance[0]);
+	compute_shader.setUniform1f("global_fbm_offset", fbm_offset);
+	compute_shader.setUniform1f("max_vel", max_particle_velocity);
+	compute_shader.setUniform1f("fbm_strength", fbm_strength);
+	compute_shader.setUniform1f("global_size_modifier", particle_size_modifier);
+	compute_shader.setUniform1f("angular_size_modifier", particle_wave_distance);
 
 	// since each work group has a local_size of 1024 (this is defined in the shader)
 	// we only have to issue 1 / 1024 workgroups to cover the full workload.
@@ -237,7 +237,7 @@ bool ComputeParticles::GuiDrawPropertiesList() {
 	return ImGui::Checkbox("free camera", &free_camera);
 }
 
-IPinInput** ComputeParticles::PinInputs(size_t& size) {
+PinInput* ComputeParticles::PinInputs(size_t& size) {
 	size = pin_inputs.size();
 	return pin_inputs.data();
 }

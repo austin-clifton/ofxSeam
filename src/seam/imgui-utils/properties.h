@@ -38,7 +38,7 @@ namespace seam {
 		bool DrawShaderPath(std::string_view label, std::string& path);
 
 		/// generic for drawing different input pin types
-		bool DrawPinInput(pins::IPinInput* input);
+		bool DrawPinInput(pins::PinInput* input);
 
 		/// utility function for drawing all a node's input pins
 		bool DrawPinInputs(nodes::INode* node);

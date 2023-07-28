@@ -21,7 +21,7 @@ Range::~Range() {
 
 }
 
-IPinInput** Range::PinInputs(size_t& size) {
+PinInput* Range::PinInputs(size_t& size) {
 	size = pin_inputs.size();
 	return &pin_inputs[0];
 }
@@ -33,11 +33,11 @@ PinOutput* Range::PinOutputs(size_t& size) {
 
 void Range::Update(UpdateParams* params) {
 	value = MapRange(
-		pin_input_value[0],
-		pin_input_range_min[0],
-		pin_input_range_max[0],
-		pin_output_range_min[0],
-		pin_output_range_max[0]
+		inValue,
+		inRangeMin,
+		inRangeMax,
+		outRangeMin,
+		outRangeMax
 	);
 
 	printf("range: %f\n", value);

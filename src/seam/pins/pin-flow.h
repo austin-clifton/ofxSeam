@@ -3,6 +3,7 @@
 #include "pin.h"
 
 namespace seam::pins {
+	/*
 	// flow pins are always a single channel since they hold no state,
 	// and are only used to fire an some event handler on the receiving node
 	struct PinFlow : public PinInput<bool, 0> {
@@ -22,4 +23,5 @@ namespace seam::pins {
 			type = PinType::FLOW;
 		}
 	};
+	*/
 }

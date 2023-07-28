@@ -17,7 +17,7 @@ namespace seam::nodes {
 
 		bool GuiDrawPropertiesList() override;
 
-		IPinInput** PinInputs(size_t& size) override;
+		PinInput* PinInputs(size_t& size) override;
 
 		PinOutput* PinOutputs(size_t& size) override;
 
@@ -73,28 +73,24 @@ namespace seam::nodes {
 
 		bool free_camera = true;
 
-		PinFloat<1> pin_fbm_offset = PinFloat<1>("fbm_offset");
-		PinFloat<1> pin_fbm_strength = PinFloat<1>("fbm strength", "", { 3.0f });
-		PinFloat<1> pin_time = PinFloat<1>("time");
-		PinFloat<1> pin_camera_speed = PinFloat<1>("camera speed", "", { 0.1f });
-		PinFloat<1> pin_camera_theta_tolerance = PinFloat<1>("camera theta tolerance", "", { 1.8f });
-		PinFloat<1> pin_max_particle_velocity = PinFloat<1>("max particle velocity", "", { 4.0f });
-		PinFloat<1> pin_particle_size_modifier = PinFloat<1>("particle size modifier", "", { 1.0f });
-		PinFloat<1> pin_particle_wave_distance = PinFloat<1>(
-			"particle wave distance",
-			"[0..PI) particles near the wave will have increased size; values past PI turn the wave off",
-			{ PI },
-			{ 0.f }
-		);
-		std::array<IPinInput*, 8> pin_inputs = {
-			&pin_time,
-			&pin_camera_speed,
-			&pin_fbm_offset,
-			&pin_fbm_strength,
-			&pin_camera_theta_tolerance,
-			&pin_max_particle_velocity,
-			&pin_particle_size_modifier,
-			&pin_particle_wave_distance
+		float fbm_offset = 0.f;
+		float fbm_strength = 3.0f;
+		float time = 0.f;
+		float camera_speed = 0.1f;
+		float camera_theta_tolerance = 1.0f;
+		float max_particle_velocity = 4.0f;
+		float particle_size_modifier = 1.0f;
+		float particle_wave_distance = 0.f;
+
+		std::array<PinInput, 8> pin_inputs = {
+			pins::SetupInputPin(PinType::FLOAT, this, &fbm_offset, 1, "FBM Offset"),
+			pins::SetupInputPin(PinType::FLOAT, this, &fbm_strength, 1, "FBM Strength"),
+			pins::SetupInputPin(PinType::FLOAT, this, &time, 1, "Time"),
+			pins::SetupInputPin(PinType::FLOAT, this, &camera_speed, 1, "Camera Speed"),
+			pins::SetupInputPin(PinType::FLOAT, this, &camera_theta_tolerance, 1, "Camera Theta Tolerance"),
+			pins::SetupInputPin(PinType::FLOAT, this, &max_particle_velocity, 1, "Max Particle Velocity"),
+			pins::SetupInputPin(PinType::FLOAT, this, &particle_size_modifier, 1, "Particle Size Modifier"),
+			pins::SetupInputPin(PinType::FLOAT, this, &particle_wave_distance, 1, "Particle Wave Distance"),
 		};
 
 		PinOutput pin_out_material = pins::SetupOutputPin(this, pins::PinType::MATERIAL, "material");

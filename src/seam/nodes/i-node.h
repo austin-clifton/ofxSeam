@@ -69,7 +69,7 @@ namespace seam::nodes {
 
 		/// \param size should be set to the size (in elements) of the returned array
 		/// \return a pointer to the array of pointers to pin inputs
-		virtual pins::IPinInput** PinInputs(size_t& size) = 0;
+		virtual pins::PinInput* PinInputs(size_t& size) = 0;
 
 		/// \param size should be set to the size (in elements) of the returned array
 		/// \return a pointer to the array of pin outputs
@@ -120,6 +120,28 @@ namespace seam::nodes {
 		}
 
 	protected:
+		struct NodeConnection {
+			INode* node = nullptr;
+			// number of connections to this node,
+			// since there may be more than one Pin connecting the nodes together
+			uint16_t conn_count = 0;
+
+			bool operator==(const INode* other) {
+				return node == other;
+			}
+
+			bool operator<(const INode* other) {
+				return node < other;
+			}
+		};
+
+		virtual void InUseParents(std::vector<INode*>& out_parents) {
+			out_parents.clear();
+			for (size_t i = 0; i < parents.size(); i++) {
+				out_parents.push_back(parents[i].node);
+			}
+		}
+
 		// nodes which draw to FBOs can set this member so the FBO is drawn as part of the node's center view.
 		ofFbo* gui_display_fbo = nullptr;
 
@@ -138,21 +160,6 @@ namespace seam::nodes {
 		seam::nodes::NodeId id = 0;
 
 	private:
-		struct NodeConnection {
-			INode* node = nullptr;
-			// number of connections to this node,
-			// since there may be more than one Pin connecting the nodes together
-			uint16_t conn_count = 0;
-
-			bool operator==(const INode* other) {
-				return node == other;
-			}
-
-			bool operator<(const INode* other) {
-				return node < other;
-			}
-		};
-
 		static bool CompareUpdateOrder(const INode* l, const INode* r);
 		static bool CompareConnUpdateOrder(const NodeConnection& l, const NodeConnection& r);
 
@@ -180,4 +187,14 @@ namespace seam::nodes {
 		// the editor is a friend class so it can manage the node's inputs and outputs lists
 		friend class Editor;
 	};
+
+	/*
+	/// <summary>
+	/// If a Node has non-static Pins, you need to inherit IDynamicIONode for pin deserialization to work as expected.
+	/// </summary>
+	class IDynamicIONode {
+		virtual bool AddPinIn(PinInput&& pin_in) = 0;
+		virtual bool AddPinOut(PinOutput&& pin_out) = 0;
+	};
+	*/
 }

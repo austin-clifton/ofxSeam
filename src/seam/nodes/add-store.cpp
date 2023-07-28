@@ -11,9 +11,9 @@ AddStore::~AddStore() {
 
 }
 
-IPinInput** AddStore::PinInputs(size_t& size) {
+PinInput* AddStore::PinInputs(size_t& size) {
 	size = pin_inputs.size();
-	return &pin_inputs[0];
+	return pin_inputs.data();
 }
 
 PinOutput* AddStore::PinOutputs(size_t& size) {
@@ -22,7 +22,7 @@ PinOutput* AddStore::PinOutputs(size_t& size) {
 }
 
 void AddStore::Update(UpdateParams* params) {
-	value += pin_incrementer[0];
+	value += inc;
 	// printf("addstore: %f\n", value);
 	params->push_patterns->Push(pin_out_value, &value, 1);
 }

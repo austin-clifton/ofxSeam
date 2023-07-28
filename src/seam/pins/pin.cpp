@@ -21,7 +21,16 @@ namespace seam::pins {
 		return pin_out;
 	}
 
-	std::vector<IPinInput*> UniformsToPinInputs(ofShader& shader, nodes::INode* node) {
+	/// <summary>
+	/// 
+	/// </summary>
+	/// <param name="shader"></param>
+	/// <param name="node"></param>
+	/// <returns>A vector containing all the found uniforms that map to pins.
+	/// Each pin has memory allocated for its channels data.
+	/// TODO: handle deallocation of allocated memory with a helper function.
+	/// </returns>
+	std::vector<PinInput> UniformsToPinInputs(ofShader& shader, nodes::INode* node) {
 		// sanity check there were no errors before now
 		assert(glGetError() == GL_NO_ERROR);
 
@@ -39,7 +48,7 @@ namespace seam::pins {
 		// the length includes the null terminating char
 		name.resize(max_name_length);
 
-		std::vector<IPinInput*> pin_inputs;
+		std::vector<PinInput> pin_inputs;
 		pin_inputs.reserve(uniforms_count);
 		// query each uniform variable and make a PinInput for it
 		for (GLint i = 0; i < uniforms_count; i++) {
@@ -61,51 +70,54 @@ namespace seam::pins {
 			assert(err == GL_NO_ERROR);
 
 			// use string_view with c_str() so it finds the nul char for us
-			std::string_view snipped_name(name.c_str());
+			std::string_view snippedName(name.c_str());
 
 			// TODO filter out uniforms prefixed with "gl_"?
 
-			// now make a PinInput for the uniform
-			// first need to figure out what kind of Pin is needed
-			IPinInput* pin = nullptr;
-			// TODO many more possible types here, including textures,
-			// and many which are "multichannel", and require a rework of Pins so that they're multichannel capable
+			bool failed = false;
+
+			// Now make a PinInput for the uniform.
+			// First need to figure out what kind of Pin is needed.
+			// TODO many more possible types here, including textures.
 			switch (uniform_type) {
 			case GL_FLOAT:
-				pin = new PinFloat<1>(snipped_name);
+				pin_inputs.push_back(SetupInputPin(PinType::FLOAT, node, new float, 1, snippedName));
 				break;
 			case GL_INT:
-				pin = new PinInt<1>(snipped_name);
+				pin_inputs.push_back(SetupInputPin(PinType::INT, node, new int32_t, 1, snippedName));
 				break;
 			case GL_UNSIGNED_INT:
-				pin = new PinUint<1>(snipped_name);
+				pin_inputs.push_back(SetupInputPin(PinType::UINT, node, new uint32_t, 1, snippedName));
 				break;
 			case GL_FLOAT_VEC2:
-				pin = new PinFloat<2>(snipped_name);
+				pin_inputs.push_back(SetupInputPin(PinType::FLOAT, node, new glm::vec2(), 2, snippedName));
 				break;
 			case GL_INT_VEC2:
-				pin = new PinInt<2>(snipped_name);
+				pin_inputs.push_back(SetupInputPin(PinType::INT, node, new glm::ivec2(), 2, snippedName));
 				break;
 			case GL_UNSIGNED_INT_VEC2:
-				pin = new PinUint<2>(snipped_name);
+				pin_inputs.push_back(SetupInputPin(PinType::INT, node, new glm::u32vec2(), 2, snippedName));
 			default:
 				printf("uniform to PinInput for GL with enum type %d not implemented yet\n", uniform_type);
+				failed = true;
 				break;
 			}
 
 			// skip over non-supported Pin types
-			if (pin == nullptr) {
+			if (failed) {
 				continue;
 			}
 
+			PinInput& pin = pin_inputs[pin_inputs.size() - 1];
+
 			// grab the location of the uniform so we can set initial values for the Pin
-			GLint uniform_location = glGetUniformLocation(program, snipped_name.data());
+			GLint uniform_location = glGetUniformLocation(program, snippedName.data());
 			assert(glGetError() == GL_NO_ERROR);
 
 			// fill the Pin's default values
 			size_t size;
-			void* channels = pin->GetChannels(size);
-			switch (pin->type) {
+			void* channels = pin.GetChannels(size);
+			switch (pin.type) {
 			case PinType::FLOAT:
 				glGetnUniformfv(program, uniform_location, size * sizeof(float), (float*)channels);
 				break;
@@ -120,11 +132,78 @@ namespace seam::pins {
 			assert(glGetError() == GL_NO_ERROR);
 
 			// add it to the list
-			pin->node = node;
+			pin.node = node;
 			pin_inputs.push_back(pin);
-			
 		}
 
 		return pin_inputs;
+	}
+
+	PinInput SetupInputPin(
+		PinType pinType,
+		nodes::INode* node,
+		void* channels,
+		const size_t numChannels,
+		const std::string_view name,
+		size_t elementSizeInBytes,
+		void* pinMetadata,
+		const std::string_view description
+	) {
+		// TODO: Validate inputs in debug mode...?
+
+		if (elementSizeInBytes == 0) {
+			elementSizeInBytes = PinTypeToElementSize(pinType);
+		}
+
+
+		return PinInput(pinType, name, description, node, channels, numChannels, elementSizeInBytes, pinMetadata);
+	}
+
+	PinInput SetupInputQueuePin(
+		PinType pinType,
+		nodes::INode* node,
+		const std::string_view name,
+		size_t elementSizeInBytes,
+		void* pinMetadata,
+		const std::string_view description
+	) {
+		// TODO: Validate inputs in debug mode...?
+
+		if (elementSizeInBytes == 0) {
+			elementSizeInBytes = PinTypeToElementSize(pinType);
+		}
+
+		return PinInput(pinType, name, description, node, elementSizeInBytes, pinMetadata);
+	}
+
+	PinInput SetupInputFlowPin(
+		nodes::INode* node,
+		std::function<void(void)>&& callback,
+		const std::string_view name,
+		void* pinMetadata,
+		const std::string_view description
+	) {
+		return PinInput(name, description, node, std::move(callback), pinMetadata);
+	}
+
+	size_t PinTypeToElementSize(PinType type) {
+		switch (type) {
+		case PinType::BOOL:
+			return sizeof(bool);
+		case PinType::CHAR:
+			return sizeof(char);
+		case PinType::FLOAT:
+			return sizeof(float);
+		case PinType::FLOW:
+			return 0;
+		case PinType::INT:
+			return sizeof(int32_t);
+		case PinType::UINT:
+			return sizeof(uint32_t);
+		case PinType::NOTE_EVENT:
+			return sizeof(notes::NoteEvent*);
+		default:
+			throw new exception("Unknown pin type! You need to provide the element size in bytes yourself.");
+		}
 	}
 }

@@ -20,7 +20,7 @@ namespace seam::nodes {
 
 		void Draw(DrawParams* params) override;
 
-		IPinInput** PinInputs(size_t& size) override;
+		PinInput* PinInputs(size_t& size) override;
 
 		PinOutput* PinOutputs(size_t& size) override;
 
@@ -121,24 +121,22 @@ namespace seam::nodes {
 
 		ofBoxPrimitive box;
 
-		PinFloat<1> pin_avoidance_radius = PinFloat<1>("avoidance radius", "", { 4.0f }, 0.001f);
-		PinFloat<1> pin_mom_avoidance_radius = PinFloat<1>("mom avoidance radius", "", { 16.0f }, 0.001f);
-		PinFloat<1> pin_avoidance_force = PinFloat<1>("avoidance force");
-		PinFloat<1> pin_max_velocity = PinFloat<1>("max velocity", "", { 0.2f });
-		PinFloat<1> pin_pulse_camera_ndistance = PinFloat<1>(
-			"pulse distance", 
-			"distance (relative to camera near and far plane depth) that fireflies should pulse at", 
-			{ -10.f }
-		);
-		PinFloat<1> pin_pulse_range = PinFloat<1>("pulse range", "", { 10.f }, 0.f);
+		PinFloatMeta avoidanceRadiusMeta = PinFloatMeta(0.001f);
 
-		std::array<IPinInput*, 6> pin_inputs = {
-			&pin_avoidance_radius,
-			&pin_mom_avoidance_radius,
-			&pin_avoidance_force,
-			&pin_max_velocity,
-			&pin_pulse_camera_ndistance,
-			&pin_pulse_range,
+		float avoidanceRadius = 4.0f;
+		float momAvoidanceRadius = 16.0f;
+		float avoidanceForce = 0.f;
+		float maxVelocity = 0.2f;
+		float pulseCameraDistance = -10.f;
+		float pulseRange = 10.f;
+
+		std::array<PinInput, 6> pin_inputs = {
+			pins::SetupInputPin(PinType::FLOAT, this, &avoidanceRadius, 1, "Avoidance Radius"),
+			pins::SetupInputPin(PinType::FLOAT, this, &momAvoidanceRadius, 1, "Mom Avoidance Radius"),
+			pins::SetupInputPin(PinType::FLOAT, this, &avoidanceForce, 1, "Avoidance Force"),
+			pins::SetupInputPin(PinType::FLOAT, this, &maxVelocity, 1, "Max Velocity"),
+			pins::SetupInputPin(PinType::FLOAT, this, &pulseCameraDistance, 1, "Pulse Distance"),
+			pins::SetupInputPin(PinType::FLOAT, this, &pulseRange, 1, "Pulse Range"),
 		};
 		
 		PinOutput pin_out_texture = pins::SetupOutputPin(this, pins::PinType::FBO, "texture");

@@ -27,48 +27,48 @@ namespace seam::props {
 		return refresh_requested || name_changed;
 	}
 
-	bool DrawPinInput(IPinInput* input) {
+	bool DrawPinInput(PinInput* input) {
 		size_t num_channels = 0;
 		void* channels = input->GetChannels(num_channels);
 		switch (input->type) {
 		case PinType::INT: {
-			PinIntMeta* meta = dynamic_cast<PinIntMeta*>(input);
+			PinIntMeta* meta = (PinIntMeta*)input->PinMetadata();
 			return ImGui::DragScalarN(
 				input->name.c_str(),
 				ImGuiDataType_S32,
 				channels,
 				num_channels,
 				0.01f,
-				&meta->min,
-				&meta->max,
+				meta ? &meta->min : nullptr,
+				meta ? &meta->max : nullptr,
 				"%d",
 				0
 			);
 		}
 		case PinType::UINT: {
-			PinUintMeta* meta = dynamic_cast<PinUintMeta*>(input);
+			PinUintMeta* meta = (PinUintMeta*)input->PinMetadata();
 			return ImGui::DragScalarN(
 				input->name.c_str(),
 				ImGuiDataType_U32,
 				channels,
 				num_channels,
 				0.05f,
-				&meta->min,
-				&meta->max,
+				meta ? &meta->min : nullptr,
+				meta ? &meta->max : nullptr,
 				"%u",
 				0
 			);
 		}
 		case PinType::FLOAT: {
-			PinFloatMeta* meta = dynamic_cast<PinFloatMeta*>(input);
+			PinFloatMeta* meta = (PinFloatMeta*)input->PinMetadata();
 			return ImGui::DragScalarN(
 				input->name.c_str(),
 				ImGuiDataType_Float,
 				channels,
 				num_channels,
 				0.001f,
-				&meta->min,
-				&meta->max,
+				meta ? &meta->min : nullptr,
+				meta ? &meta->max : nullptr,
 				"%.3f",
 				0
 			);
@@ -80,7 +80,7 @@ namespace seam::props {
 		}
 		case PinType::FLOW: {
 			if (ImGui::Button(input->name.c_str())) {
-				((PinFlow*)input)->Callback();
+				input->FlowCallback();
 				return true;
 			}
 		}
@@ -101,9 +101,9 @@ namespace seam::props {
 	bool DrawPinInputs(nodes::INode* node) {
 		bool changed = false;
 		size_t size;
-		IPinInput** inputs = node->PinInputs(size);
+		PinInput* inputs = node->PinInputs(size);
 		for (size_t i = 0; i < size; i++) {
-			changed = DrawPinInput(inputs[i]) || changed;
+			changed = DrawPinInput(&inputs[i]) || changed;
 		}
 		return changed;
 	}

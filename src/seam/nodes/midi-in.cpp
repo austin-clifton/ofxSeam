@@ -42,7 +42,7 @@ bool MidiIn::ListenOnPort(unsigned int port) {
 	}
 }
 
-IPinInput** MidiIn::PinInputs(size_t& size) {
+PinInput* MidiIn::PinInputs(size_t& size) {
 	size = 0;
 	return nullptr;
 }

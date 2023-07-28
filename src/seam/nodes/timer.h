@@ -18,13 +18,20 @@ namespace seam::nodes {
 
 		void Update(UpdateParams* params) override;
 
-		IPinInput** PinInputs(size_t& size) override;
+		PinInput* PinInputs(size_t& size) override;
 
 		PinOutput* PinOutputs(size_t& size) override;
 
 	private:
-		float time = 0.f;
+		void Pause() {
+			time = 0.f;
+		}
 
+		float time = 0.f;
+		float speed = 1.f;
+		bool pause = false;
+
+		/*
 		PinBool<1> pin_pause = PinBool<1>(
 			"pause", 
 			"pause the timer", 
@@ -42,11 +49,12 @@ namespace seam::nodes {
 			"rate of output increment for the timer", 
 			{ 1.f }
 		);
+		*/
 
-		std::array<IPinInput*, 3> pin_inputs = {
-			&pin_pause,
-			&pin_reset,
-			&pin_speed
+		std::array<PinInput, 3> pin_inputs = {
+			pins::SetupInputPin(PinType::FLOAT, this, &time, 1, "Time"),
+			pins::SetupInputPin(PinType::FLOAT, this, &speed, 1, "Speed"),
+			pins::SetupInputFlowPin(this,[&]() { Pause(); }, "Reset")
 		};
 
 		PinOutput pin_out_time = pins::SetupOutputPin(this, pins::PinType::FLOAT, "time");

@@ -19,7 +19,7 @@ namespace seam::nodes {
 
 		bool GuiDrawPropertiesList() override;
 
-		IPinInput** PinInputs(size_t& size) override;
+		PinInput* PinInputs(size_t& size) override;
 
 		PinOutput* PinOutputs(size_t& size) override;
 
@@ -33,7 +33,7 @@ namespace seam::nodes {
 		glm::ivec2 tex_size = glm::ivec2(1920, 1080);
 		
 		// input pins are dynamically created based on the shader's uniforms
-		std::vector<IPinInput*> pin_inputs;
+		std::vector<PinInput> pin_inputs;
 		PinOutput pin_out_material = pins::SetupOutputPin(this, pins::PinType::MATERIAL, "material");
 	};
 }

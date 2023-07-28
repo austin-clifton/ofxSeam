@@ -189,7 +189,7 @@ Fireflies::~Fireflies() {
 	glDeleteBuffers(1, &mom_directions_ssbo);
 }
 
-IPinInput** Fireflies::PinInputs(size_t& size) {
+PinInput* Fireflies::PinInputs(size_t& size) {
 	size = pin_inputs.size();
 	return pin_inputs.data();
 }
@@ -202,7 +202,7 @@ PinOutput* Fireflies::PinOutputs(size_t& size) {
 void Fireflies::Update(UpdateParams* params) {
 	mom_compute_shader.begin();
 	mom_compute_shader.setUniform1f("time", params->time);
-	mom_compute_shader.setUniform1f("maxVelocity", pin_max_velocity[0] * 1.1f);
+	mom_compute_shader.setUniform1f("maxVelocity", maxVelocity * 1.1f);
 	mom_compute_shader.dispatchCompute(1, 1, 1);
 	mom_compute_shader.end();
 
@@ -210,7 +210,7 @@ void Fireflies::Update(UpdateParams* params) {
 	
 	ff_compute_shader.begin();
 	ff_compute_shader.setUniform1f("time", params->time * 0.05);
-	ff_compute_shader.setUniform1f("maxVelocity", pin_max_velocity[0]);
+	ff_compute_shader.setUniform1f("maxVelocity", maxVelocity);
 	ff_compute_shader.dispatchCompute((fireflies_count + 1024 - 1) / 1024, 1, 1);
 	ff_compute_shader.end();
 
@@ -248,12 +248,12 @@ void Fireflies::Draw(DrawParams* params) {
 	float nearplane = camera.getNearClip();
 
 	float pulse_distance = camera.getNearClip() 
-		+ pin_pulse_camera_ndistance[0] * (camera.getFarClip() - camera.getNearClip());
+		+ pulseCameraDistance * (camera.getFarClip() - camera.getNearClip());
 
 	ff_geo_shader.setUniform3f("cameraLeft", camera.getSideDir());
 	ff_geo_shader.setUniform3f("cameraUp", camera.getUpAxis());
 	ff_geo_shader.setUniform1f("pulseDistance", pulse_distance);
-	ff_geo_shader.setUniform1f("pulseRange", pin_pulse_range[0]);
+	ff_geo_shader.setUniform1f("pulseRange", pulseRange);
 
 	// Point size doesn't matter(?) since a geo shader is being used.
 	ff_vbo.draw(GL_POINTS, 0, fireflies_count);
@@ -326,8 +326,8 @@ void Fireflies::AvoidanceLoop() {
 
 		auto start = std::chrono::high_resolution_clock::now();
 
-		UpdateDirections(ff_octree, ff_positions, ff_dirmap, fireflies_count, found, pin_avoidance_radius[0]);
-		UpdateDirections(mom_octree, mom_positions, mom_dirmap, moms_count, found, pin_mom_avoidance_radius[0]);
+		UpdateDirections(ff_octree, ff_positions, ff_dirmap, fireflies_count, found, avoidanceRadius);
+		UpdateDirections(mom_octree, mom_positions, mom_dirmap, moms_count, found, momAvoidanceRadius);
 
 		auto stop = std::chrono::high_resolution_clock::now();
 		// printf("took %llu ms to update directions\n", (stop - start).count() / 100000);

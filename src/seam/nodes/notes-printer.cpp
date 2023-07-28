@@ -8,6 +8,8 @@ NotesPrinter::NotesPrinter() : INode("Notes Printer") {
 	// this is a debug tool which will never be part of a visual chain (it has no outputs).
 	// check for Update() every frame.
 	flags = (NodeFlags)(flags | NodeFlags::UPDATES_EVERY_FRAME);
+	pinNotesOnStream = &pin_inputs[0];
+	pinNotesOnStream = &pin_inputs[1];
 }
 
 NotesPrinter::~NotesPrinter() {
@@ -15,7 +17,7 @@ NotesPrinter::~NotesPrinter() {
 	// no op
 }
 
-pins::IPinInput** NotesPrinter::PinInputs(size_t& size) {
+pins::PinInput* NotesPrinter::PinInputs(size_t& size) {
 	size = pin_inputs.size();
 	return pin_inputs.data();
 }
@@ -38,14 +40,19 @@ void NotesPrinter::PrintNoteOffEvent(notes::NoteOffEvent* ev) {
 }
 
 void NotesPrinter::Update(UpdateParams* params) {
-	// drain any notes that were pushed to each notes stream and print their values
-	for (size_t i = pin_notes_on_stream.channels.size(); i > 0; i--) {
-		PrintNoteOnEvent((notes::NoteOnEvent*)pin_notes_on_stream[i - 1]);
-		pin_notes_on_stream.channels.pop_back();
-	}
+	size_t size;
+	notes::NoteOnEvent** onEvents = (notes::NoteOnEvent**)pinNotesOnStream->GetEvents(size);
 
-	for (size_t i = pin_notes_off_stream.channels.size(); i > 0; i--) {
-		PrintNoteOffEvent((notes::NoteOffEvent*)pin_notes_off_stream[i - 1]);
-		pin_notes_off_stream.channels.pop_back();
+	// drain any notes that were pushed to each notes stream and print their values
+	for (size_t i = 0; i < size; i++) {
+		PrintNoteOnEvent(onEvents[i]);
 	}
+	pinNotesOnStream->ClearEvents(size);
+
+	notes::NoteOffEvent** offEvents = (notes::NoteOffEvent**)pinNotesOffStream->GetEvents(size);
+
+	for (size_t i = 0; i < size; i++) {
+		PrintNoteOffEvent(offEvents[i]);
+	}
+	pinNotesOffStream->ClearEvents(size);
 }

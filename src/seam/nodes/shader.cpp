@@ -21,7 +21,7 @@ Shader::~Shader() {
 	// TODO dealloc pin input names
 }
 
-IPinInput** Shader::PinInputs(size_t& size) {
+PinInput* Shader::PinInputs(size_t& size) {
 	size = pin_inputs.size();
 	return pin_inputs.data();
 }
@@ -37,36 +37,36 @@ void Shader::Draw(DrawParams* params) {
 	shader.begin();
 
 	for (size_t i = 0; i < pin_inputs.size(); i++) {
-		IPinInput* pin = pin_inputs[i];
+		PinInput& pin = pin_inputs[i];
 		size_t size;
-		void* channels = pin->GetChannels(size);
+		void* channels = pin.GetChannels(size);
 		
 		// TODO put this somewhere more accessible,
 		// and add more type conversions as you add more to UniformsToPinInputs()
-		switch (pin->type) {
+		switch (pin.type) {
 		case pins::PinType::FLOAT: {
 			// ohhh this is annoying, is there any way to avoid it?
 			if (size == 1) {
-				shader.setUniform1f(pin->name, *(float*)channels);
+				shader.setUniform1f(pin.name, *(float*)channels);
 			} else {
-				shader.setUniform2f(pin->name, *(glm::vec2*)channels);
+				shader.setUniform2f(pin.name, *(glm::vec2*)channels);
 			}
 			break;
 		}
 		case pins::PinType::INT: {
 			if (size == 1) {
-				shader.setUniform1i(pin->name, *(int*)channels);
+				shader.setUniform1i(pin.name, *(int*)channels);
 			} else {
-				shader.setUniform2i(pin->name, ((int*)(channels))[0], ((int*)(channels))[1]);
+				shader.setUniform2i(pin.name, ((int*)(channels))[0], ((int*)(channels))[1]);
 			}
 			break;
 		}
 		case pins::PinType::UINT: {
 			uint32_t* uchans = (uint32_t*)channels;
 			if (size == 1) {
-				glUniform1ui(shader.getUniformLocation(pin->name), *uchans);
+				glUniform1ui(shader.getUniformLocation(pin.name), *uchans);
 			} else {
-				glUniform2ui(shader.getUniformLocation(pin->name), uchans[0], uchans[1]);
+				glUniform2ui(shader.getUniformLocation(pin.name), uchans[0], uchans[1]);
 			}
 			break;
 		}
@@ -85,6 +85,7 @@ bool Shader::AttemptShaderLoad(const std::string& shader_name) {
 
 		// TODO proper handling of connected input pins being deleted, pins shifting index, etc. etc.
 		// just danger assign it for now so I can see it's doing something
+		// THIS IS LEAKING MEMORY IF PIN INPUTS CURRENTLY EXIST!
 		pin_inputs = UniformsToPinInputs(shader, this);
 
 		return true;

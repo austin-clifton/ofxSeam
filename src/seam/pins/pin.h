@@ -1,4 +1,5 @@
-#pragma once
+#ifndef PIN_H
+#define PIN_H
 
 #include <vector>
 
@@ -94,32 +95,135 @@ namespace seam {
 			nodes::INode* node = nullptr;
 
 			PinFlags flags = (PinFlags)0;
+
+			virtual ~Pin() { }
 		};
 
-		// TODO pin allocs should maybe come from a pool
+		class PinInput;
 
-		class IPinInput;
+		// TODO pin allocs should maybe come from a pool
 
 		// Why doesn't this just inherit Pin...?
 		struct PinOutput {
 			// output pins don't have values, just need to know metadata (name and type)
 			// use the base struct
 			Pin pin;
-			std::vector<IPinInput*> connections;
+			std::vector<PinInput*> connections;
 			// user data, if any is needed
 			void* userp = nullptr;
 		};
 
-		/// Abstract class for input pins.
-		/// Defines a generic function to retrieve the channels array which must be implemented.
-		class IPinInput : public Pin {
+		class PinInput : public Pin {
 		public:
-			virtual ~IPinInput() { }
+			PinInput() {
+				type = PinType::TYPE_NONE;
+				channel.data = nullptr;
+				channel.size = 0;
+			}
 
+			PinInput(PinType _type, 
+				const std::string_view _name, 
+				const std::string_view _description, 
+				nodes::INode* _node,
+				void* _channelsData,
+				size_t _channelsSize,
+				size_t _elementSizeInBytes,
+				void* _pinMetadata
+				)
+			{
+				type = _type;
+				name = _name;
+				description = _description;
+				node = _node;
+				isQueue = false;
+				flags = (PinFlags)(flags | PinFlags::INPUT);
+				channel.data = _channelsData;
+				channel.size = _channelsSize;
+				sizeInBytes = _elementSizeInBytes;
+				pinMetadata = _pinMetadata;
+			}
+
+			PinInput(PinType _type,
+				const std::string_view _name,
+				const std::string_view _description,
+				nodes::INode* _node,
+				size_t _elementSizeInBytes,
+				void* _pinMetadata
+			) {
+				type = _type;
+				name = _name;
+				description = _description;
+				node = _node;
+				isQueue = true;
+				flags = (PinFlags)(flags | PinFlags::INPUT | PinFlags::EVENT_QUEUE);
+				pinMetadata = _pinMetadata;
+				sizeInBytes = _elementSizeInBytes;
+				eventQueue.data = malloc(sizeInBytes * MAX_EVENTS);
+			}
+
+			PinInput(const std::string_view _name,
+				const std::string_view _description,
+				nodes::INode* _node,
+				std::function<void(void)>&& callback,
+				void* _pinMetadata
+			)
+			{
+				type = PinType::FLOW;
+				name = _name;
+				description = _description;
+				node = _node;
+				isQueue = false;
+				flags = (PinFlags)(flags | PinFlags::INPUT);
+				pinMetadata = _pinMetadata;
+				Callback = std::move(callback);
+				sizeInBytes = 0;
+			}
+
+			~PinInput() {
+				// Nothing to do...?
+			}
+
+			/// <summary>
 			/// Get a pointer to the input pin's raw channels data.
-			/// \param size should be set to the size of the returned array
-			/// \return the c-style array of channels the input Pin owns
-			virtual void* GetChannels(size_t& size) = 0;
+			/// </summary>
+			/// <param name="size">will be set to the size of the returned array</param>
+			/// <returns>An opaque pointer to the array of channels the input Pin owns.</returns>
+			void* GetChannels(size_t& size) {
+				size = channel.size;
+				return channel.data;
+			}
+
+			void* PinMetadata() {
+				return pinMetadata;
+			}
+
+			template <typename T>
+			inline void PushEvents(T* events, size_t numEvents) {
+				assert(isQueue);
+				size_t offset = eventQueue.size * sizeof(T);
+				memcpy_s(((T*)eventQueue.data) + offset, sizeInBytes * MAX_EVENTS - offset, events, numEvents * sizeof(T));
+				eventQueue.size = min(MAX_EVENTS, eventQueue.size + numEvents);
+			}
+
+			inline void* GetEvents(size_t& size) {
+				assert(isQueue);
+				size = eventQueue.size;
+				return eventQueue.data;
+			}
+
+			inline void ClearEvents(size_t expected) {
+				assert(isQueue);
+				// This is just a check in case any multithreading funkiness happens;
+				// Pins shouldn't be pushed to outside of an update loop, or events WILL be lost.
+				assert(expected == eventQueue.size);
+				memset(eventQueue.data, 0, eventQueue.size * sizeInBytes);
+				eventQueue.size = 0;
+			}
+
+			inline void FlowCallback() {
+				assert(type == PinType::FLOW);
+				Callback();
+			}
 
 			/// push pattern id
 			PushId push_id;
@@ -127,8 +231,176 @@ namespace seam {
 			// the output pin which connects to this pin
 			// can be nullptr
 			PinOutput* connection = nullptr;
+
+		private:
+			const size_t MAX_EVENTS = 16;
+
+			struct Channel {
+				void* data;
+				size_t size;
+			};
+
+			struct EventQueue {
+				void* data;
+				size_t size;
+			};
+
+			bool isQueue;
+
+			// Should be set by pin types which have GUI metadata for mins/maxes etc.
+			void* pinMetadata;
+
+			// Size of each element pointed to by void* members.
+			size_t sizeInBytes;
+
+			union {
+				// Only used by non-event non-flow pins.
+				Channel channel;
+
+				// Only used by event queue inputs.
+				EventQueue eventQueue;
+			};
+
+			// Only used by flow pins. Exists outside the union so the copy constructor can still exist.
+			std::function<void(void)> Callback;
 		};
 
+		struct PinFloatMeta {
+			PinFloatMeta(float _min = -FLT_MAX, float _max = FLT_MAX, RangeType _range = RangeType::LINEAR) {
+				min = _min;
+				max = _max;
+				range_type = _range;
+			}
+
+			float min;
+			float max;
+			RangeType range_type;
+		};
+
+		struct PinIntMeta {
+			PinIntMeta(int _min = INT_MIN, int _max = INT_MAX, RangeType _range = RangeType::LINEAR) {
+				min = _min;
+				max = _max;
+				range_type = _range;
+			}
+
+			int min;
+			int max;
+			RangeType range_type;
+		};
+
+		struct PinUintMeta {
+			uint32_t min = 0;
+			uint32_t max = UINT_MAX;
+			RangeType range_type = RangeType::LINEAR;
+		};
+
+		struct PinNoteEventMeta {
+			/// specifies what note event types this input pin accepts
+			notes::EventTypes note_types;
+		};
+
+		size_t PinTypeToElementSize(PinType type);
+
+		PinInput SetupInputPin(
+			PinType pinType,
+			nodes::INode* node,
+			void* channels,
+			const size_t numChannels,
+			const std::string_view name = "Input",
+			size_t elementSizeInBytes = 0,
+			void* pinMetadata = nullptr,
+			const std::string_view description = ""
+		);
+
+		PinInput SetupInputQueuePin(
+			PinType pinType,
+			nodes::INode* node,
+			const std::string_view name = "Input Queue",
+			size_t elementSizeInBytes = 0,
+			void* pinMetadata = nullptr,
+			const std::string_view description = ""
+		);
+
+		PinInput SetupInputFlowPin(
+			nodes::INode* node,
+			std::function<void(void)>&& callback,
+			const std::string_view name = "Flow",
+			void* pinMetadata = nullptr,
+			const std::string_view description = ""
+		);
+
+		/*
+		PinInput SetupFloatInputPin(
+			nodes::INode* node,
+			float* channel,
+			const std::string_view name = "Float Input",
+			bool isQueue = false,
+			PinFloatMeta* metadata = nullptr,
+			const std::string_view description = ""
+		) {
+			return PinInput(PinType::FLOAT, name, description, node, isQueue, channel, 1, metadata);
+		}
+
+		PinInput SetupVec2InputPin(
+			nodes::INode* node,
+			glm::vec2* channel,
+			const std::string_view name = "Vec2 Input",
+			bool isQueue = false,
+			PinFloatMeta* metadata = nullptr,
+			const std::string_view description = ""
+		) {
+			return PinInput(PinType::FLOAT, name, description, node, isQueue, channel, 2, metadata);
+		}
+
+		PinInput SetupIntInputPin(
+			nodes::INode* node,
+			int32_t* channel,
+			const std::string_view name = "Int Input",
+			bool isQueue = false,
+			PinFloatMeta* metadata = nullptr,
+			const std::string_view description = ""
+		) {
+			return PinInput(PinType::INT, name, description, node, isQueue, channel, 1, metadata);
+		}
+
+		PinInput SetupIntVec2InputPin(
+			nodes::INode* node,
+			glm::ivec2* channel,
+			const std::string_view name = "IVec2 Input",
+			bool isQueue = false,
+			PinFloatMeta* metadata = nullptr,
+			const std::string_view description = ""
+		) {
+			return PinInput(PinType::INT, name, description, node, isQueue, channel, 2, metadata);
+		}
+
+		PinInput SetupUIntInputPin(
+			nodes::INode* node,
+			int32_t* channel,
+			const std::string_view name = "UInt Input",
+			bool isQueue = false,
+			PinFloatMeta* metadata = nullptr,
+			const std::string_view description = ""
+		) {
+			return PinInput(PinType::UINT, name, description, node, isQueue, channel, 1, metadata);
+		}
+
+		PinInput SetupUIntVec2InputPin(
+			nodes::INode* node,
+			glm::ivec2* channel,
+			const std::string_view name = "UIVec2 Input",
+			bool isQueue = false,
+			PinFloatMeta* metadata = nullptr,
+			const std::string_view description = ""
+		) {
+			return PinInput(PinType::UINT, name, description, node, isQueue, channel, 2, metadata);
+		}
+		*/
+
+
+
+		/*
 		/// Concrete implementation for IPinInput.
 		/// Should be inherited by all input pin types since input pins are where pin channels data is stored.
 		/// Is capable of allocating a fixed size stack allocated array, 
@@ -184,7 +456,9 @@ namespace seam {
 
 			std::vector<T> channels;
 		};
+		*/
 
+		/*
 		// these belong in their own headers, probably
 
 		template <std::size_t N>
@@ -221,6 +495,7 @@ namespace seam {
 			}
 			ofShader* shader = nullptr;
 		};
+		*/
 
 		PinOutput SetupOutputPin(
 			nodes::INode* node, 
@@ -235,6 +510,8 @@ namespace seam {
 		/// \param node The node the shader's Pins will be added to. 
 		/// \return The list of PinInputs which maps to the uniforms in the shader.
 		/// All IPinInput structs are heap-allocated, and must be freed when no longer in use.
-		std::vector<IPinInput*> UniformsToPinInputs(ofShader& shader, nodes::INode* node);
+		std::vector<PinInput> UniformsToPinInputs(ofShader& shader, nodes::INode* node);
 	}
 };
+
+#endif

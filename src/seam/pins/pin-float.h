@@ -3,6 +3,7 @@
 #include "pin.h"
 
 namespace seam::pins {
+	/*
 	struct PinFloatMeta {
 		float min = -FLT_MAX;
 		float max = FLT_MAX;
@@ -31,4 +32,5 @@ namespace seam::pins {
 			range_type = _range_type;
 		}
 	};
+	*/
 }

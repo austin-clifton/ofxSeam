@@ -173,10 +173,13 @@ void Editor::UpdateVisibleNodeGraph(INode* n, UpdateParams* params) {
 	// traverse parents and update them before traversing this node
 	// parents are sorted by update order, so that any "shared parents" are updated first
 	int16_t last_update_order = -1;
-	for (auto p : n->parents) {
-		assert(last_update_order <= p.node->update_order);
-		last_update_order = p.node->update_order;
-		UpdateVisibleNodeGraph(p.node, params);
+	static std::vector<INode*> in_use_parents;
+	n->InUseParents(in_use_parents);
+
+	for (auto p : in_use_parents) {
+		assert(last_update_order <= p->update_order);
+		last_update_order = p->update_order;
+		UpdateVisibleNodeGraph(p, params);
 	}
 
 	// now, this node can update, if it's dirty
@@ -277,7 +280,7 @@ void Editor::SaveGraph(const std::string_view filename, const std::vector<INode*
 	// Build maps of IDs to nodes, input pins, and output pins.
 	// ID assignment will happen now for anything that isn't already assigned.
 	std::map<seam::nodes::NodeId, INode*> node_map;
-	std::map<seam::pins::PinId, IPinInput*> input_pin_map;
+	std::map<seam::pins::PinId, PinInput*> input_pin_map;
 	std::map<seam::pins::PinId, PinOutput*> output_pin_map;
 	seam::nodes::NodeId max_node_id = 1;
 	seam::pins::PinId max_input_pin_id = 1, max_output_pin_id = 1;
@@ -302,13 +305,13 @@ void Editor::SaveGraph(const std::string_view filename, const std::vector<INode*
 
 			// Find assigned input pin IDs.
 			for (size_t i = 0; i < inputs_size; i++) {
-				size_t pin_id = input_pins[i]->id;
+				size_t pin_id = input_pins[i].id;
 				if (pin_id != 0) {
 					if (input_pin_map.find(pin_id) != input_pin_map.end()) {
 						printf("[Serialization]: Input pin has ID matching another input pin, clearing this Pin's ID. This shouldn't happen!\n");
-						input_pins[i]->id = 0;
+						input_pins[i].id = 0;
 					} else {
-						input_pin_map.emplace(std::make_pair(pin_id, input_pins[i]));
+						input_pin_map.emplace(std::make_pair(pin_id, &input_pins[i]));
 						max_input_pin_id = std::max(pin_id, max_input_pin_id);
 					}
 				} 
@@ -349,14 +352,14 @@ void Editor::SaveGraph(const std::string_view filename, const std::vector<INode*
 
 		// Assign unassigned input pins.
 		for (size_t i = 0; i < inputs_size; i++) {
-			size_t pin_id = input_pins[i]->id;
+			size_t pin_id = input_pins[i].id;
 			if (pin_id == 0) {
 				while (input_pin_map.find(max_input_pin_id) != input_pin_map.end()) {
 					max_input_pin_id++;
 				}
-				input_pins[i]->id = pin_id = max_input_pin_id;
+				input_pins[i].id = pin_id = max_input_pin_id;
 				max_input_pin_id++;
-				input_pin_map.emplace(std::make_pair(pin_id, input_pins[i]));
+				input_pin_map.emplace(std::make_pair(pin_id, &input_pins[i]));
 			}
 		}
 
@@ -404,25 +407,25 @@ void Editor::SaveGraph(const std::string_view filename, const std::vector<INode*
 
 		// Serialize input pins
 		for (size_t i = 0; i < inputs_size; i++) {
-			auto pin_in = input_pins[i];
+			auto& pin_in = input_pins[i];
 			auto input_builder = inputs_builder[i];
-			input_builder.setName(pin_in->name);
-			input_builder.setId(pin_in->id);
+			input_builder.setName(pin_in.name);
+			input_builder.setId(pin_in.id);
 
 			// Bail out of channel serialization if this input type doesn't have serializable state
-			if (pin_in->type == PinType::FLOW
-				|| pin_in->type == PinType::FBO
-				|| pin_in->type == PinType::MATERIAL
-				|| pin_in->type == PinType::NOTE_EVENT
+			if (pin_in.type == PinType::FLOW
+				|| pin_in.type == PinType::FBO
+				|| pin_in.type == PinType::MATERIAL
+				|| pin_in.type == PinType::NOTE_EVENT
 			) {
 				continue;
 			}
 
 			size_t channels_size;
-			void* channels = pin_in->GetChannels(channels_size);
+			void* channels = pin_in.GetChannels(channels_size);
 			auto channels_builder = input_builder.initChannels(channels_size);
 
-			switch (pin_in->type) {
+			switch (pin_in.type) {
 			case PinType::BOOL: {
 				bool* bool_values = (bool*)channels;
 				for (size_t i = 0; i < channels_size; i++) {
@@ -534,15 +537,19 @@ void Editor::LoadGraph(const std::string_view filename) {
 
 		// Deserialize inputs
 		for (const auto& serialized_pin_in : serialized_node.getInputPins()) {
-			std::string_view pin_name = serialized_pin_in.getName().cStr();
+			std::string serialized_pin_name = serialized_pin_in.getName().cStr();
+			std::transform(serialized_pin_name.begin(), serialized_pin_name.end(), serialized_pin_name.begin(), 
+				[](unsigned char c) {return std::tolower(c); });
 
 			// Try to find an input pin on the node with a matching name.
-			auto matchPos = std::find_if(input_pins, input_pins + inputs_size, [pin_name](const IPinInput* pin_in) 
-				{ return pin_name == pin_in->name; }
-			);
+			auto matchPos = std::find_if(input_pins, input_pins + inputs_size, [serialized_pin_name](const PinInput& pin_in) {
+				std::string name_copy = pin_in.name;
+				std::transform(name_copy.begin(), name_copy.end(), name_copy.begin(), [](unsigned char c) {return std::tolower(c); });
+				return name_copy == serialized_pin_name;
+			});
 
 			if (matchPos != inputs_end) {
-				IPinInput* match = *matchPos;
+				PinInput* match = matchPos;
 				match->id = serialized_pin_in.getId();
 
 				input_pin_map.emplace(std::make_pair(match->id, match));
@@ -597,6 +604,9 @@ void Editor::LoadGraph(const std::string_view filename) {
 				default:
 					throw logic_error("not implemented!");
 				}
+			} else {
+				printf("Could not match serialized input pin with name %s on node %s\n", 
+					serialized_pin_name.c_str(), serialized_node.getDisplayName().cStr());
 			}
 		}
 
@@ -786,7 +796,7 @@ void Editor::GuiDraw() {
 			ed::PinId pin_id = 0;
 			if (ed::QueryNewNode(&pin_id)) {
 				// figure out if it's an input or output pin
-				IPinInput* pin_in = dynamic_cast<IPinInput*>(pin_id.AsPointer<IPinInput>());
+				PinInput* pin_in = dynamic_cast<PinInput*>(pin_id.AsPointer<PinInput>());
 				if (pin_in != nullptr) {
 					new_link_pin = pin_in;
 				} else {
@@ -934,7 +944,7 @@ bool Editor::Connect(Pin* pin_co, Pin* pin_ci) {
 
 	// find the structs that contain the pins to be connected
 	// also more validations: make sure pin_out is actually an output pin of node_out, and same for the input
-	IPinInput* pin_in = FindPinInput(child, pin_ci);
+	PinInput* pin_in = FindPinInput(child, pin_ci);
 	PinOutput* pin_out = FindPinOutput(parent, pin_co);
 	assert(pin_in && pin_out);
 
@@ -974,7 +984,7 @@ bool Editor::Disconnect(Pin* pin_co, Pin* pin_ci) {
 	INode* parent = pin_co->node;
 	INode* child = pin_ci->node;
 
-	IPinInput* pin_in = FindPinInput(child, pin_ci);
+	PinInput* pin_in = FindPinInput(child, pin_ci);
 	PinOutput* pin_out = FindPinOutput(parent, pin_co);
 	assert(pin_in && pin_out);
 
@@ -1080,13 +1090,13 @@ void Editor::RecalculateTraversalOrder(INode* node) {
 	RecalculateUpdateOrder(node);
 }
 
-IPinInput* Editor::FindPinInput(INode* node, Pin* pin) {
-	IPinInput* pin_in = nullptr;
+PinInput* Editor::FindPinInput(INode* node, Pin* pin) {
+	PinInput* pin_in = nullptr;
 	size_t size;
-	IPinInput** pin_inputs = node->PinInputs(size);
+	PinInput* pin_inputs = node->PinInputs(size);
 	for (size_t i = 0; i < size && pin_in == nullptr; i++) {
-		if (pin_inputs[i] == pin) {
-			pin_in = pin_inputs[i];
+		if (&pin_inputs[i] == pin) {
+			pin_in = &pin_inputs[i];
 		}
 	}
 	return pin_in;

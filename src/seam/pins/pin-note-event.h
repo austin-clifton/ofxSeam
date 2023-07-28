@@ -4,6 +4,7 @@
 #include "../notes.h"
 
 namespace seam::pins {
+	/*
 	struct PinNoteEventMeta {
 		/// specifies what note event types this input pin accepts
 		notes::EventTypes note_types;
@@ -26,4 +27,5 @@ namespace seam::pins {
 			flags = PinFlags(flags | _flags);
 		}
 	};
+	*/
 }

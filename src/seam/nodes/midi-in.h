@@ -19,7 +19,7 @@ namespace seam::nodes {
 
 		bool GuiDrawPropertiesList() override;
 
-		IPinInput** PinInputs(size_t& size) override;
+		PinInput* PinInputs(size_t& size) override;
 
 		PinOutput* PinOutputs(size_t& size) override;
 

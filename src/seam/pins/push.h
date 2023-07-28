@@ -43,7 +43,7 @@ namespace seam::pins {
 			return id == other.id;
 		}
 	};
-	
+
 	class PushPatterns {
 	public:
 		PushPatterns();
@@ -51,8 +51,48 @@ namespace seam::pins {
 		/// Register a Pusher. If another Pusher with the same name already exists, it will be overridden.
 		/// \return true if another Pusher was overridden
 		bool Register(Pusher&& pusher);
-		
+
+		/// <summary>
 		/// Push data from output pins to their attached input pins.
+		/// </summary>
+		/// <typeparam name="T"></typeparam>
+		/// <param name="pinOut">The output pin to push data from.</param>
+		/// <param name="data">The data to be pushed.</param>
+		/// <param name="numElements">The number of elements in the data pointer.</param>
+		template <typename T>
+		void Push(PinOutput& pinOut, T* data, size_t numElements) {
+			const bool isEventQueuePin = flags::AreRaised(pinOut.pin.flags, pins::PinFlags::EVENT_QUEUE);
+			// Event queue pins don't use push patterns, they just push to the input pins' vectors
+			if (isEventQueuePin) {
+				for (PinInput* pinIn : pinOut.connections) {
+					// Dirty the input node.
+					pinIn->node->SetDirty();
+					// Event queue input pins should always be event queue pins themselves
+					assert((pinIn->flags & pins::PinFlags::EVENT_QUEUE) == pins::PinFlags::EVENT_QUEUE);
+					// Push the output pin's data to the back of the input pin's vector
+					pinIn->PushEvents(data, numElements);
+				}
+			} else {
+				for (PinInput* pinIn : pinOut.connections) {
+					// Dirty the input node
+					pinIn->node->SetDirty();
+
+					// Find the push pattern, and expect it to exist
+					auto pp = std::lower_bound(push_patterns.begin(), push_patterns.end(), pinIn->push_id);
+					assert(pp->id == pinIn->push_id);
+
+					// Grab the destination data
+					size_t dstSize;
+					char* dst = (char*)pinIn->GetChannels(dstSize);
+
+					// Call the push pattern 
+					pp->func((char*)data, numElements * sizeof(T), dst, dstSize * sizeof(T), sizeof(T));
+				}
+			}
+		}
+		
+		/*
+		/// 
 		/// \param pin the output pin to push data from
 		/// \param data_array an array of values to push to the output pin's attached input pins
 		/// \param array_len the number of elements in the data array
@@ -99,12 +139,14 @@ namespace seam::pins {
 		template <size_t N>
 		void Push(const PinOutput& pin_out, PinInt<N>* pin_in) {
 			// TODO!
-			assert(false);
+			assert(fals
+			e);
 		}
+		*/
 
-		void Push(const PinOutput& pin_out, PinFlow* pin_in) {
-			assert(pin_out.pin.type == PinType::FLOW && pin_in->type == PinType::FLOW);
-			pin_in->Callback();
+		void Push(const PinOutput& pin_out, PinInput& pin_in) {
+			assert(pin_out.pin.type == PinType::FLOW && pin_in.type == PinType::FLOW);
+			pin_in.FlowCallback();
 		}
 
 		Pusher& Get(PushId push_id);

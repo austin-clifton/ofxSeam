@@ -15,7 +15,7 @@ namespace seam::nodes {
 
 		void Update(UpdateParams* params) override;
 
-		IPinInput** PinInputs(size_t& size) override;
+		PinInput* PinInputs(size_t& size) override;
 
 		PinOutput* PinOutputs(size_t& size) override;
 
@@ -24,7 +24,16 @@ namespace seam::nodes {
 		virtual void PrintNoteOffEvent(notes::NoteOffEvent* ev);
 
 	private:
+		PinInput* pinNotesOnStream;
+		PinInput* pinNotesOffStream;
 
+		std::array<PinInput, 2> pin_inputs = {
+			pins::SetupInputQueuePin(PinType::NOTE_EVENT, this, "Notes On Stream"),
+			pins::SetupInputQueuePin(PinType::NOTE_EVENT, this, "Notes Off Stream"),
+		};
+
+
+		/*
 		PinNoteEvent<0> pin_notes_on_stream = PinNoteEvent<0>(
 			"notes on stream",
 			"incoming stream of note ON events",
@@ -37,9 +46,10 @@ namespace seam::nodes {
 			notes::EventTypes::OFF
 		);
 
-		std::array<IPinInput*, 2> pin_inputs = {
+		std::array<PinInput, 2> pin_inputs = {
 			&pin_notes_on_stream,
 			&pin_notes_off_stream
 		};
+		*/
 	};
 }

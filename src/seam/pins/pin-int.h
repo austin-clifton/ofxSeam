@@ -3,6 +3,7 @@
 #include "pin.h"
 
 namespace seam::pins {
+	/*
 	struct PinIntMeta {
 		int min = INT_MIN;
 		int max = INT_MAX;
@@ -31,4 +32,5 @@ namespace seam::pins {
 			range_type = _range_type;
 		}
 	};
+	*/
 }

@@ -11,7 +11,7 @@ Saw::~Saw() {
 
 }
 
-pins::IPinInput** Saw::PinInputs(size_t& size) {
+pins::PinInput* Saw::PinInputs(size_t& size) {
 	size = pin_inputs.size();
 	return pin_inputs.data();
 }
@@ -22,10 +22,10 @@ pins::PinOutput* Saw::PinOutputs(size_t& size) {
 }
 
 void Saw::Update(UpdateParams* params) {
-	progress += (params->delta_time) / pin_frequency[0];
+	progress += (params->delta_time) / frequency;
 	progress = fmod(progress, 1.0f);
 
-	float v = pin_leading_edge[0] + progress * (pin_falling_edge[0] - pin_leading_edge[0]);
+	float v = leadingEdge + progress * (fallingEdge - leadingEdge);
 
 	// TODO generalize "propagation" (template function?)
 	for (size_t i = 0; i < pin_out_fval.connections.size(); i++) {

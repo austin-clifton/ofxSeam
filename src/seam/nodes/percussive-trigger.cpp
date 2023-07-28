@@ -29,6 +29,7 @@ namespace {
 
 PercussiveTrigger::PercussiveTrigger() : INode("Percussive Trigger") {
 	flags = (NodeFlags)(flags | NodeFlags::UPDATES_OVER_TIME);
+	pinNotesOnStream = &pin_inputs[0];
 }
 
 PercussiveTrigger::~PercussiveTrigger() {
@@ -40,45 +41,43 @@ void PercussiveTrigger::Update(UpdateParams* params) {
 	bool retrigger = false;
 	// drain the notes stream;
 	// if multiple triggers occurred since the last frame, grab the velocity of the loudest note
-	for (size_t i = pin_notes_stream.channels.size(); i > 0; i--) {
-		notes::NoteEvent* ev = pin_notes_stream[i - 1];
+	size_t size;
+	notes::NoteOnEvent** onEvents = (notes::NoteOnEvent**)pinNotesOnStream->GetEvents(size);
+
+	for (size_t i = 0; i < size; i++) {
+		notes::NoteEvent* ev = onEvents[i];
 		if (ev->type == notes::EventTypes::ON) {
 			notes::NoteOnEvent* on_ev = (notes::NoteOnEvent*)ev;
 			max_vel = std::max(max_vel, on_ev->velocity);
 			retrigger = true;
 		}
-		
-		pin_notes_stream.channels.pop_back();
 	}
+
+	pinNotesOnStream->ClearEvents(size);
 
 	if (retrigger) {
 		// reset trigger time
-		trigger_time = pin_total_trigger_time[0];
+		trigger_time = totalTriggerTime;
 
 		// TODO: should this be aware of the last max velocity, in cases where the last trigger hasn't finished?
 		trigger_max_vel = max_vel;
 	}
 
 	if (trigger_time > 0.f) {
-		// use time input as override if present
-		float delta_time = pin_delta_time.connection != nullptr
-			? pin_delta_time[0]
-			: params->delta_time;
-
-
-		output = CalcTriggerCurve(trigger_time, pin_total_trigger_time[0], pin_curve_modifier[0]);
+		float delta_time = params->delta_time;
+		output = CalcTriggerCurve(trigger_time, totalTriggerTime, curveModifier);
 		trigger_time = std::max(0.f, trigger_time - delta_time);
 		
 		params->push_patterns->Push(pin_out_curve, &output, 1);
 	} else if (trigger_time == 0.f) {
 		// one last guaranteed trigger to reset to min value
-		output = CalcTriggerCurve(trigger_time, pin_total_trigger_time[0], pin_curve_modifier[0]);
+		output = CalcTriggerCurve(trigger_time, totalTriggerTime, curveModifier);
 		params->push_patterns->Push(pin_out_curve, &output, 1);
 		trigger_time = -1.0f;
 	}
 }
 
-IPinInput** PercussiveTrigger::PinInputs(size_t& size) {
+PinInput* PercussiveTrigger::PinInputs(size_t& size) {
 	size = pin_inputs.size();
 	return pin_inputs.data();
 }

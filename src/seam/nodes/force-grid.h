@@ -19,7 +19,7 @@ namespace seam::nodes {
 
 		bool GuiDrawPropertiesList() override;
 
-		IPinInput** PinInputs(size_t& size) override;
+		PinInput* PinInputs(size_t& size) override;
 
 		PinOutput* PinOutputs(size_t& size) override;
 
@@ -100,6 +100,7 @@ namespace seam::nodes {
 		ofShader shader;
 		ofFbo fbo;
 
+		/*
 		PinFloat<1> pin_time = PinFloat<1>("time");
 
 		PinNoteEvent<0> pin_notes_on_stream = PinNoteEvent<0>(
@@ -114,17 +115,24 @@ namespace seam::nodes {
 			notes::EventTypes::OFF
 		);
 
+
 		PinNoteEvent<1> pin_kick_drum_on = PinNoteEvent<1>(
 			"kick drum on",
 			"hook the MIDI note for the kick drum to this pin",
 			notes::EventTypes::ON
 		);
+		*/
 
-		std::array<IPinInput*, 4> pin_inputs = {
-			&pin_time,
-			&pin_notes_on_stream,
-			&pin_notes_off_stream,
-			&pin_kick_drum_on
+		float time = 0.f;
+		notes::NoteEvent* kickDrumOn = nullptr;
+		PinInput* pinNotesOnStream;
+		PinInput* pinNotesOffStream;
+
+		std::array<PinInput, 4> pin_inputs = {
+			pins::SetupInputPin(PinType::FLOAT, this, &time, 1, "Time"),
+			pins::SetupInputPin(PinType::NOTE_EVENT, this, &kickDrumOn, 1, "Kick Drum On"),
+			pins::SetupInputQueuePin(PinType::NOTE_EVENT, this, "Notes On Stream"),
+			pins::SetupInputQueuePin(PinType::NOTE_EVENT, this, "Notes Off Stream"),
 		};
 
 		PinOutput pin_out_material = pins::SetupOutputPin(this, pins::PinType::MATERIAL, "material");

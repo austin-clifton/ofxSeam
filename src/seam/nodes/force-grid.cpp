@@ -10,6 +10,8 @@ using namespace seam::notes;
 
 ForceGrid::ForceGrid() : INode("Force Grid") {
 	flags = (NodeFlags)(flags | NodeFlags::IS_VISUAL);
+	pinNotesOnStream = &pin_inputs[2];
+	pinNotesOffStream = &pin_inputs[3];
 
 	fbo.allocate(tex_size.x, tex_size.y);
 
@@ -26,7 +28,7 @@ ForceGrid::~ForceGrid() {
 	// NOOP?
 }
 
-IPinInput** ForceGrid::PinInputs(size_t& size) {
+PinInput* ForceGrid::PinInputs(size_t& size) {
 	size = pin_inputs.size();
 	return pin_inputs.data();
 }
@@ -125,29 +127,33 @@ void ForceGrid::Update(UpdateParams* params) {
 	// drain and handle note events
 
 	// note ON events create new particles as long as there's space for them
-	while (pin_notes_on_stream.channels.size()) {
-		if (note_forces_size < note_forces.size()) {
-			NoteOnEvent* on_ev = (NoteOnEvent*)pin_notes_on_stream[pin_notes_on_stream.channels.size() - 1];
-			// set the two pieces of info from the on event: frequency and note velocity
-			NoteForce& force = note_forces[note_forces_size];
-			force.cpu.freq_hz = on_ev->frequency;
-			force.cpu.note_vel = on_ev->velocity;
-			// also seed theta with a random value (from here out it will be ever-increasing)
-			force.gpu.theta = ofRandomuf() * TWO_PI;
+	size_t size;
+	NoteOnEvent** onEvents = (NoteOnEvent**)pinNotesOnStream->GetEvents(size);
+	for (size_t i = 0; i < size && note_forces_size < note_forces.size(); i++) {
+		NoteOnEvent* on_ev = onEvents[i];
+		// set the two pieces of info from the on event: frequency and note velocity
+		NoteForce& force = note_forces[note_forces_size];
+		force.cpu.freq_hz = on_ev->frequency;
+		force.cpu.note_vel = on_ev->velocity;
+		// also seed theta with a random value (from here out it will be ever-increasing)
+		force.gpu.theta = ofRandomuf() * TWO_PI;
 
-			note_forces_size++;
-			notes_list_changed = true;
-		}
-		
-		pin_notes_on_stream.channels.pop_back();
+		note_forces_size++;
+		notes_list_changed = true;
 	}
+	pinNotesOnStream->ClearEvents(size);
 
 	// note OFF events transition live notes into the DYING state
+	NoteOffEvent** offEvents = (NoteOffEvent**)pinNotesOffStream->GetEvents(size);
+
+	// TODO something with note off events...????
+
+	pinNotesOffStream->ClearEvents(size);
+
+	/*
 	while (pin_notes_off_stream.channels.size()) {
 		NoteOffEvent* off_ev = (NoteOffEvent*)pin_notes_off_stream[pin_notes_off_stream.channels.size() - 1];
 
-
-		/*
 		// find the corresponding force by instance id
 		const auto it = std::find(
 			note_forces.begin(), 
@@ -157,10 +163,10 @@ void ForceGrid::Update(UpdateParams* params) {
 		assert(it != note_forces.end());
 		it->cpu.state = ForceState::DYING;
 		it->cpu.time = 0.f;
-		*/
 
 		pin_notes_off_stream.channels.pop_back();
 	}
+	*/
 
 	// recalculate the target radius for each note, if the notes list changed
 	if (notes_list_changed) {

@@ -138,17 +138,17 @@ void INode::GuiDraw( ed::Utilities::BlueprintNodeBuilder& builder ) {
 	builder.EndHeader();
 
 	// draw input pins
-	IPinInput** inputs = PinInputs(size);
+	PinInput* inputs = PinInputs(size);
 	for (size_t i = 0; i < size; i++) {
 		// TODO push alpha when new links are being created
 		// ImGui::PushStyleVar(ImGuiStyleVar_Alpha, alpha);
 
 		// a pin's pointer address is its ID for drawing purposes
-		builder.Input(ed::PinId((Pin*)inputs[i]));
+		builder.Input(ed::PinId((Pin*)&inputs[i]));
 		
-		DrawPinIcon(*inputs[i], inputs[i]->connection != nullptr, 1.0f);
+		DrawPinIcon(inputs[i], inputs[i].connection != nullptr, 1.0f);
 		ImGui::Spring(0.f);
-		ImGui::TextUnformatted(inputs[i]->name.data());
+		ImGui::TextUnformatted(inputs[i].name.data());
 		ImGui::Spring(0.f);
 
 		builder.EndInput();

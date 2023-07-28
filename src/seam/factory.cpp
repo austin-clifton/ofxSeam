@@ -64,9 +64,9 @@ nodes::INode* EventNodeFactory::Create(seam::nodes::NodeId node_id) {
 
 		// make sure each input pin has this node set as its parent
 		size_t size;
-		IPinInput** pin_inputs = node->PinInputs(size);
+		PinInput* pin_inputs = node->PinInputs(size);
 		for (size_t i = 0; i < size; i++) {
-			pin_inputs[i]->node = node;
+			pin_inputs[i].node = node;
 		}
 
 		return node;
@@ -96,9 +96,9 @@ bool EventNodeFactory::Register(EventNodeFactory::CreateFunc&& Create) {
 
 	// read inputs
 	{
-		IPinInput** inputs = n->PinInputs(size);
+		PinInput* inputs = n->PinInputs(size);
 		for (size_t i = 0; i < size; i++) {
-			PinType type = inputs[i]->type;
+			PinType type = inputs[i].type;
 			// filter only for types that aren't already in the list
 			if (std::find(gen.pin_inputs.begin(), gen.pin_inputs.end(), type) == gen.pin_inputs.end()) {
 				gen.pin_inputs.push_back(type);

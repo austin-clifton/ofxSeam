@@ -2,12 +2,9 @@
 
 #include "pin.h"
 
+/*
 namespace seam::pins {
-	struct PinUintMeta {
-		uint32_t min = 0;
-		uint32_t max = UINT_MAX;
-		RangeType range_type = RangeType::LINEAR;
-	};
+
 
 	template <std::size_t N>
 	struct PinUint : public PinInput<uint32_t, N>, public PinUintMeta {
@@ -32,3 +29,4 @@ namespace seam::pins {
 		}
 	};
 }
+*/
