@@ -237,6 +237,8 @@
     <ClCompile Include="src\seam\nodes\fireflies.cpp" />
     <ClCompile Include="src\seam\nodes\force-grid.cpp" />
     <ClCompile Include="src\seam\nodes\i-node.cpp" />
+    <ClCompile Include="src\seam\nodes\gate.cpp" />
+    <ClCompile Include="src\seam\nodes\markov.cpp" />
     <ClCompile Include="src\seam\nodes\midi-in.cpp" />
     <ClCompile Include="src\seam\nodes\notes-printer.cpp" />
     <ClCompile Include="src\seam\nodes\percussive-trigger.cpp" />
@@ -313,6 +315,8 @@
     <ClInclude Include="src\seam\nodes\fireflies.h" />
     <ClInclude Include="src\seam\nodes\force-grid.h" />
     <ClInclude Include="src\seam\nodes\i-node.h" />
+    <ClInclude Include="src\seam\nodes\gate.h" />
+    <ClInclude Include="src\seam\nodes\markov.h" />
     <ClInclude Include="src\seam\nodes\midi-in.h" />
     <ClInclude Include="src\seam\nodes\notes-printer.h" />
     <ClInclude Include="src\seam\nodes\percussive-trigger.h" />

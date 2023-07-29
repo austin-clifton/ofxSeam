@@ -5,6 +5,8 @@
 #include "nodes/cos.h"
 #include "nodes/feedback.h"
 #include "nodes/fireflies.h"
+#include "nodes/gate.h"
+#include "nodes/markov.h"
 #include "nodes/midi-in.h"
 #include "nodes/notes-printer.h"
 #include "nodes/saw.h"
@@ -33,6 +35,7 @@ EventNodeFactory::EventNodeFactory() {
 	Register(MakeCreate<nodes::ComputeParticles>());
 	Register(MakeCreate<nodes::Cos>());
 	Register(MakeCreate<nodes::ForceGrid>());
+	Register(MakeCreate<nodes::Markov>());
 	Register(MakeCreate<nodes::MidiIn>());
 	Register(MakeCreate<nodes::NotesPrinter>());
 	Register(MakeCreate<nodes::PercussiveTrigger>());
@@ -43,6 +46,7 @@ EventNodeFactory::EventNodeFactory() {
 	Register(MakeCreate<nodes::Fireflies>());
 	Register(MakeCreate<nodes::Feedback>());
 	Register(MakeCreate<nodes::Saw>());
+	Register(MakeCreate<nodes::Gate>());
 
 	// TODO register more seam internal generators here
 }

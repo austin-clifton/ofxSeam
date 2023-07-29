@@ -75,16 +75,24 @@ namespace seam::nodes {
 		/// \return a pointer to the array of pin outputs
 		virtual pins::PinOutput* PinOutputs(size_t& size) = 0;
 
-		// draw configurable and display-only properties that are internal to the node
-		// and should be exposed for editing.
-		virtual bool GuiDrawPropertiesList() { return false; }
-
 		/// to be called during OF's update() loop
 		virtual void Update(UpdateParams* params) { }
 
 		/// to be called during OF's draw() loop
 		/// should be overridden by visual nodes
 		virtual void Draw(DrawParams* params) { }
+
+		// draw configurable and display-only properties that are internal to the node
+		// and should be exposed for editing.
+		virtual bool GuiDrawPropertiesList() { return false; }
+
+		virtual std::vector<NodeProperty> GetProperties() {
+			return std::vector<NodeProperty>();
+		}
+
+		virtual NodeProperty* TryCreateProperty(const std::string& name, NodePropertyType type) {
+			return nullptr;
+		}
 
 		void GuiDraw( ed::Utilities::BlueprintNodeBuilder& builder );
 
@@ -188,13 +196,18 @@ namespace seam::nodes {
 		friend class Editor;
 	};
 
-	/*
 	/// <summary>
 	/// If a Node has non-static Pins, you need to inherit IDynamicIONode for pin deserialization to work as expected.
 	/// </summary>
-	class IDynamicIONode {
-		virtual bool AddPinIn(PinInput&& pin_in) = 0;
-		virtual bool AddPinOut(PinOutput&& pin_out) = 0;
+	class IDynamicPinsNode : public INode {
+	public:
+		IDynamicPinsNode(const char* name) : INode(name) {
+
+		}
+
+		virtual ~IDynamicPinsNode() { }
+
+		virtual pins::PinInput* AddPinIn(pins::PinType type, const std::string_view name, size_t elementSize, size_t elementCount) = 0;
+		virtual pins::PinOutput* AddPinOut(pins::PinOutput&& pinOut) = 0;
 	};
-	*/
 }

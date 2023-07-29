@@ -1,9 +1,152 @@
 #include "pin.h"
-#include "pin-int.h"
-#include "pin-float.h"
-#include "pin-uint.h"
+
+namespace seam {
+
+	void Serialize(capnp::List<PinValue, capnp::Kind::STRUCT>::Builder& builder,
+		NodePropertyType type, void* srcBuff, size_t srcElementsCount)
+	{
+		if (srcElementsCount == 0) {
+			return;
+		}
+
+		switch (type) {
+		case NodePropertyType::PROP_BOOL: {
+			bool* bool_values = (bool*)srcBuff;
+			for (size_t i = 0; i < srcElementsCount; i++) {
+				builder[i].setBoolValue(bool_values[i]);
+			}
+			break;
+		}
+		case NodePropertyType::PROP_INT: {
+			int32_t* int_values = (int32_t*)srcBuff;
+			for (size_t i = 0; i < srcElementsCount; i++) {
+				builder[i].setIntValue(int_values[i]);
+			}
+			break;
+		}
+		case NodePropertyType::PROP_UINT: {
+			uint32_t* uint_values = (uint32_t*)srcBuff;
+			for (size_t i = 0; i < srcElementsCount; i++) {
+				builder[i].setUintValue(uint_values[i]);
+			}
+			break;
+		}
+		case NodePropertyType::PROP_FLOAT: {
+			float* float_values = (float*)srcBuff;
+			for (size_t i = 0; i < srcElementsCount; i++) {
+				builder[i].setFloatValue(float_values[i]);
+			}
+			break;
+		}
+		case NodePropertyType::PROP_CHAR:
+		case NodePropertyType::PROP_STRING:
+		default:
+			throw std::logic_error("not implemented yet!");
+		}
+	}
+
+	void Deserialize(const capnp::List<PinValue, capnp::Kind::STRUCT>::Reader& serializedValues, NodePropertyType type, void* dstBuff, size_t dstElementsCount) {
+		if (serializedValues.size() == 0) {
+			return;
+		}
+
+		switch (type) {
+		case NodePropertyType::PROP_BOOL: {
+			if (serializedValues[0].isBoolValue()) {
+				bool* bool_channels = (bool*)dstBuff;
+				for (size_t i = 0; i < dstElementsCount && i < serializedValues.size(); i++) {
+					bool_channels[i] = serializedValues[i].getBoolValue();
+				}
+			}
+			break;
+		}
+		case NodePropertyType::PROP_FLOAT: {
+			if (serializedValues[0].isFloatValue()) {
+				float* float_channels = (float*)dstBuff;
+				for (size_t i = 0; i < dstElementsCount && i < serializedValues.size(); i++) {
+					float_channels[i] = serializedValues[i].getFloatValue();
+				}
+			}
+			break;
+		}
+		case NodePropertyType::PROP_INT: {
+			if (serializedValues[0].isIntValue()) {
+				int* int_channels = (int32_t*)dstBuff;
+				for (size_t i = 0; i < dstElementsCount && i < serializedValues.size(); i++) {
+					int_channels[i] = serializedValues[i].getIntValue();
+				}
+			}
+			break;
+		}
+		case NodePropertyType::PROP_UINT: {
+			if (serializedValues[0].isUintValue()) {
+				uint32_t* uint_channels = (uint32_t*)dstBuff;
+				for (size_t i = 0; i < dstElementsCount && i < serializedValues.size(); i++) {
+					uint_channels[i] = serializedValues[i].getUintValue();
+				}
+			}
+			break;
+		}
+		default:
+			throw logic_error("not implemented!");
+		}
+	}
+}
 
 namespace seam::pins {
+	NodePropertyType PinTypeToPropType(PinType pinType) {
+		switch (pinType) {
+		case PinType::BOOL:
+			return NodePropertyType::PROP_BOOL;
+		case PinType::CHAR:
+			return NodePropertyType::PROP_CHAR;
+		case PinType::FLOAT:
+			return NodePropertyType::PROP_FLOAT;
+		case PinType::INT:
+			return NodePropertyType::PROP_INT;
+		case PinType::UINT:
+			return NodePropertyType::PROP_UINT;
+		case PinType::STRING:
+			return NodePropertyType::PROP_STRING;
+		default:
+			throw std::logic_error("Only some pin types can be converted to property types");
+		}
+	}
+
+	NodePropertyType SerializedPinTypeToPropType(PinValue::Which pinType) {
+		switch (pinType) {
+		case PinValue::Which::BOOL_VALUE:
+			return NodePropertyType::PROP_BOOL;
+		case PinValue::Which::FLOAT_VALUE:
+			return NodePropertyType::PROP_FLOAT;
+		case PinValue::Which::INT_VALUE:
+			return NodePropertyType::PROP_INT;
+		case PinValue::Which::UINT_VALUE:
+			return NodePropertyType::PROP_UINT;
+		case PinValue::Which::STRING_VALUE:
+			return NodePropertyType::PROP_STRING;
+		default:
+			throw std::logic_error("Unimplemented?");
+		}
+	}
+
+	PinType SerializedPinTypeToPinType(PinValue::Which serializedType) {
+		switch (serializedType) {
+			case PinValue::Which::BOOL_VALUE:
+				return PinType::BOOL;
+			case PinValue::Which::FLOAT_VALUE:
+				return PinType::FLOAT;
+			case PinValue::Which::INT_VALUE:
+				return PinType::INT;
+			case PinValue::Which::UINT_VALUE:
+				return PinType::UINT;
+			case PinValue::Which::STRING_VALUE:
+				return PinType::STRING;
+			default:
+				throw std::logic_error("Unimplemented?");
+		}
+	}
+
 	PinOutput SetupOutputPin(
 		nodes::INode* node, 
 		PinType type, 

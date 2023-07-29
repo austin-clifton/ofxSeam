@@ -401,9 +401,11 @@ void Editor::SaveGraph(const std::string_view filename, const std::vector<INode*
 		size_t outputs_size, inputs_size;
 		auto output_pins = nodes_to_save[i]->PinOutputs(outputs_size);
 		auto input_pins = nodes_to_save[i]->PinInputs(inputs_size);
+		const auto properties = node->GetProperties();
 
 		auto inputs_builder = node_builder.initInputPins(inputs_size);
 		auto outputs_builder = node_builder.initOutputPins(outputs_size);
+		auto propertiesBuilder = node_builder.initProperties(properties.size());
 
 		// Serialize input pins
 		for (size_t i = 0; i < inputs_size; i++) {
@@ -425,41 +427,7 @@ void Editor::SaveGraph(const std::string_view filename, const std::vector<INode*
 			void* channels = pin_in.GetChannels(channels_size);
 			auto channels_builder = input_builder.initChannels(channels_size);
 
-			switch (pin_in.type) {
-			case PinType::BOOL: {
-				bool* bool_values = (bool*)channels;
-				for (size_t i = 0; i < channels_size; i++) {
-					channels_builder[i].setBoolValue(bool_values[i]);
-				}
-				break;
-			}
-			case PinType::INT: {
-				int32_t* int_values = (int32_t*)channels;
-				for (size_t i = 0; i < channels_size; i++) {
-					channels_builder[i].setIntValue(int_values[i]);
-				}
-				break;
-			}
-			case PinType::UINT: {
-				uint32_t* uint_values = (uint32_t*)channels;
-				for (size_t i = 0; i < channels_size; i++) {
-					channels_builder[i].setUintValue(uint_values[i]);
-				}
-				break;
-			}
-			case PinType::FLOAT: {
-				float* float_values = (float*)channels;
-				for (size_t i = 0; i < channels_size; i++) {
-					channels_builder[i].setFloatValue(float_values[i]);
-				}
-				break;
-			}
-			case PinType::CHAR:
-			case PinType::STRING:
-			default:
-				throw std::logic_error("not implemented yet!");
-			}
-
+			Serialize(channels_builder, PinTypeToPropType(pin_in.type), channels, channels_size);
 		}
 
 		// Serialize output pins
@@ -475,6 +443,17 @@ void Editor::SaveGraph(const std::string_view filename, const std::vector<INode*
 				auto pin_in = pin_out.connections[conn_index];
 				connections.push_back(std::make_pair(pin_out.pin.id, pin_in->id));
 			}
+		}
+
+		// Serialize properties
+		for (size_t i = 0; i < properties.size(); i++) {
+			const auto prop = properties[i];
+			auto propBuilder = propertiesBuilder[i];
+
+			propBuilder.setName(prop.name);
+			auto valuesBuilder = propBuilder.initValues(prop.count);
+
+			Serialize(valuesBuilder, prop.type, prop.data, prop.count);
 		}
 	}
 
@@ -532,8 +511,8 @@ void Editor::LoadGraph(const std::string_view filename) {
 		size_t inputs_size, outputs_size;
 		auto input_pins = node->PinInputs(inputs_size);
 		auto output_pins = node->PinOutputs(outputs_size);
-		auto inputs_end = input_pins + inputs_size;
-		auto outputs_end = output_pins + outputs_size;
+
+		auto dynamicPinsNode = dynamic_cast<IDynamicPinsNode*>(node);
 
 		// Deserialize inputs
 		for (const auto& serialized_pin_in : serialized_node.getInputPins()) {
@@ -548,7 +527,12 @@ void Editor::LoadGraph(const std::string_view filename) {
 				return name_copy == serialized_pin_name;
 			});
 
-			if (matchPos != inputs_end) {
+			const auto serialized_channels = serialized_pin_in.getChannels();
+			if (serialized_channels.size() == 0) {
+				continue;
+			}
+
+			if (matchPos != (input_pins + inputs_size)) {
 				PinInput* match = matchPos;
 				match->id = serialized_pin_in.getId();
 
@@ -557,53 +541,23 @@ void Editor::LoadGraph(const std::string_view filename) {
 				size_t channels_size;
 				void* channels = match->GetChannels(channels_size);
 
-				const auto serialized_channels = serialized_pin_in.getChannels();
-				if (serialized_channels.size() == 0) {
-					continue;
+				Deserialize(serialized_channels, PinTypeToPropType(match->type), channels, channels_size);
+
+			} else if (dynamicPinsNode != nullptr) {
+				PinType pinType = SerializedPinTypeToPinType(serialized_channels[0].which());
+				PinInput* added = dynamicPinsNode->AddPinIn(pinType, serialized_pin_name,
+					PinTypeToElementSize(pinType), serialized_channels.size());
+				added->id = serialized_pin_in.getId();
+
+				if (added == nullptr) {
+					printf("Dynamic Pins Node %s refused to add a pin named %s\n",
+						node->NodeName().data(), serialized_pin_name.c_str());
+				} else {
+					// Refresh the input pins list!
+					input_pins = node->PinInputs(inputs_size);
+					input_pin_map.emplace(std::make_pair(added->id, added));
 				}
 
-				switch (match->type) {
-				case PinType::BOOL: {
-					if (serialized_channels[0].isBoolValue()) {
-						bool* bool_channels = (bool*)channels;
-						for (size_t i = 0; i < channels_size && i < serialized_channels.size(); i++) {
-							bool_channels[i] = serialized_channels[i].getBoolValue();
-						}
-					}
-					break;
-				}
-
-				case PinType::FLOAT: {
-					if (serialized_channels[0].isFloatValue()) {
-						float* float_channels = (float*)channels;
-						for (size_t i = 0; i < channels_size && i < serialized_channels.size(); i++) {
-							float_channels[i] = serialized_channels[i].getFloatValue();
-						}
-					}
-					break;
-				}
-				case PinType::INT: {
-					if (serialized_channels[0].isIntValue()) {
-						int* int_channels = (int32_t*)channels;
-						for (size_t i = 0; i < channels_size && i < serialized_channels.size(); i++) {
-							int_channels[i] = serialized_channels[i].getIntValue();
-						}
-					}
-					break;
-
-				}
-				case PinType::UINT: {
-					if (serialized_channels[0].isUintValue()) {
-						uint32_t* uint_channels = (uint32_t*)channels;
-						for (size_t i = 0; i < channels_size && i < serialized_channels.size(); i++) {
-							uint_channels[i] = serialized_channels[i].getUintValue();
-						}
-					}
-					break;
-				}
-				default:
-					throw logic_error("not implemented!");
-				}
 			} else {
 				printf("Could not match serialized input pin with name %s on node %s\n", 
 					serialized_pin_name.c_str(), serialized_node.getDisplayName().cStr());
@@ -619,9 +573,47 @@ void Editor::LoadGraph(const std::string_view filename) {
 				{ return pin_name == pin_out.pin.name; }
 			);
 
-			if (match != outputs_end) {
+			if (match != (output_pins + outputs_size)) {
 				match->pin.id = serialized_pin_out.getId();
 				output_pin_map.emplace(std::make_pair(match->pin.id, &match->pin));
+			} else if (dynamicPinsNode != nullptr) {
+				// TODO....
+				throw std::runtime_error("oh shit I should implement this.....");
+
+			} else {
+				printf("Could not match serialized output pin with name %s on node %s\n",
+					pin_name.data(), serialized_node.getDisplayName().cStr());
+			}
+		}
+
+
+		// Deserialize properties
+		for (const auto& serializedProperty : serialized_node.getProperties()) {
+			const auto values = serializedProperty.getValues();
+
+			if (!values.size()) {
+				continue;
+			}
+
+			NodePropertyType propertyType = pins::SerializedPinTypeToPropType(values[0].which());
+
+			// First try to match the property against a known property in the Node's properties list.
+			// Ask for the properties list again after deserializing each property in case the list changed.
+			auto properties = node->GetProperties();
+			for (auto& prop : properties) {
+				if (prop.name == serializedProperty.getName().cStr()) {
+					Deserialize(values, propertyType, prop.data, prop.count);
+				}
+			}
+
+			// No match, the property could be dynamic though. Ask the Node to create it.
+			NodeProperty* prop = node->TryCreateProperty(serializedProperty.getName().cStr(), propertyType);
+			if (prop != nullptr) {
+				Deserialize(values, propertyType, prop->data, prop->count);
+			}
+			else {
+				printf("Serialized Node property %s could not be matched against a known property on Node %s.\n",
+					serializedProperty.getName().cStr(), node->NodeName().data());
 			}
 		}
 	}
@@ -864,7 +856,7 @@ void Editor::GuiDraw() {
 		
 		ImVec2 window_size = im::GetContentRegionAvail();
 		ImVec2 window_pos = im::GetWindowPos();
-		ImVec2 child_size = ImVec2(256, 256);
+		ImVec2 child_size = ImVec2(512, 256);
 		im::SetNextWindowPos(ImVec2(
 			window_pos.x + window_size.x,
 			editor_cursor_start_pos.y + window_pos.y)

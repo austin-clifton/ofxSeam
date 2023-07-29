@@ -27,6 +27,11 @@ struct PinIn {
     channels @2 :List(PinValue);
 }
 
+struct Property {
+    name @0 :Text;
+    values @1 :List(PinValue);
+}
+
 struct Node {
     position @0 :Vector2;
     displayName @1 :Text;
@@ -35,6 +40,7 @@ struct Node {
     
     inputPins @4 :List(PinIn);
     outputPins @5 :List(PinOut);
+    properties @6 :List(Property);
 }
 
 struct PinConnection {

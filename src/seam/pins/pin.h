@@ -5,9 +5,44 @@
 
 #include "ofMain.h"
 
+#include "capnp/message.h"
+#include "capnp/serialize-packed.h"
+#include "node-graph.capnp.h"
+
 #include "../notes.h"
 
 namespace seam {
+
+	// TODO MOVE ME
+	enum NodePropertyType : uint8_t {
+		PROP_BOOL,
+		PROP_CHAR,
+		PROP_FLOAT,
+		PROP_INT,
+		PROP_UINT,
+		PROP_STRING
+	};
+
+	// TODO MOVE ME
+	struct NodeProperty {
+		NodeProperty(const std::string& _name, NodePropertyType _type, void* _data, size_t _count) {
+			name = _name;
+			type = _type;
+			data = _data;
+			count = _count;
+		}
+
+		std::string name;
+		NodePropertyType type;
+		void* data;
+		size_t count;
+	};
+
+	void Deserialize(const capnp::List<PinValue, capnp::Kind::STRUCT>::Reader& serializedValues, 
+		NodePropertyType type, void* dstBuff, size_t dstElementsCount);
+
+	void Serialize(capnp::List<PinValue, capnp::Kind::STRUCT>::Builder& serializedValues,
+		NodePropertyType type, void* srcBuff, size_t srcElementsCount);
 
 	namespace nodes {
 		class INode;
@@ -46,6 +81,10 @@ namespace seam {
 			// or a struct that inherits one of those structs
 			NOTE_EVENT,
 		};
+
+		NodePropertyType PinTypeToPropType(PinType pinType);
+		NodePropertyType SerializedPinTypeToPropType(PinValue::Which pinType);
+		PinType SerializedPinTypeToPinType(PinValue::Which pinType);
 
 		// a bitmask enum for marking boolean properties of a Pin
 		enum PinFlags : uint16_t {
@@ -329,173 +368,6 @@ namespace seam {
 			void* pinMetadata = nullptr,
 			const std::string_view description = ""
 		);
-
-		/*
-		PinInput SetupFloatInputPin(
-			nodes::INode* node,
-			float* channel,
-			const std::string_view name = "Float Input",
-			bool isQueue = false,
-			PinFloatMeta* metadata = nullptr,
-			const std::string_view description = ""
-		) {
-			return PinInput(PinType::FLOAT, name, description, node, isQueue, channel, 1, metadata);
-		}
-
-		PinInput SetupVec2InputPin(
-			nodes::INode* node,
-			glm::vec2* channel,
-			const std::string_view name = "Vec2 Input",
-			bool isQueue = false,
-			PinFloatMeta* metadata = nullptr,
-			const std::string_view description = ""
-		) {
-			return PinInput(PinType::FLOAT, name, description, node, isQueue, channel, 2, metadata);
-		}
-
-		PinInput SetupIntInputPin(
-			nodes::INode* node,
-			int32_t* channel,
-			const std::string_view name = "Int Input",
-			bool isQueue = false,
-			PinFloatMeta* metadata = nullptr,
-			const std::string_view description = ""
-		) {
-			return PinInput(PinType::INT, name, description, node, isQueue, channel, 1, metadata);
-		}
-
-		PinInput SetupIntVec2InputPin(
-			nodes::INode* node,
-			glm::ivec2* channel,
-			const std::string_view name = "IVec2 Input",
-			bool isQueue = false,
-			PinFloatMeta* metadata = nullptr,
-			const std::string_view description = ""
-		) {
-			return PinInput(PinType::INT, name, description, node, isQueue, channel, 2, metadata);
-		}
-
-		PinInput SetupUIntInputPin(
-			nodes::INode* node,
-			int32_t* channel,
-			const std::string_view name = "UInt Input",
-			bool isQueue = false,
-			PinFloatMeta* metadata = nullptr,
-			const std::string_view description = ""
-		) {
-			return PinInput(PinType::UINT, name, description, node, isQueue, channel, 1, metadata);
-		}
-
-		PinInput SetupUIntVec2InputPin(
-			nodes::INode* node,
-			glm::ivec2* channel,
-			const std::string_view name = "UIVec2 Input",
-			bool isQueue = false,
-			PinFloatMeta* metadata = nullptr,
-			const std::string_view description = ""
-		) {
-			return PinInput(PinType::UINT, name, description, node, isQueue, channel, 2, metadata);
-		}
-		*/
-
-
-
-		/*
-		/// Concrete implementation for IPinInput.
-		/// Should be inherited by all input pin types since input pins are where pin channels data is stored.
-		/// Is capable of allocating a fixed size stack allocated array, 
-		/// or a variable size heap allocated array, for pin channels.
-		/// Pass N == 0 for a variable sized array (see template specialization below).
-		template <typename T, std::size_t N>
-		class PinInput : public IPinInput {
-		public:
-			PinInput(const std::array<T, N>& init_vals) {
-				channels = init_vals;
-				flags = (PinFlags)(flags | PinFlags::INPUT);
-			}
-
-			virtual ~PinInput() { }
-
-			/// Generic for grabbing channels data.
-			/// \return a pointer to the raw data, which should be casted to the proper type based on the pin's type 
-			inline void* GetChannels(size_t& size) override {
-				size = channels.size();
-				return channels.data();
-			}
-
-			inline T& operator[](size_t index) {
-#if _DEBUG
-				assert(index < channels.size());
-#endif
-				return channels[index];
-			}
-
-			std::array<T, N> channels;
-		};
-
-		template <typename T>
-		class PinInput<T, 0> : public IPinInput {
-		public:
-			PinInput(const std::vector<T>& init_vals = {}) {
-				// raise the event queue flag
-				flags = (PinFlags)(flags | PinFlags::EVENT_QUEUE);
-				channels = init_vals;
-			}
-
-			virtual ~PinInput() { }
-
-			inline void* GetChannels(size_t& size) override {
-				size = channels.size();
-				return size ? &channels[0] : nullptr;
-			}
-
-			inline T& operator[](size_t index) {
-				assert(index < channels.size());
-				return channels[index];
-			}
-
-			std::vector<T> channels;
-		};
-		*/
-
-		/*
-		// these belong in their own headers, probably
-
-		template <std::size_t N>
-		struct PinBool : public PinInput<bool, N> {
-			PinBool(
-				std::string_view _name = "bool",
-				std::string_view _description = "",
-				std::array<bool, N> init_vals = { 0 },
-				PinFlags _flags = PinFlags::INPUT
-			
-			) 
-				: PinInput<bool, N>(init_vals)
-			{
-				name = _name;
-				description = _description;
-				type = PinType::BOOL;
-				flags = (PinFlags)(flags | _flags);
-			}
-			// bool value = false;
-		};
-
-		template <std::size_t N>
-		struct PinFbo : public PinInput<ofFbo*, N> {
-			PinFbo(std::string_view _name = "texture", std::array<ofFbo*, N> init_vals = { 0 }) : PinInput<ofFbo*, N>(init_vals) {
-				type = PinType::FBO;
-				name = _name;
-			}
-		};
-
-		template <std::size_t N>
-		struct PinMaterial : public PinInput<ofShader*, N> {
-			PinMaterial() {
-				type = PinType::MATERIAL;
-			}
-			ofShader* shader = nullptr;
-		};
-		*/
 
 		PinOutput SetupOutputPin(
 			nodes::INode* node, 
