@@ -20,7 +20,7 @@
   </ItemGroup>
   <PropertyGroup Condition="'$(WindowsTargetPlatformVersion)'==''">
     <LatestTargetPlatformVersion>$([Microsoft.Build.Utilities.ToolLocationHelper]::GetLatestSDKTargetPlatformVersion('Windows', '10.0'))</LatestTargetPlatformVersion>
-    <WindowsTargetPlatformVersion Condition="'$(WindowsTargetPlatformVersion)' == ''">10.0.18362.0</WindowsTargetPlatformVersion>
+    <WindowsTargetPlatformVersion Condition="'$(WindowsTargetPlatformVersion)' == ''">10.0</WindowsTargetPlatformVersion>
     <TargetPlatformVersion>$(WindowsTargetPlatformVersion)</TargetPlatformVersion>
   </PropertyGroup>
   <PropertyGroup Label="Globals">
@@ -240,11 +240,13 @@
     <ClCompile Include="src\seam\nodes\gate.cpp" />
     <ClCompile Include="src\seam\nodes\markov.cpp" />
     <ClCompile Include="src\seam\nodes\midi-in.cpp" />
+    <ClCompile Include="src\seam\nodes\noise.cpp" />
     <ClCompile Include="src\seam\nodes\notes-printer.cpp" />
     <ClCompile Include="src\seam\nodes\percussive-trigger.cpp" />
     <ClCompile Include="src\seam\nodes\range.cpp" />
     <ClCompile Include="src\seam\nodes\saw.cpp" />
     <ClCompile Include="src\seam\nodes\shader.cpp" />
+    <ClCompile Include="src\seam\nodes\step.cpp" />
     <ClCompile Include="src\seam\nodes\texgen-perlin.cpp" />
     <ClCompile Include="src\seam\nodes\timer.cpp" />
     <ClCompile Include="src\seam\pins\pin.cpp" />
@@ -318,11 +320,13 @@
     <ClInclude Include="src\seam\nodes\gate.h" />
     <ClInclude Include="src\seam\nodes\markov.h" />
     <ClInclude Include="src\seam\nodes\midi-in.h" />
+    <ClInclude Include="src\seam\nodes\noise.h" />
     <ClInclude Include="src\seam\nodes\notes-printer.h" />
     <ClInclude Include="src\seam\nodes\percussive-trigger.h" />
     <ClInclude Include="src\seam\nodes\range.h" />
     <ClInclude Include="src\seam\nodes\saw.h" />
     <ClInclude Include="src\seam\nodes\shader.h" />
+    <ClInclude Include="src\seam\nodes\step.h" />
     <ClInclude Include="src\seam\nodes\texgen-perlin.h" />
     <ClInclude Include="src\seam\nodes\timer.h" />
     <ClInclude Include="src\seam\notes.h" />

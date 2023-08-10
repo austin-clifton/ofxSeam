@@ -169,6 +169,12 @@
     <ClCompile Include="src\seam\nodes\gate.cpp">
       <Filter>src\seam\nodes</Filter>
     </ClCompile>
+    <ClCompile Include="src\seam\nodes\step.cpp">
+      <Filter>src\seam\nodes</Filter>
+    </ClCompile>
+    <ClCompile Include="src\seam\nodes\noise.cpp">
+      <Filter>src\seam\nodes</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="src">
@@ -483,6 +489,12 @@
       <Filter>src\seam\nodes</Filter>
     </ClInclude>
     <ClInclude Include="src\seam\nodes\gate.h">
+      <Filter>src\seam\nodes</Filter>
+    </ClInclude>
+    <ClInclude Include="src\seam\nodes\step.h">
+      <Filter>src\seam\nodes</Filter>
+    </ClInclude>
+    <ClInclude Include="src\seam\nodes\noise.h">
       <Filter>src\seam\nodes</Filter>
     </ClInclude>
   </ItemGroup>

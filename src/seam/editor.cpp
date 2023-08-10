@@ -177,7 +177,7 @@ void Editor::UpdateVisibleNodeGraph(INode* n, UpdateParams* params) {
 	n->InUseParents(in_use_parents);
 
 	for (auto p : in_use_parents) {
-		assert(last_update_order <= p->update_order);
+		// assert(last_update_order <= p->update_order);
 		last_update_order = p->update_order;
 		UpdateVisibleNodeGraph(p, params);
 	}
@@ -528,9 +528,6 @@ void Editor::LoadGraph(const std::string_view filename) {
 			});
 
 			const auto serialized_channels = serialized_pin_in.getChannels();
-			if (serialized_channels.size() == 0) {
-				continue;
-			}
 
 			if (matchPos != (input_pins + inputs_size)) {
 				PinInput* match = matchPos;
@@ -538,10 +535,12 @@ void Editor::LoadGraph(const std::string_view filename) {
 
 				input_pin_map.emplace(std::make_pair(match->id, match));
 
-				size_t channels_size;
-				void* channels = match->GetChannels(channels_size);
+				if (serialized_channels.size()) {
+					size_t channels_size;
+					void* channels = match->GetChannels(channels_size);
 
-				Deserialize(serialized_channels, PinTypeToPropType(match->type), channels, channels_size);
+					Deserialize(serialized_channels, PinTypeToPropType(match->type), channels, channels_size);
+				}
 
 			} else if (dynamicPinsNode != nullptr) {
 				PinType pinType = SerializedPinTypeToPinType(serialized_channels[0].which());
@@ -623,6 +622,10 @@ void Editor::LoadGraph(const std::string_view filename) {
 		auto output_pin = output_pin_map.find(conn.getOutId());
 		auto input_pin = input_pin_map.find(conn.getInId());
 		if (input_pin != input_pin_map.end() && output_pin != output_pin_map.end()) {
+			if (input_pin->second->type != output_pin->second->type) {
+				continue;
+			}
+			
 			Connect(output_pin->second, input_pin->second);
 		}
 	}

@@ -78,6 +78,7 @@ namespace seam::nodes {
 		size_t moms_count = 9;
 
 		ofShader ff_compute_shader;
+		ofShader ff_compute_axis_aligned_shader;
 		ofShader ff_geo_shader;
 
 		ofShader mom_compute_shader;
@@ -129,14 +130,16 @@ namespace seam::nodes {
 		float maxVelocity = 0.2f;
 		float pulseCameraDistance = -10.f;
 		float pulseRange = 10.f;
+		float useAxisAlignedCompute = 0.f;
 
-		std::array<PinInput, 6> pin_inputs = {
+		std::array<PinInput, 7> pin_inputs = {
 			pins::SetupInputPin(PinType::FLOAT, this, &avoidanceRadius, 1, "Avoidance Radius"),
 			pins::SetupInputPin(PinType::FLOAT, this, &momAvoidanceRadius, 1, "Mom Avoidance Radius"),
 			pins::SetupInputPin(PinType::FLOAT, this, &avoidanceForce, 1, "Avoidance Force"),
 			pins::SetupInputPin(PinType::FLOAT, this, &maxVelocity, 1, "Max Velocity"),
 			pins::SetupInputPin(PinType::FLOAT, this, &pulseCameraDistance, 1, "Pulse Distance"),
 			pins::SetupInputPin(PinType::FLOAT, this, &pulseRange, 1, "Pulse Range"),
+			pins::SetupInputPin(PinType::FLOAT, this, &useAxisAlignedCompute, 1, "Axis Aligned"),
 		};
 		
 		PinOutput pin_out_texture = pins::SetupOutputPin(this, pins::PinType::FBO, "texture");

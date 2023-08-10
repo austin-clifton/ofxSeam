@@ -8,9 +8,11 @@
 #include "nodes/gate.h"
 #include "nodes/markov.h"
 #include "nodes/midi-in.h"
+#include "nodes/noise.h"
 #include "nodes/notes-printer.h"
 #include "nodes/saw.h"
 #include "nodes/shader.h"
+#include "nodes/step.h"
 #include "nodes/texgen-perlin.h"
 #include "nodes/timer.h"
 #include "nodes/force-grid.h"
@@ -37,6 +39,7 @@ EventNodeFactory::EventNodeFactory() {
 	Register(MakeCreate<nodes::ForceGrid>());
 	Register(MakeCreate<nodes::Markov>());
 	Register(MakeCreate<nodes::MidiIn>());
+	Register(MakeCreate<nodes::Noise>());
 	Register(MakeCreate<nodes::NotesPrinter>());
 	Register(MakeCreate<nodes::PercussiveTrigger>());
 	Register(MakeCreate<nodes::Range>());
@@ -47,6 +50,7 @@ EventNodeFactory::EventNodeFactory() {
 	Register(MakeCreate<nodes::Feedback>());
 	Register(MakeCreate<nodes::Saw>());
 	Register(MakeCreate<nodes::Gate>());
+	Register(MakeCreate<nodes::Step>());
 
 	// TODO register more seam internal generators here
 }

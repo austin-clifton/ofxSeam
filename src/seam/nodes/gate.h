@@ -32,5 +32,6 @@ namespace seam::nodes {
 		std::vector<float> gatedValues;
 
 		PinOutput pinOutSelection = pins::SetupOutputPin(this, pins::PinType::FLOAT, "Gated Value");
+		PinOutput pinOutGateChangedEvent = pins::SetupOutputPin(this, pins::PinType::FLOW, "Gate Changed Event");
 	};
 }

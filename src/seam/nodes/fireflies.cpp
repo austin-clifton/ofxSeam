@@ -103,10 +103,10 @@ Fireflies::Fireflies() : INode("Fireflies"),
 		auto& mom = moms[i];
 		mom.mass = 1.f;
 		mom.velocity = glm::vec3(0.f);
-		
-		mom.col_a = glm::vec3(0.5);
-		mom.col_b = glm::vec3(0.25);
-		mom.col_c = glm::vec3(1.0);
+
+		mom.col_a = glm::vec3(0.5f,0.25f,0.5f);
+		mom.col_b = glm::vec3(0.5f,0.25f,0.5f);
+		mom.col_c = glm::vec3(1.0f);;
 		mom.col_d = glm::vec3(0.f, 0.33f, 0.667f);
 	}
 
@@ -207,12 +207,15 @@ void Fireflies::Update(UpdateParams* params) {
 	mom_compute_shader.end();
 
 	mom_compute_ssbo_write.copyTo(mom_compute_ssbo_read);
+
+	ofShader* compute_shader = useAxisAlignedCompute > 0.f
+		? &ff_compute_axis_aligned_shader : &ff_compute_shader;
 	
-	ff_compute_shader.begin();
-	ff_compute_shader.setUniform1f("time", params->time * 0.05);
-	ff_compute_shader.setUniform1f("maxVelocity", maxVelocity);
-	ff_compute_shader.dispatchCompute((fireflies_count + 1024 - 1) / 1024, 1, 1);
-	ff_compute_shader.end();
+	compute_shader->begin();
+	compute_shader->setUniform1f("time", params->time * 0.05);
+	compute_shader->setUniform1f("maxVelocity", maxVelocity);
+	compute_shader->dispatchCompute((fireflies_count + 1024 - 1) / 1024, 1, 1);
+	compute_shader->end();
 
 	// Ping-pong copy written compute results back to the compute read buffer.
 	ff_compute_ssbo_write.copyTo(ff_compute_ssbo_read);
@@ -272,10 +275,14 @@ void Fireflies::Draw(DrawParams* params) {
 bool Fireflies::LoadShaders() {
 	const std::filesystem::path shaders_path = std::filesystem::current_path() / "data" / "shaders";
 	const std::string compute_name("fireflies-compute.glsl");
+	const std::string compute_aa_name("fireflies-compute-axis-aligned.glsl");
 	const std::string vert_frag_name("fireflies");
 
 	bool compute_ff_loaded = ff_compute_shader.setupShaderFromFile(GL_COMPUTE_SHADER, shaders_path / compute_name)
 		&& ff_compute_shader.linkProgram();
+
+	bool compute_ffaa_loaded = ff_compute_axis_aligned_shader.setupShaderFromFile(GL_COMPUTE_SHADER, shaders_path / compute_aa_name)
+		&& ff_compute_axis_aligned_shader.linkProgram();
 
 	bool compute_moms_loaded = mom_compute_shader.setupShaderFromFile(GL_COMPUTE_SHADER, shaders_path / "fireflies-moms-compute.glsl")
 		&& mom_compute_shader.linkProgram();
@@ -295,7 +302,11 @@ bool Fireflies::LoadShaders() {
 
 	if (!compute_ff_loaded) {
 		printf("Failed to load or link fireflies compute shader\n");
-	} 
+	}
+
+	if (!compute_ffaa_loaded) {
+		printf("Failed to load or link fireflies axis-aligned compute shader\n");
+	}
 
 	if (!compute_moms_loaded) {
 		printf("Failed to load or link fireflies moms compute shader\n");
@@ -305,7 +316,7 @@ bool Fireflies::LoadShaders() {
 		printf("Failed to load or link fireflies geo/vert/frag shaders\n");
 	}
 	
-	return compute_ff_loaded && geo_loaded && compute_moms_loaded;
+	return compute_ff_loaded && compute_ffaa_loaded && geo_loaded && compute_moms_loaded;
 }
 
 bool Fireflies::GuiDrawPropertiesList() {

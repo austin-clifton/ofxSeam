@@ -4,10 +4,14 @@ using namespace seam;
 using namespace seam::nodes;
 
 Gate::Gate() : IDynamicPinsNode("Gate") {
+	// bad hack 2 pls removeme
+	// flags = (NodeFlags)(flags | NodeFlags::UPDATES_OVER_TIME);
+
 	// !! BAD HACK !!:
 	// Reserve space for pins so the pins list pointer doesn't change when de-serializing.
 	// This needs to be fixed in deserialization!!!!!!
 	pinInputs.reserve(8);
+	gatedValues.reserve(8);
 	pinInputs.push_back(SetupInputPin(PinType::INT, this, &selectedGate, 1, "Selected Gate"));
 }
 
@@ -16,7 +20,11 @@ Gate::~Gate() {
 }
 
 void Gate::Update(UpdateParams* params) {
-	params->push_patterns->Push(pinOutSelection, &gatedValues[selectedGate], 1);
+	if (gatedValues.size() > selectedGate) {
+		params->push_patterns->Push(pinOutSelection, &gatedValues[selectedGate], 1);
+	}
+
+	// params->push_patterns->PushFlow(pinOutGateChangedEvent);
 }
 
 pins::PinInput* Gate::PinInputs(size_t& size) {
@@ -25,7 +33,7 @@ pins::PinInput* Gate::PinInputs(size_t& size) {
 }
 
 pins::PinOutput* Gate::PinOutputs(size_t& size) {
-	size = 1;
+	size = 2;
 	return &pinOutSelection;
 }
 

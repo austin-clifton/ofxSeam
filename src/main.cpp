@@ -14,7 +14,7 @@ int main( ){
 	settings.setGLVersion(4, 5);
 
 	// First set up the GUI window, it's always windowed.
-	settings.setSize(1920, 1080);
+	settings.setSize(2560, 1440);
 	settings.monitor = 0;
 	settings.resizable = true;
 	settings.windowMode = ofWindowMode::OF_WINDOW;
@@ -32,7 +32,7 @@ int main( ){
 	settings.shareContextWith = gui_window;
 	settings.title = "Seam Output";
 
-#if _DEBUG
+#if _DEBUG && false
 	settings.setSize(2560, 1440);
 	main_window = ofCreateWindow(settings);
 #else

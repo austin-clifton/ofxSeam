@@ -38,7 +38,11 @@ void Markov::Update(UpdateParams* params) {
 		printf("Markov transitioning from state %d to state %d\n", currentState, newState);
 		currentState = newState;
 
+		float currentStateF = currentState;
+
 		params->push_patterns->Push(pinOutSelection, &currentState, 1);
+		params->push_patterns->Push(PinOutSelectionF, &currentStateF, 1);
+		params->push_patterns->PushFlow(pinOutChangedEvent);
 		currentStateDuration = 0.f;
 	}
 }
@@ -72,7 +76,7 @@ pins::PinInput* Markov::PinInputs(size_t& size) {
 }
 
 pins::PinOutput* Markov::PinOutputs(size_t& size) {
-	size = 1;
+	size = 3;
 	return &pinOutSelection;
 }
 

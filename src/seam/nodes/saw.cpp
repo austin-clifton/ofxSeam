@@ -35,3 +35,7 @@ void Saw::Update(UpdateParams* params) {
 		params->push_patterns->Push(pin_out_fval, &v, 1);
 	}
 }
+
+void Saw::Reset() {
+	progress = 0.f;
+}
