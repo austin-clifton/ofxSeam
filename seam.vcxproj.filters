@@ -175,6 +175,33 @@
     <ClCompile Include="src\seam\nodes\noise.cpp">
       <Filter>src\seam\nodes</Filter>
     </ClCompile>
+    <ClCompile Include="lib\gist\src\MFCC.cpp">
+      <Filter>lib\gist</Filter>
+    </ClCompile>
+    <ClCompile Include="lib\gist\src\OnsetDetectionFunction.cpp">
+      <Filter>lib\gist</Filter>
+    </ClCompile>
+    <ClCompile Include="lib\gist\src\WindowFunctions.cpp">
+      <Filter>lib\gist</Filter>
+    </ClCompile>
+    <ClCompile Include="lib\gist\src\Yin.cpp">
+      <Filter>lib\gist</Filter>
+    </ClCompile>
+    <ClCompile Include="lib\gist\src\AccelerateFFT.cpp">
+      <Filter>lib\gist</Filter>
+    </ClCompile>
+    <ClCompile Include="lib\gist\src\CoreFrequencyDomainFeatures.cpp">
+      <Filter>lib\gist</Filter>
+    </ClCompile>
+    <ClCompile Include="lib\gist\src\CoreTimeDomainFeatures.cpp">
+      <Filter>lib\gist</Filter>
+    </ClCompile>
+    <ClCompile Include="lib\gist\src\Gist.cpp">
+      <Filter>lib\gist</Filter>
+    </ClCompile>
+    <ClCompile Include="src\seam\nodes\gist-audio.cpp">
+      <Filter>src\seam\nodes</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="src">
@@ -242,6 +269,15 @@
     </Filter>
     <Filter Include="src\seam\containers">
       <UniqueIdentifier>{d06a70e7-e7ee-4e9f-b4a3-4d3655c47f3a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="lib">
+      <UniqueIdentifier>{05e9b83e-54cc-4d28-9529-9ae941504d50}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="lib\gist">
+      <UniqueIdentifier>{53f104e2-6ff4-4825-9241-d7238606120a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="lib\fftw">
+      <UniqueIdentifier>{1a56a9fe-0749-4723-b7ca-1afbb8515911}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -497,8 +533,43 @@
     <ClInclude Include="src\seam\nodes\noise.h">
       <Filter>src\seam\nodes</Filter>
     </ClInclude>
+    <ClInclude Include="lib\gist\src\Gist.h">
+      <Filter>lib\gist</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\gist\src\MFCC.h">
+      <Filter>lib\gist</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\gist\src\OnsetDetectionFunction.h">
+      <Filter>lib\gist</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\gist\src\WindowFunctions.h">
+      <Filter>lib\gist</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\gist\src\Yin.h">
+      <Filter>lib\gist</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\gist\src\AccelerateFFT.h">
+      <Filter>lib\gist</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\gist\src\CoreFrequencyDomainFeatures.h">
+      <Filter>lib\gist</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\gist\src\CoreTimeDomainFeatures.h">
+      <Filter>lib\gist</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\headers\fftw3.h">
+      <Filter>lib\fftw</Filter>
+    </ClInclude>
+    <ClInclude Include="src\seam\nodes\gist-audio.h">
+      <Filter>src\seam\nodes</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="icon.rc" />
+  </ItemGroup>
+  <ItemGroup>
+    <Library Include="lib\fftw-3.3.5-dll64\libfftw3f-3.lib">
+      <Filter>lib\fftw</Filter>
+    </Library>
   </ItemGroup>
 </Project>

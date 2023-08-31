@@ -76,7 +76,7 @@
     <LinkIncremental>true</LinkIncremental>
     <GenerateManifest>true</GenerateManifest>
     <LibraryPath>$(LibraryPath)</LibraryPath>
-    <IncludePath>$(SolutionDir)lib\headers\;$(SolutionDir)schema\codegen\;$(IncludePath)</IncludePath>
+    <IncludePath>$(SolutionDir)lib\headers\;$(SolutionDir)schema\codegen\;$(SolutionDir)lib\gist\src\;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <OutDir>bin\</OutDir>
@@ -85,27 +85,27 @@
     <LinkIncremental>true</LinkIncremental>
     <GenerateManifest>true</GenerateManifest>
     <LibraryPath>$(LibraryPath)</LibraryPath>
-    <IncludePath>$(SolutionDir)lib\headers\;$(SolutionDir)schema\codegen\;$(IncludePath)</IncludePath>
+    <IncludePath>$(SolutionDir)lib\headers\;$(SolutionDir)schema\codegen\;$(SolutionDir)lib\gist\src\;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <OutDir>bin\</OutDir>
     <IntDir>obj\$(Platform)\$(Configuration)\</IntDir>
     <LinkIncremental>false</LinkIncremental>
     <LibraryPath>$(LibraryPath)</LibraryPath>
-    <IncludePath>$(SolutionDir)lib\headers\;$(SolutionDir)schema\codegen\;$(IncludePath)</IncludePath>
+    <IncludePath>$(SolutionDir)lib\headers\;$(SolutionDir)schema\codegen\;$(SolutionDir)lib\gist\src\;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <OutDir>bin\</OutDir>
     <IntDir>obj\$(Platform)\$(Configuration)\</IntDir>
     <LinkIncremental>false</LinkIncremental>
     <LibraryPath>$(LibraryPath)</LibraryPath>
-    <IncludePath>$(SolutionDir)lib\headers\;$(SolutionDir)schema\codegen\;$(IncludePath)</IncludePath>
+    <IncludePath>$(SolutionDir)lib\headers\;$(SolutionDir)schema\codegen\;$(SolutionDir)lib\gist\src\;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
       <Optimization>Disabled</Optimization>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
-      <PreprocessorDefinitions>RUN_DOCTEST=0;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>RUN_DOCTEST=0;USE_FFTW;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
       <WarningLevel>Level3</WarningLevel>
       <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories);..\..\..\addons\ofxImGui-1.75\libs;..\..\..\addons\ofxImGui-1.75\libs\imgui;..\..\..\addons\ofxImGui-1.75\libs\imgui\src;..\..\..\addons\ofxImGui-1.75\src;..\..\..\addons\ofxMidi\libs;..\..\..\addons\ofxMidi\libs\pgmidi;..\..\..\addons\ofxMidi\libs\rtmidi;..\..\..\addons\ofxMidi\src;..\..\..\addons\ofxMidi\src\desktop;..\..\..\addons\ofxMidi\src\ios;$(ProjectDir)src\</AdditionalIncludeDirectories>
@@ -118,7 +118,7 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <SubSystem>Console</SubSystem>
       <RandomizedBaseAddress>false</RandomizedBaseAddress>
-      <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(SolutionDir)lib\fftw-3.3.5-dll64;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
     <PostBuildEvent />
   </ItemDefinitionGroup>
@@ -126,7 +126,7 @@
     <ClCompile>
       <Optimization>Disabled</Optimization>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
-      <PreprocessorDefinitions>RUN_DOCTEST=0;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>RUN_DOCTEST=0;USE_FFTW;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
       <WarningLevel>Level3</WarningLevel>
       <CompileAs>CompileAsCpp</CompileAs>
@@ -140,15 +140,15 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <SubSystem>Console</SubSystem>
       <RandomizedBaseAddress>false</RandomizedBaseAddress>
-      <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>$(SolutionDir)lib\win-x64\debug\capnp.lib;$(SolutionDir)lib\win-x64\debug\kj.lib;$(SolutionDir)lib\win-x64\debug\nfd_d.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(SolutionDir)lib\fftw-3.3.5-dll64;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>$(SolutionDir)lib\win-x64\debug\capnp.lib;$(SolutionDir)lib\win-x64\debug\kj.lib;$(SolutionDir)lib\win-x64\debug\nfd_d.lib;$(SolutionDir)lib\fftw-3.3.5-dll64\libfftw3-3.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PostBuildEvent />
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
       <WholeProgramOptimization>false</WholeProgramOptimization>
-      <PreprocessorDefinitions>RUN_DOCTEST=0;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>RUN_DOCTEST=0;USE_FFTW;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
       <WarningLevel>Level3</WarningLevel>
       <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories);..\..\..\addons\ofxImGui-1.75\libs;..\..\..\addons\ofxImGui-1.75\libs\imgui;..\..\..\addons\ofxImGui-1.75\libs\imgui\src;..\..\..\addons\ofxImGui-1.75\src;..\..\..\addons\ofxMidi\libs;..\..\..\addons\ofxMidi\libs\pgmidi;..\..\..\addons\ofxMidi\libs\rtmidi;..\..\..\addons\ofxMidi\src;..\..\..\addons\ofxMidi\src\desktop;..\..\..\addons\ofxMidi\src\ios;$(ProjectDir)src\</AdditionalIncludeDirectories>
@@ -165,14 +165,14 @@
       <OptimizeReferences>true</OptimizeReferences>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <RandomizedBaseAddress>false</RandomizedBaseAddress>
-      <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(SolutionDir)lib\fftw-3.3.5-dll64;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
     <PostBuildEvent />
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
       <WholeProgramOptimization>false</WholeProgramOptimization>
-      <PreprocessorDefinitions>RUN_DOCTEST=0;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>RUN_DOCTEST=0;USE_FFTW;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
       <WarningLevel>Level3</WarningLevel>
       <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories);..\..\..\addons\ofxImGui-1.75\libs;..\..\..\addons\ofxImGui-1.75\libs\imgui;..\..\..\addons\ofxImGui-1.75\libs\imgui\src;..\..\..\addons\ofxImGui-1.75\src;..\..\..\addons\ofxMidi\libs;..\..\..\addons\ofxMidi\libs\pgmidi;..\..\..\addons\ofxMidi\libs\rtmidi;..\..\..\addons\ofxMidi\src;..\..\..\addons\ofxMidi\src\desktop;..\..\..\addons\ofxMidi\src\ios;$(ProjectDir)src\</AdditionalIncludeDirectories>
@@ -188,8 +188,8 @@
       <OptimizeReferences>true</OptimizeReferences>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <RandomizedBaseAddress>false</RandomizedBaseAddress>
-      <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>$(SolutionDir)lib\win-x64\release\capnp.lib;$(SolutionDir)lib\win-x64\release\kj.lib;$(SolutionDir)lib\win-x64\release\nfd.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(SolutionDir)lib\fftw-3.3.5-dll64;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>$(SolutionDir)lib\win-x64\release\capnp.lib;$(SolutionDir)lib\win-x64\release\kj.lib;$(SolutionDir)lib\win-x64\release\nfd.lib;$(SolutionDir)lib\fftw-3.3.5-dll64\libfftw3-3.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PostBuildEvent />
   </ItemDefinitionGroup>
@@ -224,6 +224,14 @@
     <ClCompile Include="..\..\..\addons\ofxMidi\src\ofxMidiMessage.cpp" />
     <ClCompile Include="..\..\..\addons\ofxMidi\src\ofxMidiOut.cpp" />
     <ClCompile Include="..\..\..\addons\ofxMidi\src\ofxMidiTimecode.cpp" />
+    <ClCompile Include="lib\gist\src\AccelerateFFT.cpp" />
+    <ClCompile Include="lib\gist\src\CoreFrequencyDomainFeatures.cpp" />
+    <ClCompile Include="lib\gist\src\CoreTimeDomainFeatures.cpp" />
+    <ClCompile Include="lib\gist\src\Gist.cpp" />
+    <ClCompile Include="lib\gist\src\MFCC.cpp" />
+    <ClCompile Include="lib\gist\src\OnsetDetectionFunction.cpp" />
+    <ClCompile Include="lib\gist\src\WindowFunctions.cpp" />
+    <ClCompile Include="lib\gist\src\Yin.cpp" />
     <ClCompile Include="schema\codegen\node-graph.capnp.c++" />
     <ClCompile Include="src\main.cpp" />
     <ClCompile Include="src\ofApp.cpp" />
@@ -236,6 +244,7 @@
     <ClCompile Include="src\seam\nodes\feedback.cpp" />
     <ClCompile Include="src\seam\nodes\fireflies.cpp" />
     <ClCompile Include="src\seam\nodes\force-grid.cpp" />
+    <ClCompile Include="src\seam\nodes\gist-audio.cpp" />
     <ClCompile Include="src\seam\nodes\i-node.cpp" />
     <ClCompile Include="src\seam\nodes\gate.cpp" />
     <ClCompile Include="src\seam\nodes\markov.cpp" />
@@ -301,6 +310,15 @@
     <ClInclude Include="..\..\..\addons\ofxMidi\src\ofxMidiOut.h" />
     <ClInclude Include="..\..\..\addons\ofxMidi\src\ofxMidiTimecode.h" />
     <ClInclude Include="..\..\..\addons\ofxMidi\src\ofxMidiTypes.h" />
+    <ClInclude Include="lib\gist\src\AccelerateFFT.h" />
+    <ClInclude Include="lib\gist\src\CoreFrequencyDomainFeatures.h" />
+    <ClInclude Include="lib\gist\src\CoreTimeDomainFeatures.h" />
+    <ClInclude Include="lib\gist\src\Gist.h" />
+    <ClInclude Include="lib\gist\src\MFCC.h" />
+    <ClInclude Include="lib\gist\src\OnsetDetectionFunction.h" />
+    <ClInclude Include="lib\gist\src\WindowFunctions.h" />
+    <ClInclude Include="lib\gist\src\Yin.h" />
+    <ClInclude Include="lib\headers\fftw3.h" />
     <ClInclude Include="schema\codegen\node-graph.capnp.h" />
     <ClInclude Include="src\ofApp.h" />
     <ClInclude Include="src\seam\containers\octree.h" />
@@ -316,6 +334,7 @@
     <ClInclude Include="src\seam\nodes\feedback.h" />
     <ClInclude Include="src\seam\nodes\fireflies.h" />
     <ClInclude Include="src\seam\nodes\force-grid.h" />
+    <ClInclude Include="src\seam\nodes\gist-audio.h" />
     <ClInclude Include="src\seam\nodes\i-node.h" />
     <ClInclude Include="src\seam\nodes\gate.h" />
     <ClInclude Include="src\seam\nodes\markov.h" />
@@ -350,6 +369,9 @@
       <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">/D_DEBUG %(AdditionalOptions)</AdditionalOptions>
       <AdditionalIncludeDirectories>$(OF_ROOT)\libs\openFrameworksCompiled\project\vs</AdditionalIncludeDirectories>
     </ResourceCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <Library Include="lib\fftw-3.3.5-dll64\libfftw3f-3.lib" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ProjectExtensions>

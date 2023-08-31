@@ -5,13 +5,17 @@
 
 #include "seam/editor.h"
 
+#include "Gist.h"
+
 class ofApp : public ofBaseApp{
 
 	public:
 		void setup();
+		void exit();
 		void update();
 		void draw();
 		void drawOutput(ofEventArgs& args);
+		void audioIn(ofSoundBuffer& input);
 
 		void keyPressed(int key);
 		void keyReleased(int key);
@@ -25,8 +29,13 @@ class ofApp : public ofBaseApp{
 		void dragEvent(ofDragInfo dragInfo);
 		void gotMessage(ofMessage msg);
 
+private:
 		// seam::MidiNoteBank<8, 2> midi_bank;
 		bool show_gui = true;
 		ofxImGui::Gui gui;
 		seam::Editor seam_editor;
+
+		// std::unique_ptr<Gist<float>> gist;
+
+		ofSoundStream soundStream;
 };

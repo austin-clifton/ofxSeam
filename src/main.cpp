@@ -32,7 +32,7 @@ int main( ){
 	settings.shareContextWith = gui_window;
 	settings.title = "Seam Output";
 
-#if _DEBUG && false
+#if _DEBUG
 	settings.setSize(2560, 1440);
 	main_window = ofCreateWindow(settings);
 #else

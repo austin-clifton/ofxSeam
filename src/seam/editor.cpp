@@ -231,6 +231,12 @@ void Editor::Update() {
 	}
 }
 
+void Editor::ProcessAudio(ProcessAudioParams* params) {
+	for (auto n : audioNodes) {
+		n->ProcessAudio(params);
+	}
+}
+
 void Editor::GuiDrawPopups() {
 	const ImVec2 open_popup_position = ImGui::GetMousePos();
 
@@ -916,6 +922,12 @@ INode* Editor::CreateAndAdd(NodeId node_id) {
 			nodes_update_every_frame.push_back(node);
 		} else if (node->UpdatesOverTime()) {
 			nodes_update_over_time.push_back(node);
+		}
+
+		// Does this Node process audio?
+		IAudioNode* audioNode = dynamic_cast<IAudioNode*>(node);
+		if (audioNode != nullptr) {
+			audioNodes.push_back(audioNode);
 		}
 	}
 

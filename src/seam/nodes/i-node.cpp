@@ -156,13 +156,7 @@ void INode::GuiDraw( ed::Utilities::BlueprintNodeBuilder& builder ) {
 
 	// draw the node's center
 	builder.Middle();
-	// TODO how does spring really work...?
-	// im::Spring(1, 0);
-	if (gui_display_fbo != nullptr) {
-		props::DrawFbo(*gui_display_fbo);
-	}
-
-	// im::Spring(1, 0);
+	GuiDrawNodeCenter();
 
 	// draw the output pins
 	PinOutput* outputs = PinOutputs(size);
@@ -181,4 +175,14 @@ void INode::GuiDraw( ed::Utilities::BlueprintNodeBuilder& builder ) {
 	}
 
 	builder.End();
+}
+
+void INode::GuiDrawNodeCenter() {
+	// TODO how does spring really work...?
+	// im::Spring(1, 0);
+	if (gui_display_fbo != nullptr) {
+		props::DrawFbo(*gui_display_fbo);
+	}
+
+	// im::Spring(1, 0);
 }

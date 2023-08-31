@@ -39,6 +39,9 @@ namespace seam::nodes {
 		// Nodes with this flag will Update() every frame, 
 		// regardless of whether they are in a visual chain or not.
 		UPDATES_EVERY_FRAME = 1 << 2,
+
+		/// Nodes which process audio should use this flag and overrid INode::ProcessAudio()
+		PROCESSES_AUDIO = 1 << 3,
 	};
 
 	struct UpdateParams {
@@ -52,6 +55,10 @@ namespace seam::nodes {
 		float delta_time;
 		float time;
 		// not sure what else is needed here yet
+	};
+
+	struct ProcessAudioParams {
+		std::vector<float>* buffer;
 	};
 
 	/// Base class for all nodes that use the eventing system
@@ -85,6 +92,8 @@ namespace seam::nodes {
 		// draw configurable and display-only properties that are internal to the node
 		// and should be exposed for editing.
 		virtual bool GuiDrawPropertiesList() { return false; }
+
+		virtual void GuiDrawNodeCenter();
 
 		virtual std::vector<NodeProperty> GetProperties() {
 			return std::vector<NodeProperty>();
@@ -209,5 +218,13 @@ namespace seam::nodes {
 
 		virtual pins::PinInput* AddPinIn(pins::PinType type, const std::string_view name, size_t elementSize, size_t elementCount) = 0;
 		virtual pins::PinOutput* AddPinOut(pins::PinOutput&& pinOut) = 0;
+	};
+
+	/// <summary>
+	/// If an INode processes audio, also inherit this class and override the ProcessAudio() hook. 
+	/// </summary>
+	class IAudioNode {
+	public:
+		virtual void ProcessAudio(ProcessAudioParams* params) = 0;
 	};
 }

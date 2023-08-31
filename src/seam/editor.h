@@ -29,6 +29,8 @@ namespace seam {
 		/// to be called by ofApp::update()
 		void Update();
 
+		void ProcessAudio(ProcessAudioParams* params);
+
 		/// Uses the node factory to create a node given its node id.
 		/// \param node_id the hash generated from the node's human-readable name by SCHash()
 		/// \return the newly created event node, or nullptr if the NodeId didn't match a registered node type.
@@ -111,6 +113,8 @@ namespace seam {
 
 		// these two are re-calculated each frame, and then sorted for update + draw in that order
 		std::vector<INode*> nodes_to_draw;
+
+		std::vector<IAudioNode*> audioNodes;
 
 		// visible visual nodes dictate which nodes actually get updated and drawn during those loops
 		std::vector<INode*> visible_nodes;

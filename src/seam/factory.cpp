@@ -6,6 +6,7 @@
 #include "nodes/feedback.h"
 #include "nodes/fireflies.h"
 #include "nodes/gate.h"
+#include "nodes/gist-audio.h"
 #include "nodes/markov.h"
 #include "nodes/midi-in.h"
 #include "nodes/noise.h"
@@ -37,6 +38,7 @@ EventNodeFactory::EventNodeFactory() {
 	Register(MakeCreate<nodes::ComputeParticles>());
 	Register(MakeCreate<nodes::Cos>());
 	Register(MakeCreate<nodes::ForceGrid>());
+	Register(MakeCreate<nodes::GistAudio>());
 	Register(MakeCreate<nodes::Markov>());
 	Register(MakeCreate<nodes::MidiIn>());
 	Register(MakeCreate<nodes::Noise>());

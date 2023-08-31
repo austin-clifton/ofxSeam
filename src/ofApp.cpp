@@ -6,7 +6,41 @@ void ofApp::setup(){
 	// ImGUI seems to have trouble drawing arb rects...?
 	ofDisableArbTex();
 	gui.setup(nullptr, false);
+
+	ofSoundStreamSettings settings;
+
+	// if you want to set the device id to be different than the default
+	auto devices = soundStream.getDeviceList();
+	// settings.device = devices[4];
+
+	// you can also get devices for an specific api
+	// auto devices = soundStream.getDevicesByApi(ofSoundDevice::Api::PULSE);
+	// settings.device = devices[0];
+
+	// or get the default device for an specific api:
+	// settings.api = ofSoundDevice::Api::PULSE;
+
+	// or by name
+	/*
+	auto devices = soundStream.getMatchingDevices("default");
+	if (!devices.empty()) {
+		settings.setInDevice(devices[0]);
+	}
+	*/
+
+	settings.setInListener(this);
+	settings.sampleRate = 44100;
+	settings.numOutputChannels = 0;
+	settings.numInputChannels = 1;
+	settings.bufferSize = 512;
+	settings.setApi(ofSoundDevice::Api::MS_DS);
+	soundStream.setup(settings);
+
 	seam_editor.Setup();
+}
+
+void ofApp::exit() {
+	soundStream.close();
 }
 
 //--------------------------------------------------------------
@@ -31,6 +65,15 @@ void ofApp::draw() {
 		gui.end();
 		gui.draw();
 	}
+}
+
+void ofApp::audioIn(ofSoundBuffer& input) {
+	std::vector<float>* buffer = &input.getBuffer();
+
+	seam::nodes::ProcessAudioParams params;
+	params.buffer = &input.getBuffer();
+
+	seam_editor.ProcessAudio(&params);
 }
 
 //--------------------------------------------------------------
