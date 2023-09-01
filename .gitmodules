@@ -1,0 +1,15 @@
+[submodule "libs/BTrack"]
+	path = libs/BTrack
+	url = git@github.com:adamstark/BTrack.git
+[submodule "libs/capnproto"]
+	path = libs/capnproto
+	url = git@github.com:capnproto/capnproto.git
+[submodule "libs/Gist"]
+	path = libs/Gist
+	url = git@github.com:adamstark/Gist.git
+[submodule "libs/nativefiledialog"]
+	path = libs/nativefiledialog
+	url = git@github.com:mlabbe/nativefiledialog.git
+[submodule "libs/libsamplerate"]
+	path = libs/libsamplerate
+	url = git@github.com:libsndfile/libsamplerate.git
