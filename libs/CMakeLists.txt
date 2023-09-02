@@ -6,9 +6,10 @@
 set(BUILD_TESTS OFF CACHE BOOL "Enable Gist and BTrack tests")
 
 add_subdirectory(capnproto)
-add_subdirectory(fftw-3.3.10)
+
+# add_subdirectory(fftw-3.3.10)
 add_subdirectory(libsamplerate)
 add_subdirectory(Gist)
-add_subdirectory(BTrack)
+# add_subdirectory(BTrack)
 
 # TODO handle nativefiledialog

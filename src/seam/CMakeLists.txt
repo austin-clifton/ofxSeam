@@ -1,74 +1,70 @@
-set(seam_sources
-    editor.cpp
-    factory.cpp
-    shader-utils.cpp
+target_sources(seam PRIVATE
+    ${CMAKE_CURRENT_SOURCE_DIR}/editor.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/factory.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/shader-utils.cpp
 
-    imgui-utils/properties.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/imgui-utils/properties.cpp
     
-    nodes/add-store.cpp
-    nodes/compute-particles.cpp
-    nodes/cos.cpp
-    nodes/feedback.cpp
-    nodes/fireflies.cpp
-    nodes/force-grid.cpp
-    nodes/gate.cpp
-    nodes/gist-audio.cpp
-    nodes/i-node.cpp
-    nodes/markov.cpp
-    nodes/midi-in.cpp
-    nodes/noise.cpp
-    nodes/notes-printer.cpp
-    nodes/percussive-trigger.cpp
-    nodes/range.cpp
-    nodes/saw.cpp
-    nodes/shader.cpp
-    nodes/step.cpp
-    nodes/texgen-perlin.cpp
-    nodes/timer.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/nodes/add-store.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/nodes/compute-particles.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/nodes/cos.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/nodes/feedback.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/nodes/fireflies.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/nodes/force-grid.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/nodes/gate.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/nodes/gist-audio.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/nodes/i-node.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/nodes/markov.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/nodes/midi-in.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/nodes/noise.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/nodes/notes-printer.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/nodes/percussive-trigger.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/nodes/range.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/nodes/saw.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/nodes/shader.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/nodes/step.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/nodes/texgen-perlin.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/nodes/timer.cpp
 
-    pins/pin.cpp
-    pins/push.cpp
-
-    PARENT_SCOPE
+    ${CMAKE_CURRENT_SOURCE_DIR}/pins/pin.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/pins/push.cpp
 )
 
-set(seam_headers
-    editor.h
-    factory.h
-    flags-helper.h
-    frame-pool.h
-    hash.h
-    notes.h
-    ring-buffer.h
-    shader-utils.h
+target_sources(seam PRIVATE
+    ${CMAKE_CURRENT_SOURCE_DIR}/editor.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/factory.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/flags-helper.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/frame-pool.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/hash.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/notes.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/ring-buffer.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/shader-utils.h
 
-    containers/octree.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/containers/octree.h
 
-    imgui-utils/properties.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/imgui-utils/properties.h
 
-    nodes/add-store.h
-    nodes/compute-particles.h
-    nodes/cos.h
-    nodes/feedback.h
-    nodes/fireflies.h
-    nodes/force-grid.h
-    nodes/gate.h
-    nodes/gist-audio.h
-    nodes/i-node.h
-    nodes/markov.h
-    nodes/midi-in.h
-    nodes/noise.h
-    nodes/notes-printer.h
-    nodes/percussive-trigger.h
-    nodes/range.h
-    nodes/saw.h
-    nodes/shader.h
-    nodes/step.h
-    nodes/texgen-perlin.h
-    nodes/timer.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/nodes/add-store.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/nodes/compute-particles.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/nodes/cos.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/nodes/feedback.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/nodes/fireflies.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/nodes/force-grid.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/nodes/gate.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/nodes/gist-audio.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/nodes/i-node.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/nodes/markov.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/nodes/midi-in.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/nodes/noise.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/nodes/notes-printer.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/nodes/percussive-trigger.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/nodes/range.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/nodes/saw.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/nodes/shader.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/nodes/step.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/nodes/texgen-perlin.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/nodes/timer.h
 
-    pins/pin.h
-    pins/push.h
-
-    PARENT_SCOPE
+    ${CMAKE_CURRENT_SOURCE_DIR}/pins/pin.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/pins/push.h
 )
