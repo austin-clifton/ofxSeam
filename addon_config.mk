@@ -19,7 +19,7 @@ meta:
 	ADDON_DESCRIPTION = ofxSeam lets you build data-driven visual systems using an extensible ImGui-based Node Graph Editor.
 	ADDON_AUTHOR = Austin Clifton
 	ADDON_TAGS = "addon" "node-graph"
-	ADDON_URL = http://github.com/yournamehere/ofxSeam
+	ADDON_URL = http://github.com/austin-clifton/ofxSeam
 
 common:
 	# dependencies with other addons, a list of them separated by spaces 
