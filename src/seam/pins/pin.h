@@ -7,7 +7,7 @@
 
 #include "capnp/message.h"
 #include "capnp/serialize-packed.h"
-#include "node-graph.capnp.h"
+#include "seam/schema/codegen/node-graph.capnp.h"
 
 #include "../notes.h"
 

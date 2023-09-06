@@ -1,6 +1,6 @@
 #include "i-node.h"
-#include "imgui/src/imgui.h"
-#include "imgui/src/blueprints/widgets.h"
+#include "imgui.h"
+#include "blueprints/widgets.h"
 #include "../imgui-utils/properties.h"
 
 using namespace seam;

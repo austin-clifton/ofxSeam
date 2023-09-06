@@ -37,6 +37,13 @@ namespace seam {
 			}
 		};
 
+		template <typename T>
+		static EventNodeFactory::CreateFunc MakeCreate() {
+			return [] {
+				return new T();
+			};
+		}
+
 		EventNodeFactory();
 
 		~EventNodeFactory();

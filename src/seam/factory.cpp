@@ -4,7 +4,6 @@
 #include "nodes/add-store.h"
 #include "nodes/cos.h"
 #include "nodes/feedback.h"
-#include "nodes/fireflies.h"
 #include "nodes/gate.h"
 #include "nodes/gist-audio.h"
 #include "nodes/markov.h"
@@ -16,28 +15,17 @@
 #include "nodes/step.h"
 #include "nodes/texgen-perlin.h"
 #include "nodes/timer.h"
-#include "nodes/force-grid.h"
 #include "nodes/compute-particles.h"
 #include "nodes/percussive-trigger.h"
 #include "nodes/range.h"
 
 using namespace seam;
 
-namespace {
-	template <typename T>
-	EventNodeFactory::CreateFunc MakeCreate() {
-		return [] {
-			return new T();
-		};
-	}
-}
-
 EventNodeFactory::EventNodeFactory() {
 	// register seam-internal nodes here
 	Register(MakeCreate<nodes::AddStore>());
 	Register(MakeCreate<nodes::ComputeParticles>());
 	Register(MakeCreate<nodes::Cos>());
-	Register(MakeCreate<nodes::ForceGrid>());
 	Register(MakeCreate<nodes::GistAudio>());
 	Register(MakeCreate<nodes::Markov>());
 	Register(MakeCreate<nodes::MidiIn>());
@@ -48,7 +36,6 @@ EventNodeFactory::EventNodeFactory() {
 	Register(MakeCreate<nodes::Shader>());
 	Register(MakeCreate<nodes::TexgenPerlin>());
 	Register(MakeCreate<nodes::Timer>());
-	Register(MakeCreate<nodes::Fireflies>());
 	Register(MakeCreate<nodes::Feedback>());
 	Register(MakeCreate<nodes::Saw>());
 	Register(MakeCreate<nodes::Gate>());

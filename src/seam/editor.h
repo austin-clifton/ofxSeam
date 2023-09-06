@@ -52,6 +52,8 @@ namespace seam {
 		///  Clear the current graph.
 		/// </summary>
 		void NewGraph();
+
+		seam::EventNodeFactory& GetFactory() { return factory; }
 	
 	private:
 		void SaveGraph(const std::string_view filename, const std::vector<INode*>& nodesToSave);

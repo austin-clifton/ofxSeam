@@ -10,7 +10,7 @@
 #include "seam/pins/push.h"
 #include "seam/frame-pool.h"
 
-#include "imgui/src/blueprints/builders.h"
+#include "blueprints/builders.h"
 namespace ed = ax::NodeEditor;
 
 namespace seam {

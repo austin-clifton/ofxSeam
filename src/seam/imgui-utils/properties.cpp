@@ -1,6 +1,6 @@
 #include <string>
 
-#include "imgui/src/imgui.h"
+#include "imgui.h"
 
 #include "properties.h"
 

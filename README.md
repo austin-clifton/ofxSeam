@@ -1,67 +1,64 @@
-# seam
+# ofxSeam
 
-Seam is a pin-based node editor for openFrameworks built using:
-- [openFrameworks](https://openframeworks.cc/)
-- [Dear ImGui](https://github.com/ocornut/imgui)
-- [the node editor extension for ImGui](https://github.com/thedmd/imgui-node-editor)
+Seam is a GUI-based node graph editor [addon](https://openframeworks.cc/learning/01_basics/how_to_add_addon_to_project/) for [OpenFrameworks](https://openframeworks.cc/), designed for protoyping and building data-driven visual systems.
 
-It is heavily WIP, and currently too barren of features to be effectively used yet. But, the scaffolding is becoming more stable!
+See the `example_usage` directory for a skeleton you can use to get started using Seam. The Seam Editor hooks into OpenFrameworks' `update()`, `draw()`, etc. functions in your `ofApp`.
 
-## Design Goals
+Seam is currently missing many quality of life features and has some annoying bugs. Node creation and connections are functional and node graph files can be saved and loaded, but don't expect a friendly experience _yet_. See the Known Issues section for more info.
 
 Seam's design goals include:
-- build a system like TouchDesigner, with audio and musical input as a primary focus
-- use open source tools and architect code that can be built on and extended easily
-- easy integration of external signals over pipes, MIDI input, etc.
-- make audio-reactive visual systems easier to build and iterate
-- make adding new nodes of various complexity easy
-- make shaders easy to plug with different inputs 
-- efficient update and draw loops, a pull based update/draw system where visible nodes determine what needs to update
-- end executables that you can send to your friends, and have them hook their beats up, or _eventually_, even use for real-time visual performances.
+- extensible node-and-pin based node graph editor that lets you easily create and add your own Node logic.
+- make audio-reactive visual systems easier to build and iterate.
+- quick integration of external signals (pipes, MIDI and OSC input, audio analysis) into visual systems.
+- the ability to construct multi-pass render systems in real time, without some of the implementation baggage that accompanies game engines.
 
-## Roadmap
+The core of Seam is open source because Seam is built using many open source libraries, including:
+- [ofxImGuiNodeEditor](https://github.com/austin-clifton/ofxImGuiNodeEditor), which itself is a mashup of [the original ImGui extension addon for OpenFrameworks](https://github.com/jvcleave/ofxImGui) and the [ImGui Node Editor extension](https://github.com/thedmd/imgui-node-editor).
+- [Cap'n Proto](https://capnproto.org/) for file serialization (and likely over-the-wire serialization in the future).
+- [ofxMidi](https://github.com/danomatika/ofxMidi) for handling MIDI input using Seam nodes.
+- ...and more, this list will continue growing as more open source libraries are added.
 
-A shorter term roadmap for seam includes:
-- make seam an actual openFrameworks extension
-- node deletion 
-- prettify it (use a better font)
-- serialize and deserialize node graphs to save and load "scene graphs" (will probably use [capnp](https://capnproto.org/capnp-tool.html) for this)
-- multichannel pin connections with mapping options
-- integrate more node types:
-    - feedback
-    - MIDI input
-    - [SuperCollider](https://supercollider.github.io/) synth inputs
-    - particle system node (probably would act like its own "scene", should probably be a compute shader)
-    - the `seam::Cos` node could be a more generic LFO
-    - generic shader node with variable input pins to map to shader inputs
-    - ...many more
-- smarter graph traversal
-    - add ping pong FBO logic for nodes with feedback textures
-    - smarter update logic (the flags handling updates over time in the `NodeFlags` enum aren't treated reasonably)
-- screen management for multiple render targets
-- TESTS, especially for the graph traversals, so I can trust the code
-- a basic expression parser, [cparse](https://github.com/cparse/cparse) looks neat
+License
+-------
 
-## Code Layout
+Seam's core Node Editor addon for OpenFrameworks is distributed under the [MIT License](https://en.wikipedia.org/wiki/MIT_License).
 
-The C++ source for seam is in the `src/seam/` directory.
+Installation
+------------
 
-The bulk of the architecture (so far) is in these files in `src/seam/`:
-- `event-nodes/event-node.h` is an abstract virtual base class for all event system nodes; the implementation file handles some common functionality
-- `factory.h` describes the `EventNodeFactory` which holds generators which contain metadata about event node types, and can create them, for GUI and eventually deserialization purposes
-- `editor.h` describes the interface for adding and removing nodes and links, drawing the node editor GUI, and is also currently responsible for calculating update and draw orders
-    - following TouchDesigner's "pull-based" eventing system, I attempt to only request updates on "dirty" nodes when the nodes need to update for drawing's purpose
+If installing for MacOS or Linux, you will need to build additional dependencies yourself (listed below).
 
-Two samples of `IEventNode` implementations are in `event-nodes/` directory, `texgen-perlin.h/cpp` and `cos.h/cpp`.
+Dependencies
+------------
+- [capnp and kj](https://capnproto.org/) (they are built together)
+- [nativefiledialog](https://github.com/mlabbe/nativefiledialog)
 
-I have started an interface for drawing pins and other properties in the properties editor (top right hand corner when a node is selected) in `imgui-utils/properties.h` and cpp.
+These are already compiled for Windows, if you are using Linux or Mac OS you will need to compile them yourself. Please PR your additions!
 
-`pin.h` describes the pin types that I plan to implement; I've only fully implemented the GUI drawing code for float and int pins so far.
+Compatibility
+------------
+Seam has been tested in Visual Studio using OpenFrameworks 0.12. It _should_ work fine on other platforms, but has not been tested, and dependencies will need to be built (see above).
 
-## Building
+Known issues
+------------
+#### GUI Bugs
+- Clicking the top-left arrow in the Seam Editor will cause the editor to collapse and it won't re-expand; `imgui.ini` in your app's `bin/` directory will need to be deleted to restore the editor.
 
-It is currently difficult to build seam since I have not uploaded the updated ImGui node editor source code I am using.
+#### GUI Missing Features
+- Nodes can't be deleted yet.
 
-I am also using a [modified branch of the openFrameworks source](https://github.com/austin-clifton/openFrameworks) which supports c++17 on Windows.
+#### Visual Studio Install
+The Visual Studio addon install via the Project Generator seems not to respect options in the `addon_config.mk` file. I am currently unsure if this is due to the addon or OpenFrameworks. To work around this, right click on your project in Visual Studio, go to Properties, and then in the Properties pane:
+- Navigate to "Configuration Properties" --> "C++" --> "Additional Include Directories" and remove all sub-directories of `addons\ofxSeam\libs\capnp\includes`.
+- Navigate to "Configuration Properties" --> "Linker" --> "Additional Input" and add the **full file paths** (dependent on your ofxSeam install path) for the following:
+    - `ofxSeam/libs/capnp/lib/vs/debug/capnp.lib`
+    - `ofxSeam/libs/capnp/lib/vs/debug/kj.lib`
+    - `ofxSeam/libs/nfd/lib/vs/nfd_d.lib`
+    - If you build for release instead of debug, you will need to use the corresponding release libraries instead.
 
-I will update this section when building seam is easier (probably when I upload the modified imgui sources).
+
+Version history
+------------
+
+### Version 0.01 (5 Sep 2023):
+Initial commit after moving from the original repo; moved Seam code to an ofx addon.

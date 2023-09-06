@@ -1,14 +1,14 @@
 #include "editor.h"
-#include "imgui/src/imgui.h"
-#include "imgui/src/imgui_node_editor.h"
-#include "imgui/src/blueprints/builders.h"
+#include "imgui.h"
+#include "imgui_node_editor.h"
+#include "blueprints/builders.h"
 
 #include <io.h>
 #include <fcntl.h>
 
 #include "capnp/message.h"
 #include "capnp/serialize-packed.h"
-#include "node-graph.capnp.h"
+#include "seam/schema/codegen/node-graph.capnp.h"
 
 #include "hash.h"
 #include "imgui-utils/properties.h"
