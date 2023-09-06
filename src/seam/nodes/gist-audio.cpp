@@ -10,7 +10,7 @@ namespace {
 GistAudio::GistAudio() : INode("Gist Audio") {
 	flags = (NodeFlags)(flags | NodeFlags::UPDATES_EVERY_FRAME);
 
-	gist = std::unique_ptr<Gist<float>>(new Gist<float>(512, 44100));
+	// gist = std::unique_ptr<Gist<float>>(new Gist<float>(512, 44100));
 }
 
 GistAudio::~GistAudio() {
@@ -18,6 +18,7 @@ GistAudio::~GistAudio() {
 }
 
 void GistAudio::ProcessAudio(ProcessAudioParams* params) {
+	/*
 	gist->processAudioFrame(*params->buffer);
 	
 	UpdateSampleAcc(rms, gist->rootMeanSquare());
@@ -28,6 +29,7 @@ void GistAudio::ProcessAudio(ProcessAudioParams* params) {
 	UpdateSampleAcc(spectralFlat, gist->spectralFlatness());
 
 	printf("%f\n", gist->spectralCentroid());
+	*/
 }
 
 void GistAudio::Update(UpdateParams* params) {

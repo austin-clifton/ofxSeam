@@ -141,7 +141,7 @@
       <SubSystem>Console</SubSystem>
       <RandomizedBaseAddress>false</RandomizedBaseAddress>
       <AdditionalLibraryDirectories>$(SolutionDir)lib\fftw-3.3.5-dll64;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>$(SolutionDir)lib\win-x64\debug\capnp.lib;$(SolutionDir)lib\win-x64\debug\kj.lib;$(SolutionDir)lib\win-x64\debug\nfd_d.lib;$(SolutionDir)lib\fftw-3.3.5-dll64\libfftw3-3.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>$(SolutionDir)lib\win-x64\debug\capnp.lib;$(SolutionDir)lib\win-x64\debug\kj.lib;$(SolutionDir)lib\win-x64\debug\nfd_d.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PostBuildEvent />
   </ItemDefinitionGroup>
@@ -212,7 +212,6 @@
     <ClCompile Include="..\..\..\addons\ofxImGui-1.75\src\EngineOpenGLES.cpp" />
     <ClCompile Include="..\..\..\addons\ofxImGui-1.75\src\EngineVk.cpp" />
     <ClCompile Include="..\..\..\addons\ofxImGui-1.75\src\Gui.cpp" />
-    <ClCompile Include="..\..\..\addons\ofxImGui-1.75\src\Helpers.cpp" />
     <ClCompile Include="..\..\..\addons\ofxImGui-1.75\src\ofxImGuiLoggerChannel.cpp" />
     <ClCompile Include="..\..\..\addons\ofxMidi\libs\rtmidi\RtMidi.cpp" />
     <ClCompile Include="..\..\..\addons\ofxMidi\src\desktop\ofxRtMidiIn.cpp" />
@@ -224,14 +223,6 @@
     <ClCompile Include="..\..\..\addons\ofxMidi\src\ofxMidiMessage.cpp" />
     <ClCompile Include="..\..\..\addons\ofxMidi\src\ofxMidiOut.cpp" />
     <ClCompile Include="..\..\..\addons\ofxMidi\src\ofxMidiTimecode.cpp" />
-    <ClCompile Include="lib\gist\src\AccelerateFFT.cpp" />
-    <ClCompile Include="lib\gist\src\CoreFrequencyDomainFeatures.cpp" />
-    <ClCompile Include="lib\gist\src\CoreTimeDomainFeatures.cpp" />
-    <ClCompile Include="lib\gist\src\Gist.cpp" />
-    <ClCompile Include="lib\gist\src\MFCC.cpp" />
-    <ClCompile Include="lib\gist\src\OnsetDetectionFunction.cpp" />
-    <ClCompile Include="lib\gist\src\WindowFunctions.cpp" />
-    <ClCompile Include="lib\gist\src\Yin.cpp" />
     <ClCompile Include="schema\codegen\node-graph.capnp.c++" />
     <ClCompile Include="src\main.cpp" />
     <ClCompile Include="src\ofApp.cpp" />
@@ -284,7 +275,6 @@
     <ClInclude Include="..\..\..\addons\ofxImGui-1.75\src\EngineOpenGLES.h" />
     <ClInclude Include="..\..\..\addons\ofxImGui-1.75\src\EngineVk.h" />
     <ClInclude Include="..\..\..\addons\ofxImGui-1.75\src\Gui.h" />
-    <ClInclude Include="..\..\..\addons\ofxImGui-1.75\src\Helpers.h" />
     <ClInclude Include="..\..\..\addons\ofxImGui-1.75\src\imconfig.h" />
     <ClInclude Include="..\..\..\addons\ofxImGui-1.75\src\ofxImGui.h" />
     <ClInclude Include="..\..\..\addons\ofxImGui-1.75\src\ofxImGuiLoggerChannel.h" />
@@ -310,14 +300,6 @@
     <ClInclude Include="..\..\..\addons\ofxMidi\src\ofxMidiOut.h" />
     <ClInclude Include="..\..\..\addons\ofxMidi\src\ofxMidiTimecode.h" />
     <ClInclude Include="..\..\..\addons\ofxMidi\src\ofxMidiTypes.h" />
-    <ClInclude Include="lib\gist\src\AccelerateFFT.h" />
-    <ClInclude Include="lib\gist\src\CoreFrequencyDomainFeatures.h" />
-    <ClInclude Include="lib\gist\src\CoreTimeDomainFeatures.h" />
-    <ClInclude Include="lib\gist\src\Gist.h" />
-    <ClInclude Include="lib\gist\src\MFCC.h" />
-    <ClInclude Include="lib\gist\src\OnsetDetectionFunction.h" />
-    <ClInclude Include="lib\gist\src\WindowFunctions.h" />
-    <ClInclude Include="lib\gist\src\Yin.h" />
     <ClInclude Include="lib\headers\fftw3.h" />
     <ClInclude Include="schema\codegen\node-graph.capnp.h" />
     <ClInclude Include="src\ofApp.h" />
@@ -369,9 +351,6 @@
       <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">/D_DEBUG %(AdditionalOptions)</AdditionalOptions>
       <AdditionalIncludeDirectories>$(OF_ROOT)\libs\openFrameworksCompiled\project\vs</AdditionalIncludeDirectories>
     </ResourceCompile>
-  </ItemGroup>
-  <ItemGroup>
-    <Library Include="lib\fftw-3.3.5-dll64\libfftw3f-3.lib" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ProjectExtensions>

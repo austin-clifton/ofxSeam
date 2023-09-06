@@ -79,9 +79,6 @@
     <ClCompile Include="..\..\..\addons\ofxImGui-1.75\src\Gui.cpp">
       <Filter>addons\ofxImGui-1.75\src</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\addons\ofxImGui-1.75\src\Helpers.cpp">
-      <Filter>addons\ofxImGui-1.75\src</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\..\addons\ofxImGui-1.75\src\ofxImGuiLoggerChannel.cpp">
       <Filter>addons\ofxImGui-1.75\src</Filter>
     </ClCompile>
@@ -174,30 +171,6 @@
     </ClCompile>
     <ClCompile Include="src\seam\nodes\noise.cpp">
       <Filter>src\seam\nodes</Filter>
-    </ClCompile>
-    <ClCompile Include="lib\gist\src\MFCC.cpp">
-      <Filter>lib\gist</Filter>
-    </ClCompile>
-    <ClCompile Include="lib\gist\src\OnsetDetectionFunction.cpp">
-      <Filter>lib\gist</Filter>
-    </ClCompile>
-    <ClCompile Include="lib\gist\src\WindowFunctions.cpp">
-      <Filter>lib\gist</Filter>
-    </ClCompile>
-    <ClCompile Include="lib\gist\src\Yin.cpp">
-      <Filter>lib\gist</Filter>
-    </ClCompile>
-    <ClCompile Include="lib\gist\src\AccelerateFFT.cpp">
-      <Filter>lib\gist</Filter>
-    </ClCompile>
-    <ClCompile Include="lib\gist\src\CoreFrequencyDomainFeatures.cpp">
-      <Filter>lib\gist</Filter>
-    </ClCompile>
-    <ClCompile Include="lib\gist\src\CoreTimeDomainFeatures.cpp">
-      <Filter>lib\gist</Filter>
-    </ClCompile>
-    <ClCompile Include="lib\gist\src\Gist.cpp">
-      <Filter>lib\gist</Filter>
     </ClCompile>
     <ClCompile Include="src\seam\nodes\gist-audio.cpp">
       <Filter>src\seam\nodes</Filter>
@@ -386,9 +359,6 @@
     <ClInclude Include="..\..\..\addons\ofxImGui-1.75\src\Gui.h">
       <Filter>addons\ofxImGui-1.75\src</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\addons\ofxImGui-1.75\src\Helpers.h">
-      <Filter>addons\ofxImGui-1.75\src</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\..\addons\ofxImGui-1.75\src\imconfig.h">
       <Filter>addons\ofxImGui-1.75\src</Filter>
     </ClInclude>
@@ -533,30 +503,6 @@
     <ClInclude Include="src\seam\nodes\noise.h">
       <Filter>src\seam\nodes</Filter>
     </ClInclude>
-    <ClInclude Include="lib\gist\src\Gist.h">
-      <Filter>lib\gist</Filter>
-    </ClInclude>
-    <ClInclude Include="lib\gist\src\MFCC.h">
-      <Filter>lib\gist</Filter>
-    </ClInclude>
-    <ClInclude Include="lib\gist\src\OnsetDetectionFunction.h">
-      <Filter>lib\gist</Filter>
-    </ClInclude>
-    <ClInclude Include="lib\gist\src\WindowFunctions.h">
-      <Filter>lib\gist</Filter>
-    </ClInclude>
-    <ClInclude Include="lib\gist\src\Yin.h">
-      <Filter>lib\gist</Filter>
-    </ClInclude>
-    <ClInclude Include="lib\gist\src\AccelerateFFT.h">
-      <Filter>lib\gist</Filter>
-    </ClInclude>
-    <ClInclude Include="lib\gist\src\CoreFrequencyDomainFeatures.h">
-      <Filter>lib\gist</Filter>
-    </ClInclude>
-    <ClInclude Include="lib\gist\src\CoreTimeDomainFeatures.h">
-      <Filter>lib\gist</Filter>
-    </ClInclude>
     <ClInclude Include="lib\headers\fftw3.h">
       <Filter>lib\fftw</Filter>
     </ClInclude>
@@ -566,10 +512,5 @@
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="icon.rc" />
-  </ItemGroup>
-  <ItemGroup>
-    <Library Include="lib\fftw-3.3.5-dll64\libfftw3f-3.lib">
-      <Filter>lib\fftw</Filter>
-    </Library>
   </ItemGroup>
 </Project>

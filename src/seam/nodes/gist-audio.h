@@ -2,7 +2,7 @@
 
 #include "i-node.h"
 
-#include "Gist.h"
+// #include "Gist.h"
 
 using namespace seam::pins;
 
@@ -34,7 +34,7 @@ namespace seam::nodes {
 		void ClearSampler(SampleAcc& sacc);
 		void DrawSampler(SampleAcc sacc, const char* label);
 
-		std::unique_ptr<Gist<float>> gist;
+		// std::unique_ptr<Gist<float>> gist;
 
 		SampleAcc rms;
 		SampleAcc peak;
