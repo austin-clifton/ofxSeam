@@ -200,9 +200,9 @@ namespace seam::nodes {
 		std::vector<NodeConnection> parents;
 
 		// the factory is a friend class so it can grab all the node's metadata easily
-		friend class EventNodeFactory;
+		friend class seam::EventNodeFactory;
 		// the editor is a friend class so it can manage the node's inputs and outputs lists
-		friend class Editor;
+		friend class seam::Editor;
 	};
 
 	/// <summary>

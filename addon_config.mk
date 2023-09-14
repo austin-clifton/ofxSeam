@@ -94,9 +94,18 @@ vs:
 	# ADDON_DLLS_TO_COPY = 
 
 	ADDON_LIBS = 
-	ADDON_LIBS += libs/capnp/lib/vs/capnp.lib 
-	ADDON_LIBS += libs/capnp/lib/vs/kj.lib
-	ADDON_LIBS += libs/nfd/lib/vs/nfd.lib
+	ADDON_LIBS += libs/capnp/lib/vs/debug/capnp.lib 
+	ADDON_LIBS += libs/capnp/lib/vs/debug/kj.lib
+	ADDON_LIBS += libs/nfd/lib/vs/nfd_d.lib
+
+msys2:
+	ADDON_LIBS =
+	ADDON_LIBS += libs/capnp/lib/msys/debug/capnp.lib
+	ADDON_LIBS += libs/capnp/lib/msys/debug/kj.lib
+	ADDON_LIBS += libs/nfd/lib/msys/nfd_d.lib
+	
+	ADDON_LDFLAGS =
+	ADDON_LDFLAGS += -lComctl32
 	
 linuxarmv6l:
 linuxarmv7l:

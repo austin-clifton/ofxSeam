@@ -39,8 +39,6 @@ Compatibility
 ------------
 Seam has been tested in Visual Studio using OpenFrameworks 0.12. It _should_ work fine on other platforms, but has not been tested, and dependencies will need to be built (see above).
 
-You will need to use C++17 for OpenFrameworks 0.12; C++14 is required for capnp.
-
 Known issues
 ------------
 #### GUI Bugs

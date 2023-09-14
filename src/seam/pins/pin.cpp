@@ -88,7 +88,7 @@ namespace seam {
 			break;
 		}
 		default:
-			throw logic_error("not implemented!");
+			throw std::logic_error("not implemented!");
 		}
 	}
 }
@@ -346,7 +346,7 @@ namespace seam::pins {
 		case PinType::NOTE_EVENT:
 			return sizeof(notes::NoteEvent*);
 		default:
-			throw new exception("Unknown pin type! You need to provide the element size in bytes yourself.");
+			throw std::runtime_error("Unknown pin type! You need to provide the element size in bytes yourself.");
 		}
 	}
 }
