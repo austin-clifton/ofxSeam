@@ -42,9 +42,9 @@ void ofApp::setup(){
 	seamEditor.Setup();
 
 	// Add custom Seam nodes.
-	seam::EventNodeFactory& factory = seamEditor.GetFactory();
-	factory.Register(factory.MakeCreate<seam::nodes::Fireflies>());
-	factory.Register(factory.MakeCreate<seam::nodes::ForceGrid>());
+	seam::EventNodeFactory* factory = seamEditor.GetFactory();
+	factory->Register(factory->MakeCreate<seam::nodes::Fireflies>());
+	factory->Register(factory->MakeCreate<seam::nodes::ForceGrid>());
 }
 
 void ofApp::exit() {
@@ -76,12 +76,7 @@ void ofApp::draw() {
 }
 
 void ofApp::audioIn(ofSoundBuffer& input) {
-	std::vector<float>* buffer = &input.getBuffer();
-
-	seam::nodes::ProcessAudioParams params;
-	params.buffer = &input.getBuffer();
-
-	seamEditor.ProcessAudio(&params);
+	seamEditor.ProcessAudio(input);
 }
 
 //--------------------------------------------------------------

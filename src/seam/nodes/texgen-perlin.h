@@ -2,8 +2,6 @@
 
 #include "i-node.h"
 
-#include "../pins/pin-float.h"
-#include "../pins/pin-int.h"
 
 using namespace seam::pins;
 

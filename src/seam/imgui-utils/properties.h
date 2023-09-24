@@ -1,9 +1,6 @@
 #pragma once
 
 #include "../pins/pin.h"
-#include "../pins/pin-float.h"
-#include "../pins/pin-int.h"
-#include "../pins/pin-uint.h"
 #include "../nodes/i-node.h"
 
 namespace seam {
@@ -19,8 +16,7 @@ namespace seam {
 			T& out_val,
 			T min, 
 			T max, 
-			float speed = 0.01f, 
-			ImGuiSliderFlags flags = 0
+			float speed = 0.01f
 		) {
 			// draw the + button
 			bool pressed = ImGui::Button("+");
@@ -28,7 +24,7 @@ namespace seam {
 			// draw the label and input box
 			// note we don't care if the value changed; 
 			// the value only matters when the button was pressed
-			DrawTextInput(label, out_val, min, max, speed, flags);
+			DrawTextInput(label, out_val, min, max, speed);
 			return pressed;
 		}
 

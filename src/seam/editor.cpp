@@ -1,5 +1,5 @@
 #include "editor.h"
-#include "imgui.h"
+#include "ofxImGui.h"
 #include "imgui_node_editor.h"
 #include "blueprints/builders.h"
 
@@ -105,7 +105,15 @@ void TestFindItems(Octree<Particle, 8>& octree, glm::vec3 search_center, float s
 	assert(expected == search_result.size());
 }
 
-void Editor::Setup() {
+Editor::~Editor() {
+	if (factory != nullptr) {
+		delete factory;
+		factory = nullptr;
+	}
+}
+
+void Editor::Setup(const ofSoundStreamSettings& soundSettings) {
+	factory = new EventNodeFactory(soundSettings);
 	node_editor_context = ed::CreateEditor();
 
 	std::function<glm::vec3(Particle*)> get = [](Particle* p) -> glm::vec3 { return p->position; };
@@ -231,9 +239,9 @@ void Editor::Update() {
 	}
 }
 
-void Editor::ProcessAudio(ProcessAudioParams* params) {
+void Editor::ProcessAudio(ofSoundBuffer& buffer) {
 	for (auto n : audioNodes) {
-		n->ProcessAudio(params);
+		n->ProcessAudio(buffer);
 	}
 }
 
@@ -253,7 +261,7 @@ void Editor::GuiDrawPopups() {
 
 	if (ImGui::BeginPopup(POPUP_NAME_NEW_NODE)) {
 		// TODO specify an input or output type here if new_link_pin != nullptr
-		NodeId new_node_id = factory.DrawCreatePopup();
+		NodeId new_node_id = factory->DrawCreatePopup();
 		if (new_node_id != 0) {
 			show_create_dialog = false;
 			INode* node = CreateAndAdd(new_node_id);
@@ -901,7 +909,7 @@ void Editor::GuiDraw() {
 }
 
 INode* Editor::CreateAndAdd(NodeId node_id) {
-	INode* node = factory.Create(node_id);
+	INode* node = factory->Create(node_id);
 	if (node != nullptr) {
 		// handle book keeping for the new node
 

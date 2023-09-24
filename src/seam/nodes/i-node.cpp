@@ -1,5 +1,7 @@
 #include "i-node.h"
-#include "imgui.h"
+
+#include "ofxImGui.h"
+
 #include "blueprints/widgets.h"
 #include "../imgui-utils/properties.h"
 

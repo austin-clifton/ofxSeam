@@ -2,6 +2,7 @@
 #include "hash.h"
 
 #include "nodes/add-store.h"
+#include "nodes/audioAnalyzer.h"
 #include "nodes/cos.h"
 #include "nodes/feedback.h"
 #include "nodes/gate.h"
@@ -21,9 +22,12 @@
 
 using namespace seam;
 
-EventNodeFactory::EventNodeFactory() {
+EventNodeFactory::EventNodeFactory(const ofSoundStreamSettings& soundSettings) {
 	// register seam-internal nodes here
 	Register(MakeCreate<nodes::AddStore>());
+	Register([&soundSettings] {
+		return new nodes::AudioAnalyzer(soundSettings);
+	});
 	Register(MakeCreate<nodes::ComputeParticles>());
 	Register(MakeCreate<nodes::Cos>());
 	Register(MakeCreate<nodes::GistAudio>());

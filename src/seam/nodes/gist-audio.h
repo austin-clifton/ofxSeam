@@ -15,7 +15,7 @@ namespace seam::nodes {
 
 		void Update(UpdateParams* params) override;
 
-		void ProcessAudio(ProcessAudioParams* params) override;
+		void ProcessAudio(ofSoundBuffer& input) override;
 
 		PinInput* PinInputs(size_t& size) override;
 

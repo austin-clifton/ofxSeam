@@ -57,10 +57,6 @@ namespace seam::nodes {
 		// not sure what else is needed here yet
 	};
 
-	struct ProcessAudioParams {
-		std::vector<float>* buffer;
-	};
-
 	/// Base class for all nodes that use the eventing system
 	class INode {
 	public:
@@ -225,6 +221,6 @@ namespace seam::nodes {
 	/// </summary>
 	class IAudioNode {
 	public:
-		virtual void ProcessAudio(ProcessAudioParams* params) = 0;
+		virtual void ProcessAudio(ofSoundBuffer& input) = 0;
 	};
 }

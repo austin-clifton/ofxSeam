@@ -1,7 +1,6 @@
 #pragma once
 
 #include "i-node.h"
-#include "../pins/pin-note-event.h"
 
 using namespace seam::pins;
 

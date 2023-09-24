@@ -1,6 +1,6 @@
 #include <string>
 
-#include "imgui.h"
+#include "ofxImGui.h"
 
 #include "properties.h"
 

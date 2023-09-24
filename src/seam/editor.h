@@ -17,7 +17,9 @@ namespace seam {
 		using Link = std::pair<PinInput*, PinOutput*>;
 
 		/// to be called by ofApp::setup()
-		void Setup();
+		void Setup(const ofSoundStreamSettings& soundSettings);
+
+		~Editor();
 
 		/// to be called by ofApp::draw()
 		void Draw();
@@ -29,7 +31,7 @@ namespace seam {
 		/// to be called by ofApp::update()
 		void Update();
 
-		void ProcessAudio(ProcessAudioParams* params);
+		void ProcessAudio(ofSoundBuffer& buffer);
 
 		/// Uses the node factory to create a node given its node id.
 		/// \param node_id the hash generated from the node's human-readable name by SCHash()
@@ -53,7 +55,7 @@ namespace seam {
 		/// </summary>
 		void NewGraph();
 
-		seam::EventNodeFactory& GetFactory() { return factory; }
+		seam::EventNodeFactory* GetFactory() { return factory; }
 	
 	private:
 		void SaveGraph(const std::string_view filename, const std::vector<INode*>& nodesToSave);
@@ -102,9 +104,9 @@ namespace seam {
 			}
 		};
 
-		ax::NodeEditor::EditorContext* node_editor_context;
+		ax::NodeEditor::EditorContext* node_editor_context = nullptr;
 
-		seam::EventNodeFactory factory;
+		seam::EventNodeFactory* factory = nullptr;
 
 		PushPatterns push_patterns;
 		FramePool alloc_pool = FramePool(8192);

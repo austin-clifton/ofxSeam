@@ -1,9 +1,6 @@
 #pragma once
 
 #include "pin.h"
-#include "pin-int.h"
-#include "pin-flow.h"
-#include "pin-float.h"
 #include "../hash.h"
 #include "../flags-helper.h"
 

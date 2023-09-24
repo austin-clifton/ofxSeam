@@ -17,7 +17,7 @@ GistAudio::~GistAudio() {
 
 }
 
-void GistAudio::ProcessAudio(ProcessAudioParams* params) {
+void GistAudio::ProcessAudio(ofSoundBuffer& buffer) {
 	/*
 	gist->processAudioFrame(*params->buffer);
 	
