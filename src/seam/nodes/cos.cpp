@@ -34,7 +34,7 @@ void Cos::Update(UpdateParams* params) {
 	// TODO generalize "propagation" (template function?)
 	for (size_t i = 0; i < pin_out_fval.connections.size(); i++) {
 		size_t chans_size;
-		float* channels = (float*)pin_out_fval.connections[i]->GetChannels(chans_size);
+		float* channels = (float*)pin_out_fval.connections[i].input->GetChannels(chans_size);
 
 		params->push_patterns->Push(pin_out_fval, &v, 1);
 	}

@@ -1,6 +1,7 @@
 #pragma once
 
 #include "pin.h"
+#include "seam/pins/pinConnection.h"
 #include "../hash.h"
 #include "../flags-helper.h"
 
@@ -23,8 +24,8 @@ namespace seam::pins {
 			id = SCHash(name.data(), name.length());
 		}
 
-		PushFunc func;
 		std::string_view name;
+		PushFunc func;
 		/// is hashed from the name
 		PushId id;
 
@@ -61,37 +62,43 @@ namespace seam::pins {
 			const bool isEventQueuePin = flags::AreRaised(pinOut.pin.flags, pins::PinFlags::EVENT_QUEUE);
 			// Event queue pins don't use push patterns, they just push to the input pins' vectors
 			if (isEventQueuePin) {
-				for (PinInput* pinIn : pinOut.connections) {
+				for (auto& conn : pinOut.connections) {
 					// Dirty the input node.
-					pinIn->node->SetDirty();
+					conn.input->node->SetDirty();
 					// Event queue input pins should always be event queue pins themselves
-					assert((pinIn->flags & pins::PinFlags::EVENT_QUEUE) == pins::PinFlags::EVENT_QUEUE);
+					assert((conn.input->flags & pins::PinFlags::EVENT_QUEUE) == pins::PinFlags::EVENT_QUEUE);
 					// Push the output pin's data to the back of the input pin's vector
-					pinIn->PushEvents(data, numElements);
+					conn.input->PushEvents(data, numElements);
 				}
 			} else {
-				for (PinInput* pinIn : pinOut.connections) {
+				for (auto& conn : pinOut.connections) {
 					// Dirty the input node
-					pinIn->node->SetDirty();
+					conn.input->node->SetDirty();
 
+					/*
 					// Find the push pattern, and expect it to exist
-					auto pp = std::lower_bound(push_patterns.begin(), push_patterns.end(), pinIn->push_id);
-					assert(pp->id == pinIn->push_id);
+					auto pp = std::lower_bound(push_patterns.begin(), push_patterns.end(), conn.input->push_id);
+					assert(pp->id == conn.input->push_id);
+					*/
 
 					// Grab the destination data
 					size_t dstSize;
-					char* dst = (char*)pinIn->GetChannels(dstSize);
+					char* dst = (char*)conn.input->GetChannels(dstSize);
 
+					size_t inputElementSize = pins::PinTypeToElementSize(conn.input->type);
+
+					conn.convertMulti(data, numElements * sizeof(T), dst, dstSize * inputElementSize);
+ 
 					// Call the push pattern 
-					pp->func((char*)data, numElements * sizeof(T), dst, dstSize * sizeof(T), sizeof(T));
+					// pp->func((char*)data, numElements * sizeof(T), dst, dstSize * sizeof(T), sizeof(T));
 				}
 			}
 		}
 
 		void PushFlow(const PinOutput& pinOut) {
 			assert(pinOut.pin.type == PinType::FLOW);
-			for (auto pinIn : pinOut.connections) {
-				pinIn->FlowCallback();
+			for (auto& conn : pinOut.connections) {
+				conn.input->FlowCallback();
 			}
 		}
 

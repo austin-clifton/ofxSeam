@@ -1,5 +1,9 @@
 #pragma once
 
+#if RUN_DOCTEST
+#include "doctest.h"
+#endif
+
 #include <functional>
 #include "glm/glm.hpp";
 
@@ -453,3 +457,85 @@ namespace seam {
 		PositionGetter GetPosition;
 	};
 }
+
+
+#if RUN_DOCTEST
+namespace {
+	struct Particle {
+		Particle() {
+
+		}
+
+		Particle(glm::vec3 pos, glm::vec3 dir = glm::vec3(0.f)) {
+			position = pos;
+			direction = dir;
+		}
+			
+		glm::vec3 position;
+		glm::vec3 direction;
+	};
+
+	void TestFindItems(seam::Octree<Particle, 8>& octree, glm::vec3 search_center, float search_radius, Particle* particles, size_t particle_count) {
+		std::vector<Particle*> search_result;
+		search_result.resize(particle_count / 10);
+		
+		auto start = std::chrono::high_resolution_clock::now();
+		octree.FindItems(search_center, search_radius, search_result);
+		auto end = std::chrono::high_resolution_clock::now();
+		auto ns = (end - start).count();
+		float ms = ns / 100000.f;
+		std::cout << "took " << ms << "ms to find " << search_result.size() << " items, search radius: " << search_radius << std::endl;
+
+		for (size_t i = 0; i < search_result.size(); i++) {
+			Particle* p = search_result[i];
+			// printf("fp %d: (%f, %f, %f)\n", i, p->position.x, p->position.y, p->position.z);
+		}
+
+		// Verify that the search result contains all the expected items.
+		size_t expected = 0;
+		for (size_t i = 0; i < particle_count; i++) {
+			expected += (glm::distance(particles[i].position, search_center) <= search_radius);
+		}
+		assert(expected == search_result.size());
+	}
+}
+
+TEST_CASE("Testing Octree") {
+	std::function<glm::vec3(Particle*)> get = [](Particle* p) -> glm::vec3 { return p->position; };
+	const float bounds = 50.f;
+	seam::Octree<Particle, 8> octree = seam::Octree<Particle, 8>(glm::vec3(0.f), glm::vec3(bounds), get);
+	const int particle_count = 100000;
+	Particle* particles = new Particle[particle_count];
+
+	for (int i = 0; i < particle_count; i++) {
+		float x = (float)rand() / ((float)RAND_MAX) - 0.5f;
+		float y = (float)rand() / ((float)RAND_MAX) - 0.5f;
+		float z = (float)rand() / ((float)RAND_MAX) - 0.5f;
+
+		glm::vec3 pos = glm::vec3(x, y, z);
+		pos = pos * (bounds - 0.01f) * 2.f;
+		particles[i] = Particle(pos);
+		octree.Add(&particles[i], pos);
+		assert(octree.Count() == i + 1);
+	}
+
+	// octree.PrintTree();
+
+	TestFindItems(octree, glm::vec3(0.f), 20.f, particles, particle_count);
+	TestFindItems(octree, glm::vec3(0.f), 0.f, particles, particle_count);
+	TestFindItems(octree, glm::vec3(-10.f), 5.f, particles, particle_count);
+	TestFindItems(octree, glm::vec3(4.f, 49.f, 26.f), 20.f, particles, particle_count);
+	TestFindItems(octree, glm::vec3(33.f), 40.f, particles, particle_count);
+	TestFindItems(octree, glm::vec3(89.f), 50.f, particles, particle_count);
+	TestFindItems(octree, glm::vec3(89.f), 5.f, particles, particle_count);
+
+	for (int i = 0; i < particle_count; i++) {
+		octree.Remove(&particles[i], particles[i].position);
+		assert(octree.Count() == particle_count - i - 1);
+	}
+	
+	// octree.PrintTree();
+
+	delete[] particles;
+}
+#endif // RUN_DOCTEST

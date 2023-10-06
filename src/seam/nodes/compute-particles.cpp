@@ -192,9 +192,6 @@ void ComputeParticles::Draw(DrawParams* params) {
 
 	billboard_shader.end();
 
-	glm::vec3 camera_pos = CalculateTorusPosition(torus_center, torus_radius, torus_thickness, camera_theta, glm::vec2(0));
-	// ofSphere(camera_pos, 10);
-
 	camera.end();
 
 	if (!free_camera) {

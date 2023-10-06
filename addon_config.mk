@@ -82,6 +82,8 @@ common:
 	# ADDON_LIBS += libs/opencv/lib/linuxarmv6l/libopencv_calib3d.a
 	# ...
 
+	# ADDON_CPPFLAGS = -DRUN_DOCTEST
+
 	ADDON_INCLUDES_EXCLUDE = libs/capnp/includes/%
 	
 linux64:

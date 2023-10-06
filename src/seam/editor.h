@@ -3,6 +3,7 @@
 #include <vector>
 
 #include "nodes/i-node.h"
+#include "pins/push.h"
 #include "seam/factory.h"
 #include "frame-pool.h"
 
@@ -104,7 +105,7 @@ namespace seam {
 			}
 		};
 
-		ax::NodeEditor::EditorContext* node_editor_context = nullptr;
+		ax::NodeEditor::EditorContext* nodeEditorContext = nullptr;
 
 		seam::EventNodeFactory* factory = nullptr;
 
@@ -116,19 +117,19 @@ namespace seam {
 		std::vector<INode*> nodes;
 
 		// these two are re-calculated each frame, and then sorted for update + draw in that order
-		std::vector<INode*> nodes_to_draw;
+		std::vector<INode*> nodesToDraw;
 
 		std::vector<IAudioNode*> audioNodes;
 
 		// visible visual nodes dictate which nodes actually get updated and drawn during those loops
-		std::vector<INode*> visible_nodes;
+		std::vector<INode*> visibleNodes;
 
 		// nodes which update over time need to be invalidated every frame
-		std::vector<INode*> nodes_update_over_time;
+		std::vector<INode*> nodesUpdateOverTime;
 
 		// nodes which update every frame need to Update() no matter what,
 		// even if they are not part of a visible visual chain
-		std::vector<INode*> nodes_update_every_frame;
+		std::vector<INode*> nodesUpdateEveryFrame;
 
 		// sorted list of all links between pins, mostly for GUI display + interactions
 		std::vector<Link> links;

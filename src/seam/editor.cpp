@@ -14,25 +14,11 @@
 #include "imgui-utils/properties.h"
 #include "nfd.h"
 
-#include "containers/octree.h"
+#include "seam/pins/pinConnection.h"
 
 using namespace seam;
 namespace im = ImGui;
 namespace ed = ax::NodeEditor;
-
-struct Particle {
-	Particle() {
-
-	}
-
-	Particle(glm::vec3 pos, glm::vec3 dir = glm::vec3(0.f)) {
-		position = pos;
-		direction = dir;
-	}
-		
-	glm::vec3 position;
-	glm::vec3 direction;
-};
 
 namespace {
 	const char* POPUP_NAME_NEW_NODE = "Create New Node";
@@ -81,87 +67,37 @@ namespace {
 	}
 }
 
-void TestFindItems(Octree<Particle, 8>& octree, glm::vec3 search_center, float search_radius, Particle* particles, size_t particle_count) {
-	std::vector<Particle*> search_result;
-	search_result.resize(particle_count / 10);
-	
-	auto start = std::chrono::high_resolution_clock::now();
-	octree.FindItems(search_center, search_radius, search_result);
-	auto end = std::chrono::high_resolution_clock::now();
-	auto ns = (end - start).count();
-	float ms = ns / 100000.f;
-	std::cout << "took " << ms << "ms to find " << search_result.size() << " items, search radius: " << search_radius << std::endl;
-
-	for (size_t i = 0; i < search_result.size(); i++) {
-		Particle* p = search_result[i];
-		// printf("fp %d: (%f, %f, %f)\n", i, p->position.x, p->position.y, p->position.z);
-	}
-
-	// Verify that the search result contains all the expected items.
-	size_t expected = 0;
-	for (size_t i = 0; i < particle_count; i++) {
-		expected += (glm::distance(particles[i].position, search_center) <= search_radius);
-	}
-	assert(expected == search_result.size());
-}
-
 Editor::~Editor() {
+	for (size_t i = 0; i < nodes.size(); i++) {
+		delete nodes[i];
+	}
+	nodes.clear();
+	nodesToDraw.clear();
+	audioNodes.clear();
+	visibleNodes.clear();
+	nodesUpdateOverTime.clear();
+	links.clear();
+
 	if (factory != nullptr) {
 		delete factory;
 		factory = nullptr;
 	}
+
+	ed::DestroyEditor(nodeEditorContext);
 }
 
 void Editor::Setup(const ofSoundStreamSettings& soundSettings) {
 	factory = new EventNodeFactory(soundSettings);
-	node_editor_context = ed::CreateEditor();
-
-	std::function<glm::vec3(Particle*)> get = [](Particle* p) -> glm::vec3 { return p->position; };
-	const float bounds = 50.f;
-	Octree<Particle, 8> octree = Octree<Particle, 8>(glm::vec3(0.f), glm::vec3(bounds), get);
-	const int particle_count = 100000;
-	Particle* particles = new Particle[particle_count];
-
-	for (int i = 0; i < particle_count; i++) {
-		float x = (float)rand() / ((float)RAND_MAX) - 0.5f;
-		float y = (float)rand() / ((float)RAND_MAX) - 0.5f;
-		float z = (float)rand() / ((float)RAND_MAX) - 0.5f;
-
-		glm::vec3 pos = glm::vec3(x, y, z);
-		pos = pos * (bounds - 0.01f) * 2.f;
-		particles[i] = Particle(pos);
-		octree.Add(&particles[i], pos);
-		assert(octree.Count() == i + 1);
-	}
-
-	// octree.PrintTree();
-
-	TestFindItems(octree, glm::vec3(0.f), 20.f, particles, particle_count);
-	TestFindItems(octree, glm::vec3(0.f), 0.f, particles, particle_count);
-	TestFindItems(octree, glm::vec3(-10.f), 5.f, particles, particle_count);
-	TestFindItems(octree, glm::vec3(4.f, 49.f, 26.f), 20.f, particles, particle_count);
-	TestFindItems(octree, glm::vec3(33.f), 40.f, particles, particle_count);
-	TestFindItems(octree, glm::vec3(89.f), 50.f, particles, particle_count);
-	TestFindItems(octree, glm::vec3(89.f), 5.f, particles, particle_count);
-
-	for (int i = 0; i < particle_count; i++) {
-		octree.Remove(&particles[i], particles[i].position);
-		assert(octree.Count() == particle_count - i - 1);
-	}
-	
-	// octree.PrintTree();
-
-	delete[] particles;
+	nodeEditorContext = ed::CreateEditor();
 }
 
 void Editor::Draw() {
-
 	DrawParams params;
 	params.time = ofGetElapsedTimef();
 	// not sure if this is truly delta time?
 	params.delta_time = ofGetLastFrameTime();
 
-	for (auto n : nodes_to_draw) {
+	for (auto n : nodesToDraw) {
 		n->Draw(&params);
 	}
 
@@ -197,17 +133,17 @@ void Editor::UpdateVisibleNodeGraph(INode* n, UpdateParams* params) {
 
 		// if this is a visual node, it will need to be re-drawn now
 		if (n->IsVisual()) {
-			nodes_to_draw.push_back(n);
+			nodesToDraw.push_back(n);
 		}
 	}
 }
 
 void Editor::Update() {
 	// traverse the parent tree of each visible visual node and determine what needs to update
-	nodes_to_draw.clear();
+	nodesToDraw.clear();
 
 	// before traversing the graphs of visible nodes, dirty nodes which update every frame
-	for (auto n : nodes_update_over_time) {
+	for (auto n : nodesUpdateOverTime) {
 		// set the dirty flag directly so children aren't affected;
 		// just because the node updates over time doesn't mean it will change every frame,
 		// for instance in the case of a timer which fires every XX seconds
@@ -226,7 +162,7 @@ void Editor::Update() {
 
 	// traverse Nodes which must be updated every frame;
 	// these are usually nodes which handle some kind of external input and/or can be dirtied by other threads
-	for (auto n : nodes_update_every_frame) {
+	for (auto n : nodesUpdateEveryFrame) {
 		// assume the node will dirty itself if it needs to Update()
 		if (n->dirty) {
 			n->Update(&params);
@@ -234,7 +170,7 @@ void Editor::Update() {
 	}
 
 	// traverse the visible node graph and update nodes that need to be updated
-	for (auto n : visible_nodes) {
+	for (auto n : visibleNodes) {
 		UpdateVisibleNodeGraph(n, &params);
 	}
 }
@@ -282,10 +218,10 @@ void Editor::GuiDrawPopups() {
 
 void Editor::NewGraph() {
 	nodes.clear();
-	nodes_to_draw.clear();
-	visible_nodes.clear();
-	nodes_update_over_time.clear();
-	nodes_update_every_frame.clear();
+	nodesToDraw.clear();
+	visibleNodes.clear();
+	nodesUpdateOverTime.clear();
+	nodesUpdateEveryFrame.clear();
 	links.clear();
 	loaded_file.clear();
 }
@@ -454,8 +390,8 @@ void Editor::SaveGraph(const std::string_view filename, const std::vector<INode*
 
 			// Remember what connections this output has so we can serialize all the connections after this loop.
 			for (size_t conn_index = 0; conn_index < pin_out.connections.size(); conn_index++) {
-				auto pin_in = pin_out.connections[conn_index];
-				connections.push_back(std::make_pair(pin_out.pin.id, pin_in->id));
+				auto& conn = pin_out.connections[conn_index];
+				connections.push_back(std::make_pair(pin_out.pin.id, conn.input->id));
 			}
 		}
 
@@ -473,7 +409,7 @@ void Editor::SaveGraph(const std::string_view filename, const std::vector<INode*
 
 	// FINALLY, serialize pin connections.
 	auto connections_builder = serialized_graph.initConnections(connections.size());
-	for (int i = 0; i < connections.size(); i++) {
+	for (size_t i = 0; i < connections.size(); i++) {
 		connections_builder[i].setOutId(connections[i].first);
 		connections_builder[i].setInId(connections[i].second);
 	}
@@ -708,7 +644,7 @@ void Editor::GuiDraw() {
 	}
 
 
-	ed::SetCurrentEditor(node_editor_context);
+	ed::SetCurrentEditor(nodeEditorContext);
 
 	// remember the editor cursor's start position and the editor's window position,
 	// so we can offset other draws on top of the node editor's window
@@ -780,8 +716,18 @@ void Editor::GuiDraw() {
 				if ((void*)pin_in == (void*)pin_out) {
 					ed::RejectNewItem(ImColor(255, 0, 0), 2.0f);
 				} else if (pin_in->type != pin_out->type) {
-					showLabel("x Pins must be of the same type", ImColor(45, 32, 32, 180));
-					ed::RejectNewItem(ImColor(255, 128, 128), 1.0f);
+					bool canConvert;
+					pins::GetConvertSingle(pin_out->type, pin_in->type, canConvert);
+					if (canConvert) {
+						showLabel("+ Create Link", ImColor(32, 45, 32, 180));
+						if (ed::AcceptNewItem(ImColor(128, 255, 128), 4.0f)) {
+							bool connected = Connect(pin_out, pin_in);
+							assert(connected);
+						}
+					} else {
+						showLabel("x Can't connect pins with those differing types", ImColor(45, 32, 32, 180));
+						ed::RejectNewItem(ImColor(255, 128, 128), 1.0f);
+					}
 				} else if (
 					(pin_in->flags & PinFlags::INPUT) != PinFlags::INPUT
 					|| (pin_out->flags & PinFlags::OUTPUT) != PinFlags::OUTPUT
@@ -920,16 +866,16 @@ INode* Editor::CreateAndAdd(NodeId node_id) {
 
 		if (node->IsVisual()) {
 			// probably temporary: add to the list of visible nodes up front
-			auto it = std::upper_bound(visible_nodes.begin(), visible_nodes.end(), node, &INode::CompareUpdateOrder);
-			visible_nodes.insert(it, node);
+			auto it = std::upper_bound(visibleNodes.begin(), visibleNodes.end(), node, &INode::CompareUpdateOrder);
+			visibleNodes.insert(it, node);
 		}
 
 		assert(!(node->UpdatesEveryFrame() && node->UpdatesOverTime()));
 
 		if (node->UpdatesEveryFrame()) {
-			nodes_update_every_frame.push_back(node);
+			nodesUpdateEveryFrame.push_back(node);
 		} else if (node->UpdatesOverTime()) {
-			nodes_update_over_time.push_back(node);
+			nodesUpdateOverTime.push_back(node);
 		}
 
 		// Does this Node process audio?
@@ -952,7 +898,6 @@ bool Editor::Connect(Pin* pin_co, Pin* pin_ci) {
 	// names are hard :(
 	assert((pin_ci->flags & PinFlags::INPUT) == PinFlags::INPUT);
 	assert((pin_co->flags & PinFlags::OUTPUT) == PinFlags::OUTPUT);
-	assert(pin_co->type == pin_ci->type);
 
 	INode* parent = pin_co->node;
 	INode* child = pin_ci->node;
@@ -968,7 +913,7 @@ bool Editor::Connect(Pin* pin_co, Pin* pin_ci) {
 	}
 
 	// create the connection
-	pin_out->connections.push_back(pin_in);
+	pin_out->connections.push_back(PinConnection(pin_in, pin_out->pin.type));
 	pin_in->connection = pin_out;
 
 	// add to the links list
@@ -1010,11 +955,14 @@ bool Editor::Disconnect(Pin* pin_co, Pin* pin_ci) {
 	pin_in->connection = nullptr;
 
 	// remove from pin_out's connections list
-	{
-		auto it = std::find(pin_out->connections.begin(), pin_out->connections.end(), pin_in);
-		assert(it != pin_out->connections.end());
-		pin_out->connections.erase(it);
+	size_t i = 0;
+	for (; i < pin_out->connections.size(); i++) {
+		if (pin_out->connections[i].input == pin_in) {
+			break;
+		}
 	}
+	assert(i < pin_out->connections.size());
+	pin_out->connections.erase(pin_out->connections.begin() + i);
 
 	// remove from links list
 	{
