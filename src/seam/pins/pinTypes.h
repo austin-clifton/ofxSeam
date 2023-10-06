@@ -8,6 +8,9 @@ namespace seam::pins {
         // used internally but should not be used for actual pins
         TYPE_NONE,
 
+        /// @brief Only valid for input pins
+        ANY,
+
         // flow pins are stateless triggers which just dirty any nodes that use them as inputs
         FLOW,
 

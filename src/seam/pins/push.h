@@ -59,7 +59,7 @@ namespace seam::pins {
 		/// <param name="numElements">The number of elements in the data pointer.</param>
 		template <typename T>
 		void Push(PinOutput& pinOut, T* data, size_t numElements) {
-			const bool isEventQueuePin = flags::AreRaised(pinOut.pin.flags, pins::PinFlags::EVENT_QUEUE);
+			const bool isEventQueuePin = flags::AreRaised(pinOut.flags, pins::PinFlags::EVENT_QUEUE);
 			// Event queue pins don't use push patterns, they just push to the input pins' vectors
 			if (isEventQueuePin) {
 				for (auto& conn : pinOut.connections) {
@@ -87,7 +87,7 @@ namespace seam::pins {
 		}
 
 		void PushFlow(const PinOutput& pinOut) {
-			assert(pinOut.pin.type == PinType::FLOW);
+			assert(pinOut.type == PinType::FLOW);
 			for (auto& conn : pinOut.connections) {
 				conn.input->FlowCallback();
 			}

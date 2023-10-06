@@ -267,11 +267,11 @@ void Editor::SaveGraph(const std::string_view filename, const std::vector<INode*
 
 			// Find assigned output pin IDs.
 			for (size_t i = 0; i < outputs_size; i++) {
-				size_t pin_id = output_pins[i].pin.id;
+				size_t pin_id = output_pins[i].id;
 				if (pin_id != 0) {
 					if (output_pin_map.find(pin_id) != output_pin_map.end()) {
 						printf("[Serialization]: Output pin has ID matching another output pin, clearing this Pin's ID. This shouldn't happen!\n");
-						output_pins[i].pin.id = 0;
+						output_pins[i].id = 0;
 					} else {
 						output_pin_map.emplace(std::make_pair(pin_id, &output_pins[i]));
 						max_output_pin_id = std::max(pin_id, max_output_pin_id);
@@ -314,12 +314,12 @@ void Editor::SaveGraph(const std::string_view filename, const std::vector<INode*
 
 		// Assign unassigned output pins.
 		for (size_t i = 0; i < outputs_size; i++) {
-			size_t pin_id = output_pins[i].pin.id;
+			size_t pin_id = output_pins[i].id;
 			if (pin_id == 0) {
 				while (output_pin_map.find(max_output_pin_id) != output_pin_map.end()) {
 					max_output_pin_id++;
 				}
-				output_pins[i].pin.id = pin_id = max_output_pin_id;
+				output_pins[i].id = pin_id = max_output_pin_id;
 				max_output_pin_id++;
 				output_pin_map.emplace(std::make_pair(pin_id, &output_pins[i]));
 			}
@@ -384,13 +384,13 @@ void Editor::SaveGraph(const std::string_view filename, const std::vector<INode*
 			auto pin_out = output_pins[i];
 			auto output_builder = outputs_builder[i];
 
-			output_builder.setId(pin_out.pin.id);
-			output_builder.setName(pin_out.pin.name);
+			output_builder.setId(pin_out.id);
+			output_builder.setName(pin_out.name);
 
 			// Remember what connections this output has so we can serialize all the connections after this loop.
 			for (size_t conn_index = 0; conn_index < pin_out.connections.size(); conn_index++) {
 				auto& conn = pin_out.connections[conn_index];
-				connections.push_back(std::make_pair(pin_out.pin.id, conn.input->id));
+				connections.push_back(std::make_pair(pin_out.id, conn.input->id));
 			}
 		}
 
@@ -505,7 +505,7 @@ void Editor::LoadGraph(const std::string_view filename) {
 					// Refresh the input pins list!
 					input_pins = node->PinInputs(inputs_size);
 					input_pin_map.emplace(std::make_pair(added->id, added));
-					nextPinId = std::max(nextPinId, match->id + 1);
+					nextPinId = std::max(nextPinId, added->id + 1);
 				}
 
 			} else {
@@ -520,13 +520,13 @@ void Editor::LoadGraph(const std::string_view filename) {
 
 			// Try to find an input pin on the node with a matching name.
 			auto match = std::find_if(output_pins, output_pins + outputs_size, [pin_name](const PinOutput& pin_out) 
-				{ return pin_name == pin_out.pin.name; }
+				{ return pin_name == pin_out.name; }
 			);
 
 			if (match != (output_pins + outputs_size)) {
-				match->pin.id = serialized_pin_out.getId();
-				output_pin_map.emplace(std::make_pair(match->pin.id, &match->pin));
-				nextPinId = std::max(nextPinId, match->pin.id + 1);
+				match->id = serialized_pin_out.getId();
+				output_pin_map.emplace(std::make_pair(match->id, (Pin*)match));
+				nextPinId = std::max(nextPinId, match->id + 1);
 			} else if (dynamicPinsNode != nullptr) {
 				// TODO....
 				throw std::runtime_error("oh shit I should implement this.....");
@@ -762,7 +762,7 @@ void Editor::GuiDraw() {
 				} else {
 					PinOutput* pin_out = dynamic_cast<PinOutput*>(pin_id.AsPointer<PinOutput>());
 					assert(pin_out != nullptr);
-					new_link_pin = &pin_out->pin;
+					new_link_pin = pin_out;
 				}
 				
 				if (new_link_pin) {
@@ -799,7 +799,7 @@ void Editor::GuiDraw() {
 					PinInput* pinIn = it->inNode->FindPinInput(it->inPin);
 					PinOutput* pinOut = it->outNode->FindPinOutput(it->outPin);
 					assert(pinIn != nullptr && pinOut != nullptr);
-					bool disconnected = Disconnect(pinIn, &pinOut->pin);
+					bool disconnected = Disconnect(pinIn, pinOut);
 					assert(disconnected);
 				}
 			}
@@ -877,7 +877,7 @@ INode* Editor::CreateAndAdd(NodeId node_id) {
 
 		PinOutput* outputs = node->PinOutputs(size);
 		for (size_t i = 0; i < size; i++) {
-			outputs[i].pin.id = nextPinId;
+			outputs[i].id = nextPinId;
 			nextPinId++;
 		}
 
@@ -926,8 +926,8 @@ bool Editor::Connect(Pin* pin_co, Pin* pin_ci) {
 
 	// find the structs that contain the pins to be connected
 	// also more validations: make sure pin_out is actually an output pin of node_out, and same for the input
-	PinInput* pin_in = FindPinInput(child, pin_ci);
-	PinOutput* pin_out = FindPinOutput(parent, pin_co);
+	PinInput* pin_in = child->FindPinInput(pin_ci->id);
+	PinOutput* pin_out = parent->FindPinOutput(pin_co->id);
 	assert(pin_in && pin_out);
 
 	if (pin_in == nullptr || pin_out == nullptr) {
@@ -935,7 +935,7 @@ bool Editor::Connect(Pin* pin_co, Pin* pin_ci) {
 	}
 
 	// create the connection
-	pin_out->connections.push_back(PinConnection(pin_in, pin_out->pin.type));
+	pin_out->connections.push_back(PinConnection(pin_in, pin_out->type));
 	pin_in->connection = pin_out;
 
 	// add to the links list
@@ -966,8 +966,8 @@ bool Editor::Disconnect(Pin* pin_co, Pin* pin_ci) {
 	INode* parent = pin_co->node;
 	INode* child = pin_ci->node;
 
-	PinInput* pin_in = FindPinInput(child, pin_ci);
-	PinOutput* pin_out = FindPinOutput(parent, pin_co);
+	PinInput* pin_in = child->FindPinInput(pin_ci->id);
+	PinOutput* pin_out = parent->FindPinOutput(pin_co->id);
 	assert(pin_in && pin_out);
 
 	if (pin_in == nullptr || pin_out == nullptr) {
@@ -988,7 +988,7 @@ bool Editor::Disconnect(Pin* pin_co, Pin* pin_ci) {
 
 	// remove from links list
 	{
-		Link l(parent, pin_out->pin.id, child, pin_in->id);
+		Link l(parent, pin_out->id, child, pin_in->id);
 		auto it = std::find(links.begin(), links.end(), l);
 		assert(it != links.end());
 		links.erase(it);
@@ -1074,28 +1074,3 @@ void Editor::RecalculateTraversalOrder(INode* node) {
 	InvalidateChildren(node);
 	RecalculateUpdateOrder(node);
 }
-
-PinInput* Editor::FindPinInput(INode* node, Pin* pin) {
-	PinInput* pin_in = nullptr;
-	size_t size;
-	PinInput* pin_inputs = node->PinInputs(size);
-	for (size_t i = 0; i < size && pin_in == nullptr; i++) {
-		if (&pin_inputs[i] == pin) {
-			pin_in = &pin_inputs[i];
-		}
-	}
-	return pin_in;
-}
-
-PinOutput* Editor::FindPinOutput(INode* node, Pin* pin) {
-	PinOutput* pin_out = nullptr;
-	size_t size;
-	PinOutput* pin_outputs = node->PinOutputs(size);
-	for (size_t i = 0; i < size && pin_out == nullptr; i++) {
-		if (&pin_outputs[i].pin == pin) {
-			pin_out = &pin_outputs[i];
-		}
-	}
-	return pin_out;
-}
-

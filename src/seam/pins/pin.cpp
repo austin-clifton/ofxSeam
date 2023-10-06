@@ -156,10 +156,10 @@ namespace seam::pins {
 	) {
 		assert(node != nullptr);
 		PinOutput pin_out;
-		pin_out.pin.node = node;
-		pin_out.pin.type = type;
-		pin_out.pin.name = name;
-		pin_out.pin.flags = (PinFlags)(flags | PinFlags::OUTPUT);
+		pin_out.node = node;
+		pin_out.type = type;
+		pin_out.name = name;
+		pin_out.flags = (PinFlags)(flags | PinFlags::OUTPUT);
 		pin_out.userp = userp;
 		return pin_out;
 	}
@@ -337,6 +337,7 @@ namespace seam::pins {
 			return sizeof(char);
 		case PinType::FLOAT:
 			return sizeof(float);
+		case PinType::ANY:
 		case PinType::FLOW:
 			return 0;
 		case PinType::INT:

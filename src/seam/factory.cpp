@@ -72,7 +72,7 @@ nodes::INode* EventNodeFactory::Create(seam::nodes::NodeId node_id) {
 
 		return node;
 	} else {
-		printf("node with node id %u not found, did you register it?", node_id);
+		printf("node with node id %llu not found, did you register it?", node_id);
 		return nullptr;
 	}
 }
@@ -88,7 +88,7 @@ bool EventNodeFactory::Register(EventNodeFactory::CreateFunc&& Create) {
 	// make sure it's not already registered before continuing
 	if (std::find(generators.begin(), generators.end(), gen.node_id) != generators.end()) {
 		// node id already registered, probably a bug
-		printf("node with name %s and id %u already registered\n", 
+		printf("node with name %s and id %llu already registered\n", 
 			gen.node_name.data(), gen.node_id);
 		return false;
 	}
@@ -111,7 +111,7 @@ bool EventNodeFactory::Register(EventNodeFactory::CreateFunc&& Create) {
 	{
 		PinOutput* outputs = n->PinOutputs(size);
 		for (size_t i = 0; i < size; i++) {
-			PinType type = outputs[i].pin.type;
+			PinType type = outputs[i].type;
 			if (std::find(gen.pin_outputs.begin(), gen.pin_outputs.end(), type) == gen.pin_outputs.end()) {
 				gen.pin_outputs.push_back(type);
 			}

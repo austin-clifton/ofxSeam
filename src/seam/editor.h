@@ -93,10 +93,6 @@ namespace seam {
 
 		void GuiDrawPopups();
 
-		inline PinInput* FindPinInput(INode* node, Pin* pin_in);
-
-		inline PinOutput* FindPinOutput(INode* node, Pin* pin_out);
-
 		ax::NodeEditor::EditorContext* nodeEditorContext = nullptr;
 
 		seam::EventNodeFactory* factory = nullptr;

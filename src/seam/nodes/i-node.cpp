@@ -167,9 +167,9 @@ void INode::GuiDraw( ed::Utilities::BlueprintNodeBuilder& builder ) {
 		builder.Output((ed::PinId)&outputs[i]);
 
 		ImGui::Spring(0.f);
-		ImGui::TextUnformatted(outputs[i].pin.name.data());
+		ImGui::TextUnformatted(outputs[i].name.data());
 		ImGui::Spring(0.f);
-		DrawPinIcon(outputs[i].pin, outputs[i].connections.size() > 0, 1.0f);
+		DrawPinIcon(outputs[i], outputs[i].connections.size() > 0, 1.0f);
 
 
 		builder.EndOutput();
@@ -203,7 +203,7 @@ pins::PinOutput* INode::FindPinOutput(PinId id) {
 	size_t size;
 	pins::PinOutput* pins = PinOutputs(size);
 	for (size_t i = 0; i < size; i++) {
-		if (pins[i].pin.id == id) {
+		if (pins[i].id == id) {
 			return &pins[i];
 		}
 	}
