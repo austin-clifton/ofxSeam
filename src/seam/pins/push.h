@@ -75,22 +75,13 @@ namespace seam::pins {
 					// Dirty the input node
 					conn.input->node->SetDirty();
 
-					/*
-					// Find the push pattern, and expect it to exist
-					auto pp = std::lower_bound(push_patterns.begin(), push_patterns.end(), conn.input->push_id);
-					assert(pp->id == conn.input->push_id);
-					*/
-
 					// Grab the destination data
 					size_t dstSize;
 					char* dst = (char*)conn.input->GetChannels(dstSize);
 
+					// Figure out the size of each element in the destination.
 					size_t inputElementSize = pins::PinTypeToElementSize(conn.input->type);
-
 					conn.convertMulti(data, numElements * sizeof(T), dst, dstSize * inputElementSize);
- 
-					// Call the push pattern 
-					// pp->func((char*)data, numElements * sizeof(T), dst, dstSize * sizeof(T), sizeof(T));
 				}
 			}
 		}

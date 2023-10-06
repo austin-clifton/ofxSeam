@@ -68,15 +68,7 @@ namespace {
 }
 
 Editor::~Editor() {
-	for (size_t i = 0; i < nodes.size(); i++) {
-		delete nodes[i];
-	}
-	nodes.clear();
-	nodesToDraw.clear();
-	audioNodes.clear();
-	visibleNodes.clear();
-	nodesUpdateOverTime.clear();
-	links.clear();
+	NewGraph();
 
 	if (factory != nullptr) {
 		delete factory;
@@ -217,6 +209,10 @@ void Editor::GuiDrawPopups() {
 }
 
 void Editor::NewGraph() {
+	for (size_t i = 0; i < nodes.size(); i++) {
+		delete nodes[i];
+	}
+
 	nodes.clear();
 	nodesToDraw.clear();
 	visibleNodes.clear();
@@ -224,6 +220,7 @@ void Editor::NewGraph() {
 	nodesUpdateEveryFrame.clear();
 	links.clear();
 	loaded_file.clear();
+	nextPinId = 1;
 }
 
 void Editor::SaveGraph(const std::string_view filename, const std::vector<INode*>& nodes_to_save) {
@@ -258,6 +255,7 @@ void Editor::SaveGraph(const std::string_view filename, const std::vector<INode*
 				size_t pin_id = input_pins[i].id;
 				if (pin_id != 0) {
 					if (input_pin_map.find(pin_id) != input_pin_map.end()) {
+						assert(0);
 						printf("[Serialization]: Input pin has ID matching another input pin, clearing this Pin's ID. This shouldn't happen!\n");
 						input_pins[i].id = 0;
 					} else {
@@ -303,6 +301,7 @@ void Editor::SaveGraph(const std::string_view filename, const std::vector<INode*
 		// Assign unassigned input pins.
 		for (size_t i = 0; i < inputs_size; i++) {
 			size_t pin_id = input_pins[i].id;
+			assert(pin_id != 0);
 			if (pin_id == 0) {
 				while (input_pin_map.find(max_input_pin_id) != input_pin_map.end()) {
 					max_input_pin_id++;
@@ -484,6 +483,7 @@ void Editor::LoadGraph(const std::string_view filename) {
 				match->id = serialized_pin_in.getId();
 
 				input_pin_map.emplace(std::make_pair(match->id, match));
+				nextPinId = std::max(nextPinId, match->id + 1);
 
 				if (serialized_channels.size()) {
 					size_t channels_size;
@@ -505,6 +505,7 @@ void Editor::LoadGraph(const std::string_view filename) {
 					// Refresh the input pins list!
 					input_pins = node->PinInputs(inputs_size);
 					input_pin_map.emplace(std::make_pair(added->id, added));
+					nextPinId = std::max(nextPinId, match->id + 1);
 				}
 
 			} else {
@@ -525,6 +526,7 @@ void Editor::LoadGraph(const std::string_view filename) {
 			if (match != (output_pins + outputs_size)) {
 				match->pin.id = serialized_pin_out.getId();
 				output_pin_map.emplace(std::make_pair(match->pin.id, &match->pin));
+				nextPinId = std::max(nextPinId, match->pin.id + 1);
 			} else if (dynamicPinsNode != nullptr) {
 				// TODO....
 				throw std::runtime_error("oh shit I should implement this.....");
@@ -658,12 +660,15 @@ void Editor::GuiDraw() {
 	}
 
 	for (const auto& l : links) {
-		// TODO this runs a lot, might be better to store Pins in the Links list directly,
-		// instead of PinInput* and PinOutput* which require the pointer follow to get the data we want
+		// Look up each pin on the Node.
+		// Pins aren't cached, because their pointers might change.
+		pins::PinInput* pinIn = l.inNode->FindPinInput(l.inPin);
+		pins::PinOutput* pinOut = l.outNode->FindPinOutput(l.outPin);
+
 		ed::Link(
 			(ed::LinkId)&l,
-			ed::PinId((Pin*)(l.first)),
-			(ed::PinId)&l.second->pin
+			(ed::PinId)(pinIn),
+			(ed::PinId)(pinOut)
 		);
 	}
 
@@ -788,10 +793,13 @@ void Editor::GuiDraw() {
 					Link* link = dynamic_cast<Link*>(link_id.AsPointer<Link>());
 					assert(link);
 					auto it = std::find_if(links.begin(), links.end(), [link](const Link& other) {
-						return link->first == other.first && link->second == other.second;
+						return link->inPin == other.inPin && link->outPin == other.outPin;
 					});
 					assert(it != links.end());
-					bool disconnected = Disconnect(&it->second->pin, it->first);
+					PinInput* pinIn = it->inNode->FindPinInput(it->inPin);
+					PinOutput* pinOut = it->outNode->FindPinOutput(it->outPin);
+					assert(pinIn != nullptr && pinOut != nullptr);
+					bool disconnected = Disconnect(pinIn, &pinOut->pin);
 					assert(disconnected);
 				}
 			}
@@ -857,7 +865,21 @@ void Editor::GuiDraw() {
 INode* Editor::CreateAndAdd(NodeId node_id) {
 	INode* node = factory->Create(node_id);
 	if (node != nullptr) {
-		// handle book keeping for the new node
+		// Handle book keeping for the new node
+
+		// Make sure pins have valid assigned IDs
+		size_t size;
+		PinInput* inputs = node->PinInputs(size);
+		for (size_t i = 0; i < size; i++) {
+			inputs[i].id = nextPinId;
+			nextPinId++;
+		}
+
+		PinOutput* outputs = node->PinOutputs(size);
+		for (size_t i = 0; i < size; i++) {
+			outputs[i].pin.id = nextPinId;
+			nextPinId++;
+		}
 
 		// TODO do nodes really need to know their IDs?
 		// node->id = node_id;
@@ -917,7 +939,7 @@ bool Editor::Connect(Pin* pin_co, Pin* pin_ci) {
 	pin_in->connection = pin_out;
 
 	// add to the links list
-	links.push_back(Link(pin_in, pin_out));
+	links.push_back(Link(parent, pin_co->id, child, pin_ci->id));
 
 	// give the input pin the default push pattern
 	pin_in->push_id = push_patterns.Default().id;
@@ -966,7 +988,7 @@ bool Editor::Disconnect(Pin* pin_co, Pin* pin_ci) {
 
 	// remove from links list
 	{
-		Link l(pin_in, pin_out);
+		Link l(parent, pin_out->pin.id, child, pin_in->id);
 		auto it = std::find(links.begin(), links.end(), l);
 		assert(it != links.end());
 		links.erase(it);

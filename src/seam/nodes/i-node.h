@@ -132,6 +132,9 @@ namespace seam::nodes {
 			return (flags & NodeFlags::IS_VISUAL) == NodeFlags::IS_VISUAL;
 		}
 
+		pins::PinInput* FindPinInput(pins::PinId id);
+		pins::PinOutput* FindPinOutput(pins::PinId id);
+
 	protected:
 		struct NodeConnection {
 			INode* node = nullptr;

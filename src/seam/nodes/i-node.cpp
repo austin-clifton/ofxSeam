@@ -145,8 +145,7 @@ void INode::GuiDraw( ed::Utilities::BlueprintNodeBuilder& builder ) {
 		// TODO push alpha when new links are being created
 		// ImGui::PushStyleVar(ImGuiStyleVar_Alpha, alpha);
 
-		// a pin's pointer address is its ID for drawing purposes
-		builder.Input(ed::PinId((Pin*)&inputs[i]));
+		builder.Input((ed::PinId)&inputs[i]);
 		
 		DrawPinIcon(inputs[i], inputs[i].connection != nullptr, 1.0f);
 		ImGui::Spring(0.f);
@@ -165,7 +164,7 @@ void INode::GuiDraw( ed::Utilities::BlueprintNodeBuilder& builder ) {
 	for (size_t i = 0; i < size; i++) {
 		// TODO alpha again
 
-		builder.Output(ed::PinId(&outputs[i].pin));
+		builder.Output((ed::PinId)&outputs[i]);
 
 		ImGui::Spring(0.f);
 		ImGui::TextUnformatted(outputs[i].pin.name.data());
@@ -187,4 +186,26 @@ void INode::GuiDrawNodeCenter() {
 	}
 
 	// im::Spring(1, 0);
+}
+
+pins::PinInput* INode::FindPinInput(PinId id) {
+	size_t size;
+	pins::PinInput* pins = PinInputs(size);
+	for (size_t i = 0; i < size; i++) {
+		if (pins[i].id == id) {
+			return &pins[i];
+		}
+	}
+	return nullptr;
+}
+
+pins::PinOutput* INode::FindPinOutput(PinId id) {
+	size_t size;
+	pins::PinOutput* pins = PinOutputs(size);
+	for (size_t i = 0; i < size; i++) {
+		if (pins[i].pin.id == id) {
+			return &pins[i];
+		}
+	}
+	return nullptr;
 }

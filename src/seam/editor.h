@@ -15,8 +15,6 @@ namespace seam {
 	/// node graph editor manages the event nodes and connections that make up a seam scene
 	class Editor {
 	public:
-		using Link = std::pair<PinInput*, PinOutput*>;
-
 		/// to be called by ofApp::setup()
 		void Setup(const ofSoundStreamSettings& soundSettings);
 
@@ -59,6 +57,24 @@ namespace seam {
 		seam::EventNodeFactory* GetFactory() { return factory; }
 	
 	private:
+		struct Link {
+			INode* outNode;
+			PinId outPin;
+			INode* inNode;
+			PinId inPin;
+
+			Link(INode* _outNode, PinId _outPin, INode* _inNode, PinId _inPin) {
+				outNode = _outNode;
+				outPin = _outPin;
+				inNode = _inNode;
+				inPin = _inPin;
+			}
+
+			inline bool operator==(const Link& other) {
+				return outPin == other.outPin && inPin == other.inPin;
+			}
+		};
+
 		void SaveGraph(const std::string_view filename, const std::vector<INode*>& nodesToSave);
 		void LoadGraph(const std::string_view filename);
 
@@ -81,36 +97,15 @@ namespace seam {
 
 		inline PinOutput* FindPinOutput(INode* node, Pin* pin_out);
 
-		// used by GUI interactions to "map" Pins to their Nodes
-		struct PinToNode {
-			Pin* pin;
-			INode* node;
-
-			bool operator<(const PinToNode& other) {
-				// compare by pointer value
-				return pin < other.pin;
-			}
-
-			bool operator<(Pin* other) {
-				// compare by pointer value
-				return pin < other;
-			}
-
-			bool operator==(const PinToNode& other) {
-				return pin == other.pin;
-			}
-
-			bool operator==(Pin* other) {
-				return pin == other;
-			}
-		};
-
 		ax::NodeEditor::EditorContext* nodeEditorContext = nullptr;
 
 		seam::EventNodeFactory* factory = nullptr;
 
 		PushPatterns push_patterns;
 		FramePool alloc_pool = FramePool(8192);
+
+		// std::vector<pins::PinId> usedPinIds;
+		pins::PinId nextPinId = 1;
 
 		// list of all the event nodes the graph will draw
 		// this list does not need to be sorted
