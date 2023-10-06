@@ -126,17 +126,26 @@ bool EventNodeFactory::Register(EventNodeFactory::CreateFunc&& Create) {
 seam::nodes::NodeId EventNodeFactory::DrawCreatePopup(PinType input_type, PinType output_type) {
 	if (!generators_sorted) {
 		std::sort(generators.begin(), generators.end());
+
+		guiGenerators.clear();
+		for (size_t i = 0; i < generators.size(); i++) {
+			guiGenerators.push_back(&generators[i]);
+		}
+
+		std::sort(guiGenerators.begin(), guiGenerators.end(), [](const Generator* a, const Generator* b) -> bool {
+			return a->node_name < b->node_name;
+		});
 	}
 
 	// loop through each Generator that's been registered with the EventNodeFactory,
 	// and make a selectable menu item for it
 	nodes::NodeId new_node_id = 0;
-	for (auto gen : generators) {
+	for (auto gen : guiGenerators) {
 		// TODO filter input / output types, only enable items which match the filter
 
 		// MenuItem() will return true if this menu item was selected
-		if (ImGui::MenuItem(gen.node_name.data())) {
-			new_node_id = gen.node_id;
+		if (ImGui::MenuItem(gen->node_name.data())) {
+			new_node_id = gen->node_id;
 		}
 	}
 

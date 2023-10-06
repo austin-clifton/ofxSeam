@@ -63,5 +63,8 @@ namespace seam {
 
 		bool generators_sorted = false;
 		std::vector<Generator> generators;
+		
+		// @brief Generators but sorted by name for GUI usage
+		std::vector<Generator*> guiGenerators;
 	};
 }
