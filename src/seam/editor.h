@@ -2,7 +2,7 @@
 
 #include <vector>
 
-#include "nodes/i-node.h"
+#include "nodes/iNode.h"
 #include "pins/push.h"
 #include "seam/factory.h"
 #include "frame-pool.h"

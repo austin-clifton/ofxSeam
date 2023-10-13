@@ -2,7 +2,7 @@
 
 #include "ofxAudioAnalyzer.h"
 
-#include "seam/nodes/i-node.h"
+#include "seam/nodes/iNode.h"
 
 using namespace seam::pins;
 

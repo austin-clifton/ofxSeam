@@ -1,6 +1,6 @@
 #pragma once
 
-#include "nodes/i-node.h"
+#include "nodes/iNode.h"
 
 namespace seam {
 	class EventNodeFactory {

@@ -89,7 +89,7 @@ namespace seam {
 
 			~OctreeNode() {
 				if (is_branch) {
-					for (int i = 0; i < branch_children.size(); i++) {
+					for (size_t i = 0; i < branch_children.size(); i++) {
 						if (branch_children[i] != nullptr) {
 							delete branch_children[i];
 						}

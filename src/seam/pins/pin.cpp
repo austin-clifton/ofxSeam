@@ -4,7 +4,7 @@ const size_t seam::pins::PinInput::MAX_EVENTS = 16;
 
 namespace seam {
 
-	void Serialize(capnp::List<PinValue, capnp::Kind::STRUCT>::Builder& builder,
+	void Serialize(capnp::List<seam::schema::PinValue, capnp::Kind::STRUCT>::Builder& builder,
 		NodePropertyType type, void* srcBuff, size_t srcElementsCount)
 	{
 		if (srcElementsCount == 0) {
@@ -47,7 +47,7 @@ namespace seam {
 		}
 	}
 
-	void Deserialize(const capnp::List<PinValue, capnp::Kind::STRUCT>::Reader& serializedValues, NodePropertyType type, void* dstBuff, size_t dstElementsCount) {
+	void Deserialize(const capnp::List<seam::schema::PinValue, capnp::Kind::STRUCT>::Reader& serializedValues, NodePropertyType type, void* dstBuff, size_t dstElementsCount) {
 		if (serializedValues.size() == 0) {
 			return;
 		}
@@ -115,34 +115,34 @@ namespace seam::pins {
 		}
 	}
 
-	NodePropertyType SerializedPinTypeToPropType(PinValue::Which pinType) {
+	NodePropertyType SerializedPinTypeToPropType(seam::schema::PinValue::Which pinType) {
 		switch (pinType) {
-		case PinValue::Which::BOOL_VALUE:
+		case seam::schema::PinValue::Which::BOOL_VALUE:
 			return NodePropertyType::PROP_BOOL;
-		case PinValue::Which::FLOAT_VALUE:
+		case seam::schema::PinValue::Which::FLOAT_VALUE:
 			return NodePropertyType::PROP_FLOAT;
-		case PinValue::Which::INT_VALUE:
+		case seam::schema::PinValue::Which::INT_VALUE:
 			return NodePropertyType::PROP_INT;
-		case PinValue::Which::UINT_VALUE:
+		case seam::schema::PinValue::Which::UINT_VALUE:
 			return NodePropertyType::PROP_UINT;
-		case PinValue::Which::STRING_VALUE:
+		case seam::schema::PinValue::Which::STRING_VALUE:
 			return NodePropertyType::PROP_STRING;
 		default:
 			throw std::logic_error("Unimplemented?");
 		}
 	}
 
-	PinType SerializedPinTypeToPinType(PinValue::Which serializedType) {
+	PinType SerializedPinTypeToPinType(seam::schema::PinValue::Which serializedType) {
 		switch (serializedType) {
-			case PinValue::Which::BOOL_VALUE:
+			case seam::schema::PinValue::Which::BOOL_VALUE:
 				return PinType::BOOL;
-			case PinValue::Which::FLOAT_VALUE:
+			case seam::schema::PinValue::Which::FLOAT_VALUE:
 				return PinType::FLOAT;
-			case PinValue::Which::INT_VALUE:
+			case seam::schema::PinValue::Which::INT_VALUE:
 				return PinType::INT;
-			case PinValue::Which::UINT_VALUE:
+			case seam::schema::PinValue::Which::UINT_VALUE:
 				return PinType::UINT;
-			case PinValue::Which::STRING_VALUE:
+			case seam::schema::PinValue::Which::STRING_VALUE:
 				return PinType::STRING;
 			default:
 				throw std::logic_error("Unimplemented?");

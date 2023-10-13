@@ -20,10 +20,10 @@
 
 namespace seam {
 
-	void Deserialize(const capnp::List<PinValue, capnp::Kind::STRUCT>::Reader& serializedValues, 
+	void Deserialize(const capnp::List<seam::schema::PinValue, capnp::Kind::STRUCT>::Reader& serializedValues, 
 		NodePropertyType type, void* dstBuff, size_t dstElementsCount);
 
-	void Serialize(capnp::List<PinValue, capnp::Kind::STRUCT>::Builder& serializedValues,
+	void Serialize(capnp::List<seam::schema::PinValue, capnp::Kind::STRUCT>::Builder& serializedValues,
 		NodePropertyType type, void* srcBuff, size_t srcElementsCount);
 
 	namespace nodes {
@@ -108,8 +108,8 @@ namespace seam {
 		/// \return The list of PinInputs which maps to the uniforms in the shader.
 		/// All IPinInput structs are heap-allocated, and must be freed when no longer in use.
 		std::vector<PinInput> UniformsToPinInputs(ofShader& shader, nodes::INode* node);
-		NodePropertyType SerializedPinTypeToPropType(PinValue::Which pinType);
- 		PinType SerializedPinTypeToPinType(PinValue::Which pinType);
+		NodePropertyType SerializedPinTypeToPropType(seam::schema::PinValue::Which pinType);
+ 		PinType SerializedPinTypeToPinType(seam::schema::PinValue::Which pinType);
 	}
 };
 

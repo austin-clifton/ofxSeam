@@ -1,5 +1,8 @@
 @0x855494f355dd77fb;
 
+using Cxx = import "/capnp/c++.capnp";
+$Cxx.namespace("seam::schema");
+
 struct Vector2 {
     x @0 :Float32;
     y @1 :Float32;

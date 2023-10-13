@@ -2,12 +2,10 @@
     "env": {
         "myDefaultIncludePath": [
             "${workspaceFolder}/src",
-
             "${workspaceRoot}/../../../addons/ofxSeam/src/",
             "${workspaceRoot}/../../../addons/ofxSeam/libs/capnp/includes/",
             "${workspaceRoot}/../../../libs/openFrameworks/",
             "${workspaceRoot}/../../../libs/openFrameworks/utils/"
-
         ],
         "myCompilerPath": "C:/msys64/ucrt64/bin/gcc.exe"
     },
@@ -43,7 +41,8 @@
                 "${workspaceRoot}/../../addons/ofxImGuiNodeEditor/src/**",
                 "${workspaceRoot}/../../addons/ofxImGuiNodeEditor/libs/imgui/src/",
                 "${workspaceRoot}/../../addons/ofxAudioAnalyzer/src/",
-                "${workspaceRoot}/../../addons/ofxAudioAnalyzer/libs/**"
+                "${workspaceRoot}/../../addons/ofxAudioAnalyzer/libs/**",
+                "${workspaceFolder}/libs/nfd/includes"
             ]
         }
     ],

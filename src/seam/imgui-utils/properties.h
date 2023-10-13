@@ -1,7 +1,7 @@
 #pragma once
 
 #include "../pins/pin.h"
-#include "../nodes/i-node.h"
+#include "../nodes/iNode.h"
 
 namespace seam {
 	namespace props {

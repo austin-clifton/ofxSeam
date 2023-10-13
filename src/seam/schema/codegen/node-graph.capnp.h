@@ -6,7 +6,9 @@
 #include <capnp/generated-header-support.h>
 #include <kj/windows-sanity.h>
 
-#if CAPNP_VERSION != 10003
+#ifndef CAPNP_VERSION
+#error "CAPNP_VERSION is not defined, is capnp/generated-header-support.h missing?"
+#elif CAPNP_VERSION != 1000001
 #error "Version mismatch between generated code and library headers.  You must use the same version of the Cap'n Proto compiler and library."
 #endif
 
@@ -28,6 +30,8 @@ CAPNP_DECLARE_SCHEMA(ecd07e563d6e33f1);
 }  // namespace schemas
 }  // namespace capnp
 
+namespace seam {
+namespace schema {
 
 struct Vector2 {
   Vector2() = delete;
@@ -461,7 +465,7 @@ public:
   inline  ::uint64_t getId() const;
 
   inline bool hasChannels() const;
-  inline  ::capnp::List< ::PinValue,  ::capnp::Kind::STRUCT>::Reader getChannels() const;
+  inline  ::capnp::List< ::seam::schema::PinValue,  ::capnp::Kind::STRUCT>::Reader getChannels() const;
 
 private:
   ::capnp::_::StructReader _reader;
@@ -502,11 +506,11 @@ public:
   inline void setId( ::uint64_t value);
 
   inline bool hasChannels();
-  inline  ::capnp::List< ::PinValue,  ::capnp::Kind::STRUCT>::Builder getChannels();
-  inline void setChannels( ::capnp::List< ::PinValue,  ::capnp::Kind::STRUCT>::Reader value);
-  inline  ::capnp::List< ::PinValue,  ::capnp::Kind::STRUCT>::Builder initChannels(unsigned int size);
-  inline void adoptChannels(::capnp::Orphan< ::capnp::List< ::PinValue,  ::capnp::Kind::STRUCT>>&& value);
-  inline ::capnp::Orphan< ::capnp::List< ::PinValue,  ::capnp::Kind::STRUCT>> disownChannels();
+  inline  ::capnp::List< ::seam::schema::PinValue,  ::capnp::Kind::STRUCT>::Builder getChannels();
+  inline void setChannels( ::capnp::List< ::seam::schema::PinValue,  ::capnp::Kind::STRUCT>::Reader value);
+  inline  ::capnp::List< ::seam::schema::PinValue,  ::capnp::Kind::STRUCT>::Builder initChannels(unsigned int size);
+  inline void adoptChannels(::capnp::Orphan< ::capnp::List< ::seam::schema::PinValue,  ::capnp::Kind::STRUCT>>&& value);
+  inline ::capnp::Orphan< ::capnp::List< ::seam::schema::PinValue,  ::capnp::Kind::STRUCT>> disownChannels();
 
 private:
   ::capnp::_::StructBuilder _builder;
@@ -555,7 +559,7 @@ public:
   inline  ::capnp::Text::Reader getName() const;
 
   inline bool hasValues() const;
-  inline  ::capnp::List< ::PinValue,  ::capnp::Kind::STRUCT>::Reader getValues() const;
+  inline  ::capnp::List< ::seam::schema::PinValue,  ::capnp::Kind::STRUCT>::Reader getValues() const;
 
 private:
   ::capnp::_::StructReader _reader;
@@ -593,11 +597,11 @@ public:
   inline ::capnp::Orphan< ::capnp::Text> disownName();
 
   inline bool hasValues();
-  inline  ::capnp::List< ::PinValue,  ::capnp::Kind::STRUCT>::Builder getValues();
-  inline void setValues( ::capnp::List< ::PinValue,  ::capnp::Kind::STRUCT>::Reader value);
-  inline  ::capnp::List< ::PinValue,  ::capnp::Kind::STRUCT>::Builder initValues(unsigned int size);
-  inline void adoptValues(::capnp::Orphan< ::capnp::List< ::PinValue,  ::capnp::Kind::STRUCT>>&& value);
-  inline ::capnp::Orphan< ::capnp::List< ::PinValue,  ::capnp::Kind::STRUCT>> disownValues();
+  inline  ::capnp::List< ::seam::schema::PinValue,  ::capnp::Kind::STRUCT>::Builder getValues();
+  inline void setValues( ::capnp::List< ::seam::schema::PinValue,  ::capnp::Kind::STRUCT>::Reader value);
+  inline  ::capnp::List< ::seam::schema::PinValue,  ::capnp::Kind::STRUCT>::Builder initValues(unsigned int size);
+  inline void adoptValues(::capnp::Orphan< ::capnp::List< ::seam::schema::PinValue,  ::capnp::Kind::STRUCT>>&& value);
+  inline ::capnp::Orphan< ::capnp::List< ::seam::schema::PinValue,  ::capnp::Kind::STRUCT>> disownValues();
 
 private:
   ::capnp::_::StructBuilder _builder;
@@ -643,7 +647,7 @@ public:
 #endif  // !CAPNP_LITE
 
   inline bool hasPosition() const;
-  inline  ::Vector2::Reader getPosition() const;
+  inline  ::seam::schema::Vector2::Reader getPosition() const;
 
   inline bool hasDisplayName() const;
   inline  ::capnp::Text::Reader getDisplayName() const;
@@ -654,13 +658,13 @@ public:
   inline  ::uint64_t getId() const;
 
   inline bool hasInputPins() const;
-  inline  ::capnp::List< ::PinIn,  ::capnp::Kind::STRUCT>::Reader getInputPins() const;
+  inline  ::capnp::List< ::seam::schema::PinIn,  ::capnp::Kind::STRUCT>::Reader getInputPins() const;
 
   inline bool hasOutputPins() const;
-  inline  ::capnp::List< ::PinOut,  ::capnp::Kind::STRUCT>::Reader getOutputPins() const;
+  inline  ::capnp::List< ::seam::schema::PinOut,  ::capnp::Kind::STRUCT>::Reader getOutputPins() const;
 
   inline bool hasProperties() const;
-  inline  ::capnp::List< ::Property,  ::capnp::Kind::STRUCT>::Reader getProperties() const;
+  inline  ::capnp::List< ::seam::schema::Property,  ::capnp::Kind::STRUCT>::Reader getProperties() const;
 
 private:
   ::capnp::_::StructReader _reader;
@@ -691,11 +695,11 @@ public:
 #endif  // !CAPNP_LITE
 
   inline bool hasPosition();
-  inline  ::Vector2::Builder getPosition();
-  inline void setPosition( ::Vector2::Reader value);
-  inline  ::Vector2::Builder initPosition();
-  inline void adoptPosition(::capnp::Orphan< ::Vector2>&& value);
-  inline ::capnp::Orphan< ::Vector2> disownPosition();
+  inline  ::seam::schema::Vector2::Builder getPosition();
+  inline void setPosition( ::seam::schema::Vector2::Reader value);
+  inline  ::seam::schema::Vector2::Builder initPosition();
+  inline void adoptPosition(::capnp::Orphan< ::seam::schema::Vector2>&& value);
+  inline ::capnp::Orphan< ::seam::schema::Vector2> disownPosition();
 
   inline bool hasDisplayName();
   inline  ::capnp::Text::Builder getDisplayName();
@@ -715,25 +719,25 @@ public:
   inline void setId( ::uint64_t value);
 
   inline bool hasInputPins();
-  inline  ::capnp::List< ::PinIn,  ::capnp::Kind::STRUCT>::Builder getInputPins();
-  inline void setInputPins( ::capnp::List< ::PinIn,  ::capnp::Kind::STRUCT>::Reader value);
-  inline  ::capnp::List< ::PinIn,  ::capnp::Kind::STRUCT>::Builder initInputPins(unsigned int size);
-  inline void adoptInputPins(::capnp::Orphan< ::capnp::List< ::PinIn,  ::capnp::Kind::STRUCT>>&& value);
-  inline ::capnp::Orphan< ::capnp::List< ::PinIn,  ::capnp::Kind::STRUCT>> disownInputPins();
+  inline  ::capnp::List< ::seam::schema::PinIn,  ::capnp::Kind::STRUCT>::Builder getInputPins();
+  inline void setInputPins( ::capnp::List< ::seam::schema::PinIn,  ::capnp::Kind::STRUCT>::Reader value);
+  inline  ::capnp::List< ::seam::schema::PinIn,  ::capnp::Kind::STRUCT>::Builder initInputPins(unsigned int size);
+  inline void adoptInputPins(::capnp::Orphan< ::capnp::List< ::seam::schema::PinIn,  ::capnp::Kind::STRUCT>>&& value);
+  inline ::capnp::Orphan< ::capnp::List< ::seam::schema::PinIn,  ::capnp::Kind::STRUCT>> disownInputPins();
 
   inline bool hasOutputPins();
-  inline  ::capnp::List< ::PinOut,  ::capnp::Kind::STRUCT>::Builder getOutputPins();
-  inline void setOutputPins( ::capnp::List< ::PinOut,  ::capnp::Kind::STRUCT>::Reader value);
-  inline  ::capnp::List< ::PinOut,  ::capnp::Kind::STRUCT>::Builder initOutputPins(unsigned int size);
-  inline void adoptOutputPins(::capnp::Orphan< ::capnp::List< ::PinOut,  ::capnp::Kind::STRUCT>>&& value);
-  inline ::capnp::Orphan< ::capnp::List< ::PinOut,  ::capnp::Kind::STRUCT>> disownOutputPins();
+  inline  ::capnp::List< ::seam::schema::PinOut,  ::capnp::Kind::STRUCT>::Builder getOutputPins();
+  inline void setOutputPins( ::capnp::List< ::seam::schema::PinOut,  ::capnp::Kind::STRUCT>::Reader value);
+  inline  ::capnp::List< ::seam::schema::PinOut,  ::capnp::Kind::STRUCT>::Builder initOutputPins(unsigned int size);
+  inline void adoptOutputPins(::capnp::Orphan< ::capnp::List< ::seam::schema::PinOut,  ::capnp::Kind::STRUCT>>&& value);
+  inline ::capnp::Orphan< ::capnp::List< ::seam::schema::PinOut,  ::capnp::Kind::STRUCT>> disownOutputPins();
 
   inline bool hasProperties();
-  inline  ::capnp::List< ::Property,  ::capnp::Kind::STRUCT>::Builder getProperties();
-  inline void setProperties( ::capnp::List< ::Property,  ::capnp::Kind::STRUCT>::Reader value);
-  inline  ::capnp::List< ::Property,  ::capnp::Kind::STRUCT>::Builder initProperties(unsigned int size);
-  inline void adoptProperties(::capnp::Orphan< ::capnp::List< ::Property,  ::capnp::Kind::STRUCT>>&& value);
-  inline ::capnp::Orphan< ::capnp::List< ::Property,  ::capnp::Kind::STRUCT>> disownProperties();
+  inline  ::capnp::List< ::seam::schema::Property,  ::capnp::Kind::STRUCT>::Builder getProperties();
+  inline void setProperties( ::capnp::List< ::seam::schema::Property,  ::capnp::Kind::STRUCT>::Reader value);
+  inline  ::capnp::List< ::seam::schema::Property,  ::capnp::Kind::STRUCT>::Builder initProperties(unsigned int size);
+  inline void adoptProperties(::capnp::Orphan< ::capnp::List< ::seam::schema::Property,  ::capnp::Kind::STRUCT>>&& value);
+  inline ::capnp::Orphan< ::capnp::List< ::seam::schema::Property,  ::capnp::Kind::STRUCT>> disownProperties();
 
 private:
   ::capnp::_::StructBuilder _builder;
@@ -753,7 +757,7 @@ public:
   inline explicit Pipeline(::capnp::AnyPointer::Pipeline&& typeless)
       : _typeless(kj::mv(typeless)) {}
 
-  inline  ::Vector2::Pipeline getPosition();
+  inline  ::seam::schema::Vector2::Pipeline getPosition();
 private:
   ::capnp::AnyPointer::Pipeline _typeless;
   friend class ::capnp::PipelineHook;
@@ -861,10 +865,10 @@ public:
 #endif  // !CAPNP_LITE
 
   inline bool hasNodes() const;
-  inline  ::capnp::List< ::Node,  ::capnp::Kind::STRUCT>::Reader getNodes() const;
+  inline  ::capnp::List< ::seam::schema::Node,  ::capnp::Kind::STRUCT>::Reader getNodes() const;
 
   inline bool hasConnections() const;
-  inline  ::capnp::List< ::PinConnection,  ::capnp::Kind::STRUCT>::Reader getConnections() const;
+  inline  ::capnp::List< ::seam::schema::PinConnection,  ::capnp::Kind::STRUCT>::Reader getConnections() const;
 
   inline bool hasName() const;
   inline  ::capnp::Text::Reader getName() const;
@@ -898,18 +902,18 @@ public:
 #endif  // !CAPNP_LITE
 
   inline bool hasNodes();
-  inline  ::capnp::List< ::Node,  ::capnp::Kind::STRUCT>::Builder getNodes();
-  inline void setNodes( ::capnp::List< ::Node,  ::capnp::Kind::STRUCT>::Reader value);
-  inline  ::capnp::List< ::Node,  ::capnp::Kind::STRUCT>::Builder initNodes(unsigned int size);
-  inline void adoptNodes(::capnp::Orphan< ::capnp::List< ::Node,  ::capnp::Kind::STRUCT>>&& value);
-  inline ::capnp::Orphan< ::capnp::List< ::Node,  ::capnp::Kind::STRUCT>> disownNodes();
+  inline  ::capnp::List< ::seam::schema::Node,  ::capnp::Kind::STRUCT>::Builder getNodes();
+  inline void setNodes( ::capnp::List< ::seam::schema::Node,  ::capnp::Kind::STRUCT>::Reader value);
+  inline  ::capnp::List< ::seam::schema::Node,  ::capnp::Kind::STRUCT>::Builder initNodes(unsigned int size);
+  inline void adoptNodes(::capnp::Orphan< ::capnp::List< ::seam::schema::Node,  ::capnp::Kind::STRUCT>>&& value);
+  inline ::capnp::Orphan< ::capnp::List< ::seam::schema::Node,  ::capnp::Kind::STRUCT>> disownNodes();
 
   inline bool hasConnections();
-  inline  ::capnp::List< ::PinConnection,  ::capnp::Kind::STRUCT>::Builder getConnections();
-  inline void setConnections( ::capnp::List< ::PinConnection,  ::capnp::Kind::STRUCT>::Reader value);
-  inline  ::capnp::List< ::PinConnection,  ::capnp::Kind::STRUCT>::Builder initConnections(unsigned int size);
-  inline void adoptConnections(::capnp::Orphan< ::capnp::List< ::PinConnection,  ::capnp::Kind::STRUCT>>&& value);
-  inline ::capnp::Orphan< ::capnp::List< ::PinConnection,  ::capnp::Kind::STRUCT>> disownConnections();
+  inline  ::capnp::List< ::seam::schema::PinConnection,  ::capnp::Kind::STRUCT>::Builder getConnections();
+  inline void setConnections( ::capnp::List< ::seam::schema::PinConnection,  ::capnp::Kind::STRUCT>::Reader value);
+  inline  ::capnp::List< ::seam::schema::PinConnection,  ::capnp::Kind::STRUCT>::Builder initConnections(unsigned int size);
+  inline void adoptConnections(::capnp::Orphan< ::capnp::List< ::seam::schema::PinConnection,  ::capnp::Kind::STRUCT>>&& value);
+  inline ::capnp::Orphan< ::capnp::List< ::seam::schema::PinConnection,  ::capnp::Kind::STRUCT>> disownConnections();
 
   inline bool hasName();
   inline  ::capnp::Text::Builder getName();
@@ -1022,11 +1026,11 @@ inline void PinOut::Builder::setId( ::uint64_t value) {
       ::capnp::bounded<0>() * ::capnp::ELEMENTS, value);
 }
 
-inline  ::PinValue::Which PinValue::Reader::which() const {
+inline  ::seam::schema::PinValue::Which PinValue::Reader::which() const {
   return _reader.getDataField<Which>(
       ::capnp::bounded<2>() * ::capnp::ELEMENTS);
 }
-inline  ::PinValue::Which PinValue::Builder::which() {
+inline  ::seam::schema::PinValue::Which PinValue::Builder::which() {
   return _builder.getDataField<Which>(
       ::capnp::bounded<2>() * ::capnp::ELEMENTS);
 }
@@ -1245,29 +1249,29 @@ inline bool PinIn::Builder::hasChannels() {
   return !_builder.getPointerField(
       ::capnp::bounded<1>() * ::capnp::POINTERS).isNull();
 }
-inline  ::capnp::List< ::PinValue,  ::capnp::Kind::STRUCT>::Reader PinIn::Reader::getChannels() const {
-  return ::capnp::_::PointerHelpers< ::capnp::List< ::PinValue,  ::capnp::Kind::STRUCT>>::get(_reader.getPointerField(
+inline  ::capnp::List< ::seam::schema::PinValue,  ::capnp::Kind::STRUCT>::Reader PinIn::Reader::getChannels() const {
+  return ::capnp::_::PointerHelpers< ::capnp::List< ::seam::schema::PinValue,  ::capnp::Kind::STRUCT>>::get(_reader.getPointerField(
       ::capnp::bounded<1>() * ::capnp::POINTERS));
 }
-inline  ::capnp::List< ::PinValue,  ::capnp::Kind::STRUCT>::Builder PinIn::Builder::getChannels() {
-  return ::capnp::_::PointerHelpers< ::capnp::List< ::PinValue,  ::capnp::Kind::STRUCT>>::get(_builder.getPointerField(
+inline  ::capnp::List< ::seam::schema::PinValue,  ::capnp::Kind::STRUCT>::Builder PinIn::Builder::getChannels() {
+  return ::capnp::_::PointerHelpers< ::capnp::List< ::seam::schema::PinValue,  ::capnp::Kind::STRUCT>>::get(_builder.getPointerField(
       ::capnp::bounded<1>() * ::capnp::POINTERS));
 }
-inline void PinIn::Builder::setChannels( ::capnp::List< ::PinValue,  ::capnp::Kind::STRUCT>::Reader value) {
-  ::capnp::_::PointerHelpers< ::capnp::List< ::PinValue,  ::capnp::Kind::STRUCT>>::set(_builder.getPointerField(
+inline void PinIn::Builder::setChannels( ::capnp::List< ::seam::schema::PinValue,  ::capnp::Kind::STRUCT>::Reader value) {
+  ::capnp::_::PointerHelpers< ::capnp::List< ::seam::schema::PinValue,  ::capnp::Kind::STRUCT>>::set(_builder.getPointerField(
       ::capnp::bounded<1>() * ::capnp::POINTERS), value);
 }
-inline  ::capnp::List< ::PinValue,  ::capnp::Kind::STRUCT>::Builder PinIn::Builder::initChannels(unsigned int size) {
-  return ::capnp::_::PointerHelpers< ::capnp::List< ::PinValue,  ::capnp::Kind::STRUCT>>::init(_builder.getPointerField(
+inline  ::capnp::List< ::seam::schema::PinValue,  ::capnp::Kind::STRUCT>::Builder PinIn::Builder::initChannels(unsigned int size) {
+  return ::capnp::_::PointerHelpers< ::capnp::List< ::seam::schema::PinValue,  ::capnp::Kind::STRUCT>>::init(_builder.getPointerField(
       ::capnp::bounded<1>() * ::capnp::POINTERS), size);
 }
 inline void PinIn::Builder::adoptChannels(
-    ::capnp::Orphan< ::capnp::List< ::PinValue,  ::capnp::Kind::STRUCT>>&& value) {
-  ::capnp::_::PointerHelpers< ::capnp::List< ::PinValue,  ::capnp::Kind::STRUCT>>::adopt(_builder.getPointerField(
+    ::capnp::Orphan< ::capnp::List< ::seam::schema::PinValue,  ::capnp::Kind::STRUCT>>&& value) {
+  ::capnp::_::PointerHelpers< ::capnp::List< ::seam::schema::PinValue,  ::capnp::Kind::STRUCT>>::adopt(_builder.getPointerField(
       ::capnp::bounded<1>() * ::capnp::POINTERS), kj::mv(value));
 }
-inline ::capnp::Orphan< ::capnp::List< ::PinValue,  ::capnp::Kind::STRUCT>> PinIn::Builder::disownChannels() {
-  return ::capnp::_::PointerHelpers< ::capnp::List< ::PinValue,  ::capnp::Kind::STRUCT>>::disown(_builder.getPointerField(
+inline ::capnp::Orphan< ::capnp::List< ::seam::schema::PinValue,  ::capnp::Kind::STRUCT>> PinIn::Builder::disownChannels() {
+  return ::capnp::_::PointerHelpers< ::capnp::List< ::seam::schema::PinValue,  ::capnp::Kind::STRUCT>>::disown(_builder.getPointerField(
       ::capnp::bounded<1>() * ::capnp::POINTERS));
 }
 
@@ -1313,29 +1317,29 @@ inline bool Property::Builder::hasValues() {
   return !_builder.getPointerField(
       ::capnp::bounded<1>() * ::capnp::POINTERS).isNull();
 }
-inline  ::capnp::List< ::PinValue,  ::capnp::Kind::STRUCT>::Reader Property::Reader::getValues() const {
-  return ::capnp::_::PointerHelpers< ::capnp::List< ::PinValue,  ::capnp::Kind::STRUCT>>::get(_reader.getPointerField(
+inline  ::capnp::List< ::seam::schema::PinValue,  ::capnp::Kind::STRUCT>::Reader Property::Reader::getValues() const {
+  return ::capnp::_::PointerHelpers< ::capnp::List< ::seam::schema::PinValue,  ::capnp::Kind::STRUCT>>::get(_reader.getPointerField(
       ::capnp::bounded<1>() * ::capnp::POINTERS));
 }
-inline  ::capnp::List< ::PinValue,  ::capnp::Kind::STRUCT>::Builder Property::Builder::getValues() {
-  return ::capnp::_::PointerHelpers< ::capnp::List< ::PinValue,  ::capnp::Kind::STRUCT>>::get(_builder.getPointerField(
+inline  ::capnp::List< ::seam::schema::PinValue,  ::capnp::Kind::STRUCT>::Builder Property::Builder::getValues() {
+  return ::capnp::_::PointerHelpers< ::capnp::List< ::seam::schema::PinValue,  ::capnp::Kind::STRUCT>>::get(_builder.getPointerField(
       ::capnp::bounded<1>() * ::capnp::POINTERS));
 }
-inline void Property::Builder::setValues( ::capnp::List< ::PinValue,  ::capnp::Kind::STRUCT>::Reader value) {
-  ::capnp::_::PointerHelpers< ::capnp::List< ::PinValue,  ::capnp::Kind::STRUCT>>::set(_builder.getPointerField(
+inline void Property::Builder::setValues( ::capnp::List< ::seam::schema::PinValue,  ::capnp::Kind::STRUCT>::Reader value) {
+  ::capnp::_::PointerHelpers< ::capnp::List< ::seam::schema::PinValue,  ::capnp::Kind::STRUCT>>::set(_builder.getPointerField(
       ::capnp::bounded<1>() * ::capnp::POINTERS), value);
 }
-inline  ::capnp::List< ::PinValue,  ::capnp::Kind::STRUCT>::Builder Property::Builder::initValues(unsigned int size) {
-  return ::capnp::_::PointerHelpers< ::capnp::List< ::PinValue,  ::capnp::Kind::STRUCT>>::init(_builder.getPointerField(
+inline  ::capnp::List< ::seam::schema::PinValue,  ::capnp::Kind::STRUCT>::Builder Property::Builder::initValues(unsigned int size) {
+  return ::capnp::_::PointerHelpers< ::capnp::List< ::seam::schema::PinValue,  ::capnp::Kind::STRUCT>>::init(_builder.getPointerField(
       ::capnp::bounded<1>() * ::capnp::POINTERS), size);
 }
 inline void Property::Builder::adoptValues(
-    ::capnp::Orphan< ::capnp::List< ::PinValue,  ::capnp::Kind::STRUCT>>&& value) {
-  ::capnp::_::PointerHelpers< ::capnp::List< ::PinValue,  ::capnp::Kind::STRUCT>>::adopt(_builder.getPointerField(
+    ::capnp::Orphan< ::capnp::List< ::seam::schema::PinValue,  ::capnp::Kind::STRUCT>>&& value) {
+  ::capnp::_::PointerHelpers< ::capnp::List< ::seam::schema::PinValue,  ::capnp::Kind::STRUCT>>::adopt(_builder.getPointerField(
       ::capnp::bounded<1>() * ::capnp::POINTERS), kj::mv(value));
 }
-inline ::capnp::Orphan< ::capnp::List< ::PinValue,  ::capnp::Kind::STRUCT>> Property::Builder::disownValues() {
-  return ::capnp::_::PointerHelpers< ::capnp::List< ::PinValue,  ::capnp::Kind::STRUCT>>::disown(_builder.getPointerField(
+inline ::capnp::Orphan< ::capnp::List< ::seam::schema::PinValue,  ::capnp::Kind::STRUCT>> Property::Builder::disownValues() {
+  return ::capnp::_::PointerHelpers< ::capnp::List< ::seam::schema::PinValue,  ::capnp::Kind::STRUCT>>::disown(_builder.getPointerField(
       ::capnp::bounded<1>() * ::capnp::POINTERS));
 }
 
@@ -1347,34 +1351,34 @@ inline bool Node::Builder::hasPosition() {
   return !_builder.getPointerField(
       ::capnp::bounded<0>() * ::capnp::POINTERS).isNull();
 }
-inline  ::Vector2::Reader Node::Reader::getPosition() const {
-  return ::capnp::_::PointerHelpers< ::Vector2>::get(_reader.getPointerField(
+inline  ::seam::schema::Vector2::Reader Node::Reader::getPosition() const {
+  return ::capnp::_::PointerHelpers< ::seam::schema::Vector2>::get(_reader.getPointerField(
       ::capnp::bounded<0>() * ::capnp::POINTERS));
 }
-inline  ::Vector2::Builder Node::Builder::getPosition() {
-  return ::capnp::_::PointerHelpers< ::Vector2>::get(_builder.getPointerField(
+inline  ::seam::schema::Vector2::Builder Node::Builder::getPosition() {
+  return ::capnp::_::PointerHelpers< ::seam::schema::Vector2>::get(_builder.getPointerField(
       ::capnp::bounded<0>() * ::capnp::POINTERS));
 }
 #if !CAPNP_LITE
-inline  ::Vector2::Pipeline Node::Pipeline::getPosition() {
-  return  ::Vector2::Pipeline(_typeless.getPointerField(0));
+inline  ::seam::schema::Vector2::Pipeline Node::Pipeline::getPosition() {
+  return  ::seam::schema::Vector2::Pipeline(_typeless.getPointerField(0));
 }
 #endif  // !CAPNP_LITE
-inline void Node::Builder::setPosition( ::Vector2::Reader value) {
-  ::capnp::_::PointerHelpers< ::Vector2>::set(_builder.getPointerField(
+inline void Node::Builder::setPosition( ::seam::schema::Vector2::Reader value) {
+  ::capnp::_::PointerHelpers< ::seam::schema::Vector2>::set(_builder.getPointerField(
       ::capnp::bounded<0>() * ::capnp::POINTERS), value);
 }
-inline  ::Vector2::Builder Node::Builder::initPosition() {
-  return ::capnp::_::PointerHelpers< ::Vector2>::init(_builder.getPointerField(
+inline  ::seam::schema::Vector2::Builder Node::Builder::initPosition() {
+  return ::capnp::_::PointerHelpers< ::seam::schema::Vector2>::init(_builder.getPointerField(
       ::capnp::bounded<0>() * ::capnp::POINTERS));
 }
 inline void Node::Builder::adoptPosition(
-    ::capnp::Orphan< ::Vector2>&& value) {
-  ::capnp::_::PointerHelpers< ::Vector2>::adopt(_builder.getPointerField(
+    ::capnp::Orphan< ::seam::schema::Vector2>&& value) {
+  ::capnp::_::PointerHelpers< ::seam::schema::Vector2>::adopt(_builder.getPointerField(
       ::capnp::bounded<0>() * ::capnp::POINTERS), kj::mv(value));
 }
-inline ::capnp::Orphan< ::Vector2> Node::Builder::disownPosition() {
-  return ::capnp::_::PointerHelpers< ::Vector2>::disown(_builder.getPointerField(
+inline ::capnp::Orphan< ::seam::schema::Vector2> Node::Builder::disownPosition() {
+  return ::capnp::_::PointerHelpers< ::seam::schema::Vector2>::disown(_builder.getPointerField(
       ::capnp::bounded<0>() * ::capnp::POINTERS));
 }
 
@@ -1468,29 +1472,29 @@ inline bool Node::Builder::hasInputPins() {
   return !_builder.getPointerField(
       ::capnp::bounded<3>() * ::capnp::POINTERS).isNull();
 }
-inline  ::capnp::List< ::PinIn,  ::capnp::Kind::STRUCT>::Reader Node::Reader::getInputPins() const {
-  return ::capnp::_::PointerHelpers< ::capnp::List< ::PinIn,  ::capnp::Kind::STRUCT>>::get(_reader.getPointerField(
+inline  ::capnp::List< ::seam::schema::PinIn,  ::capnp::Kind::STRUCT>::Reader Node::Reader::getInputPins() const {
+  return ::capnp::_::PointerHelpers< ::capnp::List< ::seam::schema::PinIn,  ::capnp::Kind::STRUCT>>::get(_reader.getPointerField(
       ::capnp::bounded<3>() * ::capnp::POINTERS));
 }
-inline  ::capnp::List< ::PinIn,  ::capnp::Kind::STRUCT>::Builder Node::Builder::getInputPins() {
-  return ::capnp::_::PointerHelpers< ::capnp::List< ::PinIn,  ::capnp::Kind::STRUCT>>::get(_builder.getPointerField(
+inline  ::capnp::List< ::seam::schema::PinIn,  ::capnp::Kind::STRUCT>::Builder Node::Builder::getInputPins() {
+  return ::capnp::_::PointerHelpers< ::capnp::List< ::seam::schema::PinIn,  ::capnp::Kind::STRUCT>>::get(_builder.getPointerField(
       ::capnp::bounded<3>() * ::capnp::POINTERS));
 }
-inline void Node::Builder::setInputPins( ::capnp::List< ::PinIn,  ::capnp::Kind::STRUCT>::Reader value) {
-  ::capnp::_::PointerHelpers< ::capnp::List< ::PinIn,  ::capnp::Kind::STRUCT>>::set(_builder.getPointerField(
+inline void Node::Builder::setInputPins( ::capnp::List< ::seam::schema::PinIn,  ::capnp::Kind::STRUCT>::Reader value) {
+  ::capnp::_::PointerHelpers< ::capnp::List< ::seam::schema::PinIn,  ::capnp::Kind::STRUCT>>::set(_builder.getPointerField(
       ::capnp::bounded<3>() * ::capnp::POINTERS), value);
 }
-inline  ::capnp::List< ::PinIn,  ::capnp::Kind::STRUCT>::Builder Node::Builder::initInputPins(unsigned int size) {
-  return ::capnp::_::PointerHelpers< ::capnp::List< ::PinIn,  ::capnp::Kind::STRUCT>>::init(_builder.getPointerField(
+inline  ::capnp::List< ::seam::schema::PinIn,  ::capnp::Kind::STRUCT>::Builder Node::Builder::initInputPins(unsigned int size) {
+  return ::capnp::_::PointerHelpers< ::capnp::List< ::seam::schema::PinIn,  ::capnp::Kind::STRUCT>>::init(_builder.getPointerField(
       ::capnp::bounded<3>() * ::capnp::POINTERS), size);
 }
 inline void Node::Builder::adoptInputPins(
-    ::capnp::Orphan< ::capnp::List< ::PinIn,  ::capnp::Kind::STRUCT>>&& value) {
-  ::capnp::_::PointerHelpers< ::capnp::List< ::PinIn,  ::capnp::Kind::STRUCT>>::adopt(_builder.getPointerField(
+    ::capnp::Orphan< ::capnp::List< ::seam::schema::PinIn,  ::capnp::Kind::STRUCT>>&& value) {
+  ::capnp::_::PointerHelpers< ::capnp::List< ::seam::schema::PinIn,  ::capnp::Kind::STRUCT>>::adopt(_builder.getPointerField(
       ::capnp::bounded<3>() * ::capnp::POINTERS), kj::mv(value));
 }
-inline ::capnp::Orphan< ::capnp::List< ::PinIn,  ::capnp::Kind::STRUCT>> Node::Builder::disownInputPins() {
-  return ::capnp::_::PointerHelpers< ::capnp::List< ::PinIn,  ::capnp::Kind::STRUCT>>::disown(_builder.getPointerField(
+inline ::capnp::Orphan< ::capnp::List< ::seam::schema::PinIn,  ::capnp::Kind::STRUCT>> Node::Builder::disownInputPins() {
+  return ::capnp::_::PointerHelpers< ::capnp::List< ::seam::schema::PinIn,  ::capnp::Kind::STRUCT>>::disown(_builder.getPointerField(
       ::capnp::bounded<3>() * ::capnp::POINTERS));
 }
 
@@ -1502,29 +1506,29 @@ inline bool Node::Builder::hasOutputPins() {
   return !_builder.getPointerField(
       ::capnp::bounded<4>() * ::capnp::POINTERS).isNull();
 }
-inline  ::capnp::List< ::PinOut,  ::capnp::Kind::STRUCT>::Reader Node::Reader::getOutputPins() const {
-  return ::capnp::_::PointerHelpers< ::capnp::List< ::PinOut,  ::capnp::Kind::STRUCT>>::get(_reader.getPointerField(
+inline  ::capnp::List< ::seam::schema::PinOut,  ::capnp::Kind::STRUCT>::Reader Node::Reader::getOutputPins() const {
+  return ::capnp::_::PointerHelpers< ::capnp::List< ::seam::schema::PinOut,  ::capnp::Kind::STRUCT>>::get(_reader.getPointerField(
       ::capnp::bounded<4>() * ::capnp::POINTERS));
 }
-inline  ::capnp::List< ::PinOut,  ::capnp::Kind::STRUCT>::Builder Node::Builder::getOutputPins() {
-  return ::capnp::_::PointerHelpers< ::capnp::List< ::PinOut,  ::capnp::Kind::STRUCT>>::get(_builder.getPointerField(
+inline  ::capnp::List< ::seam::schema::PinOut,  ::capnp::Kind::STRUCT>::Builder Node::Builder::getOutputPins() {
+  return ::capnp::_::PointerHelpers< ::capnp::List< ::seam::schema::PinOut,  ::capnp::Kind::STRUCT>>::get(_builder.getPointerField(
       ::capnp::bounded<4>() * ::capnp::POINTERS));
 }
-inline void Node::Builder::setOutputPins( ::capnp::List< ::PinOut,  ::capnp::Kind::STRUCT>::Reader value) {
-  ::capnp::_::PointerHelpers< ::capnp::List< ::PinOut,  ::capnp::Kind::STRUCT>>::set(_builder.getPointerField(
+inline void Node::Builder::setOutputPins( ::capnp::List< ::seam::schema::PinOut,  ::capnp::Kind::STRUCT>::Reader value) {
+  ::capnp::_::PointerHelpers< ::capnp::List< ::seam::schema::PinOut,  ::capnp::Kind::STRUCT>>::set(_builder.getPointerField(
       ::capnp::bounded<4>() * ::capnp::POINTERS), value);
 }
-inline  ::capnp::List< ::PinOut,  ::capnp::Kind::STRUCT>::Builder Node::Builder::initOutputPins(unsigned int size) {
-  return ::capnp::_::PointerHelpers< ::capnp::List< ::PinOut,  ::capnp::Kind::STRUCT>>::init(_builder.getPointerField(
+inline  ::capnp::List< ::seam::schema::PinOut,  ::capnp::Kind::STRUCT>::Builder Node::Builder::initOutputPins(unsigned int size) {
+  return ::capnp::_::PointerHelpers< ::capnp::List< ::seam::schema::PinOut,  ::capnp::Kind::STRUCT>>::init(_builder.getPointerField(
       ::capnp::bounded<4>() * ::capnp::POINTERS), size);
 }
 inline void Node::Builder::adoptOutputPins(
-    ::capnp::Orphan< ::capnp::List< ::PinOut,  ::capnp::Kind::STRUCT>>&& value) {
-  ::capnp::_::PointerHelpers< ::capnp::List< ::PinOut,  ::capnp::Kind::STRUCT>>::adopt(_builder.getPointerField(
+    ::capnp::Orphan< ::capnp::List< ::seam::schema::PinOut,  ::capnp::Kind::STRUCT>>&& value) {
+  ::capnp::_::PointerHelpers< ::capnp::List< ::seam::schema::PinOut,  ::capnp::Kind::STRUCT>>::adopt(_builder.getPointerField(
       ::capnp::bounded<4>() * ::capnp::POINTERS), kj::mv(value));
 }
-inline ::capnp::Orphan< ::capnp::List< ::PinOut,  ::capnp::Kind::STRUCT>> Node::Builder::disownOutputPins() {
-  return ::capnp::_::PointerHelpers< ::capnp::List< ::PinOut,  ::capnp::Kind::STRUCT>>::disown(_builder.getPointerField(
+inline ::capnp::Orphan< ::capnp::List< ::seam::schema::PinOut,  ::capnp::Kind::STRUCT>> Node::Builder::disownOutputPins() {
+  return ::capnp::_::PointerHelpers< ::capnp::List< ::seam::schema::PinOut,  ::capnp::Kind::STRUCT>>::disown(_builder.getPointerField(
       ::capnp::bounded<4>() * ::capnp::POINTERS));
 }
 
@@ -1536,29 +1540,29 @@ inline bool Node::Builder::hasProperties() {
   return !_builder.getPointerField(
       ::capnp::bounded<5>() * ::capnp::POINTERS).isNull();
 }
-inline  ::capnp::List< ::Property,  ::capnp::Kind::STRUCT>::Reader Node::Reader::getProperties() const {
-  return ::capnp::_::PointerHelpers< ::capnp::List< ::Property,  ::capnp::Kind::STRUCT>>::get(_reader.getPointerField(
+inline  ::capnp::List< ::seam::schema::Property,  ::capnp::Kind::STRUCT>::Reader Node::Reader::getProperties() const {
+  return ::capnp::_::PointerHelpers< ::capnp::List< ::seam::schema::Property,  ::capnp::Kind::STRUCT>>::get(_reader.getPointerField(
       ::capnp::bounded<5>() * ::capnp::POINTERS));
 }
-inline  ::capnp::List< ::Property,  ::capnp::Kind::STRUCT>::Builder Node::Builder::getProperties() {
-  return ::capnp::_::PointerHelpers< ::capnp::List< ::Property,  ::capnp::Kind::STRUCT>>::get(_builder.getPointerField(
+inline  ::capnp::List< ::seam::schema::Property,  ::capnp::Kind::STRUCT>::Builder Node::Builder::getProperties() {
+  return ::capnp::_::PointerHelpers< ::capnp::List< ::seam::schema::Property,  ::capnp::Kind::STRUCT>>::get(_builder.getPointerField(
       ::capnp::bounded<5>() * ::capnp::POINTERS));
 }
-inline void Node::Builder::setProperties( ::capnp::List< ::Property,  ::capnp::Kind::STRUCT>::Reader value) {
-  ::capnp::_::PointerHelpers< ::capnp::List< ::Property,  ::capnp::Kind::STRUCT>>::set(_builder.getPointerField(
+inline void Node::Builder::setProperties( ::capnp::List< ::seam::schema::Property,  ::capnp::Kind::STRUCT>::Reader value) {
+  ::capnp::_::PointerHelpers< ::capnp::List< ::seam::schema::Property,  ::capnp::Kind::STRUCT>>::set(_builder.getPointerField(
       ::capnp::bounded<5>() * ::capnp::POINTERS), value);
 }
-inline  ::capnp::List< ::Property,  ::capnp::Kind::STRUCT>::Builder Node::Builder::initProperties(unsigned int size) {
-  return ::capnp::_::PointerHelpers< ::capnp::List< ::Property,  ::capnp::Kind::STRUCT>>::init(_builder.getPointerField(
+inline  ::capnp::List< ::seam::schema::Property,  ::capnp::Kind::STRUCT>::Builder Node::Builder::initProperties(unsigned int size) {
+  return ::capnp::_::PointerHelpers< ::capnp::List< ::seam::schema::Property,  ::capnp::Kind::STRUCT>>::init(_builder.getPointerField(
       ::capnp::bounded<5>() * ::capnp::POINTERS), size);
 }
 inline void Node::Builder::adoptProperties(
-    ::capnp::Orphan< ::capnp::List< ::Property,  ::capnp::Kind::STRUCT>>&& value) {
-  ::capnp::_::PointerHelpers< ::capnp::List< ::Property,  ::capnp::Kind::STRUCT>>::adopt(_builder.getPointerField(
+    ::capnp::Orphan< ::capnp::List< ::seam::schema::Property,  ::capnp::Kind::STRUCT>>&& value) {
+  ::capnp::_::PointerHelpers< ::capnp::List< ::seam::schema::Property,  ::capnp::Kind::STRUCT>>::adopt(_builder.getPointerField(
       ::capnp::bounded<5>() * ::capnp::POINTERS), kj::mv(value));
 }
-inline ::capnp::Orphan< ::capnp::List< ::Property,  ::capnp::Kind::STRUCT>> Node::Builder::disownProperties() {
-  return ::capnp::_::PointerHelpers< ::capnp::List< ::Property,  ::capnp::Kind::STRUCT>>::disown(_builder.getPointerField(
+inline ::capnp::Orphan< ::capnp::List< ::seam::schema::Property,  ::capnp::Kind::STRUCT>> Node::Builder::disownProperties() {
+  return ::capnp::_::PointerHelpers< ::capnp::List< ::seam::schema::Property,  ::capnp::Kind::STRUCT>>::disown(_builder.getPointerField(
       ::capnp::bounded<5>() * ::capnp::POINTERS));
 }
 
@@ -1598,29 +1602,29 @@ inline bool NodeGraph::Builder::hasNodes() {
   return !_builder.getPointerField(
       ::capnp::bounded<0>() * ::capnp::POINTERS).isNull();
 }
-inline  ::capnp::List< ::Node,  ::capnp::Kind::STRUCT>::Reader NodeGraph::Reader::getNodes() const {
-  return ::capnp::_::PointerHelpers< ::capnp::List< ::Node,  ::capnp::Kind::STRUCT>>::get(_reader.getPointerField(
+inline  ::capnp::List< ::seam::schema::Node,  ::capnp::Kind::STRUCT>::Reader NodeGraph::Reader::getNodes() const {
+  return ::capnp::_::PointerHelpers< ::capnp::List< ::seam::schema::Node,  ::capnp::Kind::STRUCT>>::get(_reader.getPointerField(
       ::capnp::bounded<0>() * ::capnp::POINTERS));
 }
-inline  ::capnp::List< ::Node,  ::capnp::Kind::STRUCT>::Builder NodeGraph::Builder::getNodes() {
-  return ::capnp::_::PointerHelpers< ::capnp::List< ::Node,  ::capnp::Kind::STRUCT>>::get(_builder.getPointerField(
+inline  ::capnp::List< ::seam::schema::Node,  ::capnp::Kind::STRUCT>::Builder NodeGraph::Builder::getNodes() {
+  return ::capnp::_::PointerHelpers< ::capnp::List< ::seam::schema::Node,  ::capnp::Kind::STRUCT>>::get(_builder.getPointerField(
       ::capnp::bounded<0>() * ::capnp::POINTERS));
 }
-inline void NodeGraph::Builder::setNodes( ::capnp::List< ::Node,  ::capnp::Kind::STRUCT>::Reader value) {
-  ::capnp::_::PointerHelpers< ::capnp::List< ::Node,  ::capnp::Kind::STRUCT>>::set(_builder.getPointerField(
+inline void NodeGraph::Builder::setNodes( ::capnp::List< ::seam::schema::Node,  ::capnp::Kind::STRUCT>::Reader value) {
+  ::capnp::_::PointerHelpers< ::capnp::List< ::seam::schema::Node,  ::capnp::Kind::STRUCT>>::set(_builder.getPointerField(
       ::capnp::bounded<0>() * ::capnp::POINTERS), value);
 }
-inline  ::capnp::List< ::Node,  ::capnp::Kind::STRUCT>::Builder NodeGraph::Builder::initNodes(unsigned int size) {
-  return ::capnp::_::PointerHelpers< ::capnp::List< ::Node,  ::capnp::Kind::STRUCT>>::init(_builder.getPointerField(
+inline  ::capnp::List< ::seam::schema::Node,  ::capnp::Kind::STRUCT>::Builder NodeGraph::Builder::initNodes(unsigned int size) {
+  return ::capnp::_::PointerHelpers< ::capnp::List< ::seam::schema::Node,  ::capnp::Kind::STRUCT>>::init(_builder.getPointerField(
       ::capnp::bounded<0>() * ::capnp::POINTERS), size);
 }
 inline void NodeGraph::Builder::adoptNodes(
-    ::capnp::Orphan< ::capnp::List< ::Node,  ::capnp::Kind::STRUCT>>&& value) {
-  ::capnp::_::PointerHelpers< ::capnp::List< ::Node,  ::capnp::Kind::STRUCT>>::adopt(_builder.getPointerField(
+    ::capnp::Orphan< ::capnp::List< ::seam::schema::Node,  ::capnp::Kind::STRUCT>>&& value) {
+  ::capnp::_::PointerHelpers< ::capnp::List< ::seam::schema::Node,  ::capnp::Kind::STRUCT>>::adopt(_builder.getPointerField(
       ::capnp::bounded<0>() * ::capnp::POINTERS), kj::mv(value));
 }
-inline ::capnp::Orphan< ::capnp::List< ::Node,  ::capnp::Kind::STRUCT>> NodeGraph::Builder::disownNodes() {
-  return ::capnp::_::PointerHelpers< ::capnp::List< ::Node,  ::capnp::Kind::STRUCT>>::disown(_builder.getPointerField(
+inline ::capnp::Orphan< ::capnp::List< ::seam::schema::Node,  ::capnp::Kind::STRUCT>> NodeGraph::Builder::disownNodes() {
+  return ::capnp::_::PointerHelpers< ::capnp::List< ::seam::schema::Node,  ::capnp::Kind::STRUCT>>::disown(_builder.getPointerField(
       ::capnp::bounded<0>() * ::capnp::POINTERS));
 }
 
@@ -1632,29 +1636,29 @@ inline bool NodeGraph::Builder::hasConnections() {
   return !_builder.getPointerField(
       ::capnp::bounded<1>() * ::capnp::POINTERS).isNull();
 }
-inline  ::capnp::List< ::PinConnection,  ::capnp::Kind::STRUCT>::Reader NodeGraph::Reader::getConnections() const {
-  return ::capnp::_::PointerHelpers< ::capnp::List< ::PinConnection,  ::capnp::Kind::STRUCT>>::get(_reader.getPointerField(
+inline  ::capnp::List< ::seam::schema::PinConnection,  ::capnp::Kind::STRUCT>::Reader NodeGraph::Reader::getConnections() const {
+  return ::capnp::_::PointerHelpers< ::capnp::List< ::seam::schema::PinConnection,  ::capnp::Kind::STRUCT>>::get(_reader.getPointerField(
       ::capnp::bounded<1>() * ::capnp::POINTERS));
 }
-inline  ::capnp::List< ::PinConnection,  ::capnp::Kind::STRUCT>::Builder NodeGraph::Builder::getConnections() {
-  return ::capnp::_::PointerHelpers< ::capnp::List< ::PinConnection,  ::capnp::Kind::STRUCT>>::get(_builder.getPointerField(
+inline  ::capnp::List< ::seam::schema::PinConnection,  ::capnp::Kind::STRUCT>::Builder NodeGraph::Builder::getConnections() {
+  return ::capnp::_::PointerHelpers< ::capnp::List< ::seam::schema::PinConnection,  ::capnp::Kind::STRUCT>>::get(_builder.getPointerField(
       ::capnp::bounded<1>() * ::capnp::POINTERS));
 }
-inline void NodeGraph::Builder::setConnections( ::capnp::List< ::PinConnection,  ::capnp::Kind::STRUCT>::Reader value) {
-  ::capnp::_::PointerHelpers< ::capnp::List< ::PinConnection,  ::capnp::Kind::STRUCT>>::set(_builder.getPointerField(
+inline void NodeGraph::Builder::setConnections( ::capnp::List< ::seam::schema::PinConnection,  ::capnp::Kind::STRUCT>::Reader value) {
+  ::capnp::_::PointerHelpers< ::capnp::List< ::seam::schema::PinConnection,  ::capnp::Kind::STRUCT>>::set(_builder.getPointerField(
       ::capnp::bounded<1>() * ::capnp::POINTERS), value);
 }
-inline  ::capnp::List< ::PinConnection,  ::capnp::Kind::STRUCT>::Builder NodeGraph::Builder::initConnections(unsigned int size) {
-  return ::capnp::_::PointerHelpers< ::capnp::List< ::PinConnection,  ::capnp::Kind::STRUCT>>::init(_builder.getPointerField(
+inline  ::capnp::List< ::seam::schema::PinConnection,  ::capnp::Kind::STRUCT>::Builder NodeGraph::Builder::initConnections(unsigned int size) {
+  return ::capnp::_::PointerHelpers< ::capnp::List< ::seam::schema::PinConnection,  ::capnp::Kind::STRUCT>>::init(_builder.getPointerField(
       ::capnp::bounded<1>() * ::capnp::POINTERS), size);
 }
 inline void NodeGraph::Builder::adoptConnections(
-    ::capnp::Orphan< ::capnp::List< ::PinConnection,  ::capnp::Kind::STRUCT>>&& value) {
-  ::capnp::_::PointerHelpers< ::capnp::List< ::PinConnection,  ::capnp::Kind::STRUCT>>::adopt(_builder.getPointerField(
+    ::capnp::Orphan< ::capnp::List< ::seam::schema::PinConnection,  ::capnp::Kind::STRUCT>>&& value) {
+  ::capnp::_::PointerHelpers< ::capnp::List< ::seam::schema::PinConnection,  ::capnp::Kind::STRUCT>>::adopt(_builder.getPointerField(
       ::capnp::bounded<1>() * ::capnp::POINTERS), kj::mv(value));
 }
-inline ::capnp::Orphan< ::capnp::List< ::PinConnection,  ::capnp::Kind::STRUCT>> NodeGraph::Builder::disownConnections() {
-  return ::capnp::_::PointerHelpers< ::capnp::List< ::PinConnection,  ::capnp::Kind::STRUCT>>::disown(_builder.getPointerField(
+inline ::capnp::Orphan< ::capnp::List< ::seam::schema::PinConnection,  ::capnp::Kind::STRUCT>> NodeGraph::Builder::disownConnections() {
+  return ::capnp::_::PointerHelpers< ::capnp::List< ::seam::schema::PinConnection,  ::capnp::Kind::STRUCT>>::disown(_builder.getPointerField(
       ::capnp::bounded<1>() * ::capnp::POINTERS));
 }
 
@@ -1692,6 +1696,8 @@ inline ::capnp::Orphan< ::capnp::Text> NodeGraph::Builder::disownName() {
       ::capnp::bounded<2>() * ::capnp::POINTERS));
 }
 
+}  // namespace
+}  // namespace
 
 CAPNP_END_HEADER
 

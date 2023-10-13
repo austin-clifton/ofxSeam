@@ -24,7 +24,7 @@ namespace {
 	const char* POPUP_NAME_NEW_NODE = "Create New Node";
 	const char* WINDOW_NAME_NODE_MENU = "Node Properties Menu";
 
-	void PrintGraph(const NodeGraph::Reader& reader) {
+	void PrintGraph(const seam::schema::NodeGraph::Reader& reader) {
 		printf("seam graph file %s\n", reader.getName().cStr());
 
 		// First list Nodes.
@@ -331,8 +331,8 @@ void Editor::SaveGraph(const std::string_view filename, const std::vector<INode*
 
 	// Third pass: all nodes and pins should be assigned unique IDs now, and we can finally build the serialized graph.
 	capnp::MallocMessageBuilder message;
-	NodeGraph::Builder serialized_graph = message.initRoot<NodeGraph>();
-	capnp::List<Node>::Builder serialized_nodes = serialized_graph.initNodes(nodes_to_save.size());
+	seam::schema::NodeGraph::Builder serialized_graph = message.initRoot<seam::schema::NodeGraph>();
+	capnp::List<seam::schema::Node>::Builder serialized_nodes = serialized_graph.initNodes(nodes_to_save.size());
 
 	// Pair is output pin, input pin
 	std::vector<std::pair<PinId, PinId>> connections;
@@ -438,7 +438,7 @@ void Editor::LoadGraph(const std::string_view filename) {
 		return;
 	}
 	auto message = capnp::PackedFdMessageReader(fileno(file));
-	auto node_graph = message.getRoot<NodeGraph>();
+	auto node_graph = message.getRoot<seam::schema::NodeGraph>();
 
 	PrintGraph(node_graph);
 	NewGraph();
@@ -504,13 +504,13 @@ void Editor::LoadGraph(const std::string_view filename) {
 				PinType pinType = SerializedPinTypeToPinType(serialized_channels[0].which());
 				PinInput* added = dynamicPinsNode->AddPinIn(pinType, serialized_pin_name,
 					PinTypeToElementSize(pinType), serialized_channels.size());
-				added->id = serialized_pin_in.getId();
 
 				if (added == nullptr) {
 					printf("Dynamic Pins Node %s refused to add a pin named %s\n",
 						node->NodeName().data(), serialized_pin_name.c_str());
 				} else {
 					// Refresh the input pins list!
+					added->id = serialized_pin_in.getId();
 					input_pins = node->PinInputs(inputs_size);
 					input_pin_map.emplace(std::make_pair(added->id, added));
 				}
@@ -543,7 +543,6 @@ void Editor::LoadGraph(const std::string_view filename) {
 					pin_name.data(), serialized_node.getDisplayName().cStr());
 			}
 		}
-
 
 		// Deserialize properties
 		for (const auto& serializedProperty : serialized_node.getProperties()) {
