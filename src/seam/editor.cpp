@@ -220,7 +220,8 @@ void Editor::NewGraph() {
 	nodesUpdateEveryFrame.clear();
 	links.clear();
 	loaded_file.clear();
-	nextPinId = 1;
+
+	IdsDistributor::GetInstance().ResetIds();
 }
 
 void Editor::SaveGraph(const std::string_view filename, const std::vector<INode*>& nodes_to_save) {
@@ -300,6 +301,7 @@ void Editor::SaveGraph(const std::string_view filename, const std::vector<INode*
 
 		// Assign unassigned input pins.
 		for (size_t i = 0; i < inputs_size; i++) {
+			assert(false);
 			size_t pin_id = input_pins[i].id;
 			assert(pin_id != 0);
 			if (pin_id == 0) {
@@ -314,6 +316,7 @@ void Editor::SaveGraph(const std::string_view filename, const std::vector<INode*
 
 		// Assign unassigned output pins.
 		for (size_t i = 0; i < outputs_size; i++) {
+			assert(false);
 			size_t pin_id = output_pins[i].id;
 			if (pin_id == 0) {
 				while (output_pin_map.find(max_output_pin_id) != output_pin_map.end()) {
@@ -444,10 +447,15 @@ void Editor::LoadGraph(const std::string_view filename) {
 	std::map<PinId, Pin*> input_pin_map;
 	std::map<PinId, Pin*> output_pin_map;
 
+	// Remember max pin and node IDs.
+	PinId maxPinId = 0;
+	NodeId maxNodeId = 0;
+
 	// First deserialize nodes and pins
 	for (const auto& serialized_node : node_graph.getNodes()) {
 		auto node = CreateAndAdd(serialized_node.getNodeName().cStr());
 		node->id = serialized_node.getId();
+		maxNodeId = std::max(node->id, maxNodeId);
 		node->instance_name = serialized_node.getDisplayName();
 
 		auto position = ImVec2(serialized_node.getPosition().getX(), serialized_node.getPosition().getY());
@@ -481,9 +489,9 @@ void Editor::LoadGraph(const std::string_view filename) {
 			if (matchPos != (input_pins + inputs_size)) {
 				PinInput* match = matchPos;
 				match->id = serialized_pin_in.getId();
+				maxPinId = std::max(match->id, maxPinId);
 
 				input_pin_map.emplace(std::make_pair(match->id, match));
-				nextPinId = std::max(nextPinId, match->id + 1);
 
 				if (serialized_channels.size()) {
 					size_t channels_size;
@@ -505,7 +513,6 @@ void Editor::LoadGraph(const std::string_view filename) {
 					// Refresh the input pins list!
 					input_pins = node->PinInputs(inputs_size);
 					input_pin_map.emplace(std::make_pair(added->id, added));
-					nextPinId = std::max(nextPinId, added->id + 1);
 				}
 
 			} else {
@@ -525,8 +532,8 @@ void Editor::LoadGraph(const std::string_view filename) {
 
 			if (match != (output_pins + outputs_size)) {
 				match->id = serialized_pin_out.getId();
+				maxPinId = std::max(match->id, maxPinId);
 				output_pin_map.emplace(std::make_pair(match->id, (Pin*)match));
-				nextPinId = std::max(nextPinId, match->id + 1);
 			} else if (dynamicPinsNode != nullptr) {
 				// TODO....
 				throw std::runtime_error("oh shit I should implement this.....");
@@ -583,6 +590,11 @@ void Editor::LoadGraph(const std::string_view filename) {
 	}
 
 	ed::NavigateToContent();
+
+	// Make sure the IdsDistributor knows where to start assigning IDs from.
+	IdsDistributor::GetInstance().ResetIds();
+	IdsDistributor::GetInstance().SetNextNodeId(maxNodeId + 1);
+	IdsDistributor::GetInstance().SetNextPinId(maxPinId + 1);
 
 	loaded_file = filename;
 }
@@ -723,7 +735,7 @@ void Editor::GuiDraw() {
 				} else if (pin_in->type != pin_out->type) {
 					bool canConvert;
 					pins::GetConvertSingle(pin_out->type, pin_in->type, canConvert);
-					if (canConvert) {
+					if (canConvert || pin_in->type == PinType::ANY) {
 						showLabel("+ Create Link", ImColor(32, 45, 32, 180));
 						if (ed::AcceptNewItem(ImColor(128, 255, 128), 4.0f)) {
 							bool connected = Connect(pin_out, pin_in);
@@ -865,25 +877,6 @@ void Editor::GuiDraw() {
 INode* Editor::CreateAndAdd(NodeId node_id) {
 	INode* node = factory->Create(node_id);
 	if (node != nullptr) {
-		// Handle book keeping for the new node
-
-		// Make sure pins have valid assigned IDs
-		size_t size;
-		PinInput* inputs = node->PinInputs(size);
-		for (size_t i = 0; i < size; i++) {
-			inputs[i].id = nextPinId;
-			nextPinId++;
-		}
-
-		PinOutput* outputs = node->PinOutputs(size);
-		for (size_t i = 0; i < size; i++) {
-			outputs[i].id = nextPinId;
-			nextPinId++;
-		}
-
-		// TODO do nodes really need to know their IDs?
-		// node->id = node_id;
-
 		nodes.push_back(node);
 
 		if (node->IsVisual()) {
@@ -941,6 +934,9 @@ bool Editor::Connect(Pin* pin_co, Pin* pin_ci) {
 	// add to the links list
 	links.push_back(Link(parent, pin_co->id, child, pin_ci->id));
 
+	parent->OnPinConnected(pin_in, pin_out);
+	child->OnPinConnected(pin_in, pin_out);
+
 	// give the input pin the default push pattern
 	pin_in->push_id = push_patterns.Default().id;
 
@@ -958,16 +954,15 @@ bool Editor::Connect(Pin* pin_co, Pin* pin_ci) {
 	return true;
 }
 
-bool Editor::Disconnect(Pin* pin_co, Pin* pin_ci) {
-	assert((pin_ci->flags & PinFlags::INPUT) == PinFlags::INPUT);
-	assert((pin_co->flags & PinFlags::OUTPUT) == PinFlags::OUTPUT);
-	assert(pin_co->type == pin_ci->type);
+bool Editor::Disconnect(Pin* pinIn, Pin* pinOut) {
+	assert((pinIn->flags & PinFlags::INPUT) == PinFlags::INPUT);
+	assert((pinOut->flags & PinFlags::OUTPUT) == PinFlags::OUTPUT);
 
-	INode* parent = pin_co->node;
-	INode* child = pin_ci->node;
+	INode* parent = pinOut->node;
+	INode* child = pinIn->node;
 
-	PinInput* pin_in = child->FindPinInput(pin_ci->id);
-	PinOutput* pin_out = parent->FindPinOutput(pin_co->id);
+	PinInput* pin_in = child->FindPinInput(pinIn->id);
+	PinOutput* pin_out = parent->FindPinOutput(pinOut->id);
 	assert(pin_in && pin_out);
 
 	if (pin_in == nullptr || pin_out == nullptr) {
@@ -993,6 +988,9 @@ bool Editor::Disconnect(Pin* pin_co, Pin* pin_ci) {
 		assert(it != links.end());
 		links.erase(it);
 	}
+
+	parent->OnPinDisconnected(pin_in, pin_out);
+	child->OnPinDisconnected(pin_in, pin_out);
 
 	// track if we need to update traversal order
 	bool rearranged = false;

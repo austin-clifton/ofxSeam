@@ -16,8 +16,10 @@ namespace seam::pins {
 
     struct PinConnection {
         PinConnection(PinInput* _input, PinType outputType);
+        void RecacheConverts(PinType outputType);
 
         PinInput* input;
+        PinId inputPinId;
         ConvertSingle convertSingle;
         ConvertMulti convertMulti;
     };

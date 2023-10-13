@@ -1,5 +1,7 @@
 #include "pin.h"
 
+const size_t seam::pins::PinInput::MAX_EVENTS = 16;
+
 namespace seam {
 
 	void Serialize(capnp::List<PinValue, capnp::Kind::STRUCT>::Builder& builder,
@@ -346,6 +348,8 @@ namespace seam::pins {
 			return sizeof(uint32_t);
 		case PinType::NOTE_EVENT:
 			return sizeof(notes::NoteEvent*);
+		case PinType::FBO:
+			return sizeof(ofFbo*);
 		default:
 			throw std::runtime_error("Unknown pin type! You need to provide the element size in bytes yourself.");
 		}

@@ -84,6 +84,7 @@ namespace seam::props {
 				return true;
 			}
 		}
+		case PinType::ANY:
 		case PinType::NOTE_EVENT:
 		case PinType::FBO:
 		{

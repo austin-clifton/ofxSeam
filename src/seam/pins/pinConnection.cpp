@@ -7,6 +7,11 @@
 namespace seam::pins {
     PinConnection::PinConnection(PinInput* _input, PinType outputType) {
         input = _input;
+        inputPinId = input->id;
+        RecacheConverts(outputType);
+    }
+
+    void PinConnection::RecacheConverts(PinType outputType) {
         bool canConvert;
         convertSingle = GetConvertSingle(outputType, input->type, canConvert);
         assert(canConvert);
@@ -14,12 +19,12 @@ namespace seam::pins {
         assert(canConvert);
     }
 
-
     ConvertSingle GetConvertSingle(PinType srcType, PinType dstType, bool& isConvertible) {
         isConvertible = true;
+        const bool dstIsAny = dstType == PinType::ANY;
         // If types match, no conversion is needed and a simple memcpy can be used.
-        if (dstType == srcType) {
-            size_t elementSize = PinTypeToElementSize(dstType);
+        if (dstType == srcType || dstIsAny) {
+            size_t elementSize = PinTypeToElementSize(dstIsAny ? srcType : dstType);
             return [elementSize](void* src, void* dst) { 
                 std::copy((char*)src, (char*)src + elementSize, (char*)dst); 
             };
@@ -34,6 +39,8 @@ namespace seam::pins {
                         return Convert<uint32_t, float>;
                     case PinType::BOOL:
                         return Convert<bool, float>;
+                    case PinType::CHAR:
+                        return Convert<char, float>;
                     default:
                         break;
                 }
@@ -45,6 +52,8 @@ namespace seam::pins {
                         return Convert<uint32_t, int32_t>;
                     case PinType::BOOL:
                         return Convert<bool, int32_t>;
+                    case PinType::CHAR:
+                        return Convert<char, int32_t>;
                     default:
                         break;
                 }
@@ -56,21 +65,35 @@ namespace seam::pins {
                         return Convert<int32_t, bool>;
                     case PinType::UINT:
                         return Convert<uint32_t, bool>;
+                    case PinType::CHAR:
+                        return Convert<char, bool>;
                     default:
                         break;
                 }
             case PinType::UINT:
                 switch (srcType) {
                     case PinType::FLOAT:
-                        return Convert<float, bool>;
+                        return Convert<float, uint32_t>;
                     case PinType::INT:
-                        return Convert<int32_t, bool>;
+                        return Convert<int32_t, uint32_t>;
                     case PinType::BOOL:
-                        return Convert<uint32_t, bool>;
+                        return Convert<bool, uint32_t>;
+                    case PinType::CHAR:
+                        return Convert<char, uint32_t>;
                     default:
                         break;
                 }
-            case PinType::CHAR: // TODO maybe if char converters are actually needed...
+            case PinType::CHAR:
+                switch(srcType) {
+                    case PinType::FLOAT:
+                        return Convert<float, char>;
+                    case PinType::INT:
+                        return Convert<int32_t, char>;
+                    case PinType::BOOL:
+                        return Convert<bool, char>;
+                    case PinType::UINT:
+                        return Convert<uint32_t, char>;
+                }
             default:
                 break;
         }

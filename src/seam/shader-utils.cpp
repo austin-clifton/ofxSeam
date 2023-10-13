@@ -29,7 +29,7 @@ namespace seam::ShaderUtils {
 		std::filesystem::path frag_path = std::filesystem::current_path() / "data/shaders" / frag_name;
 		std::filesystem::path geo_path = geo_name.length() ? std::filesystem::current_path() / "data/shaders" / geo_name : "";
 		if (!shader.load(vert_path, frag_path, geo_path)) {
-			printf("failed to load shader at paths:\n\t%s\t%s\t%s\n", vert_path.c_str(), frag_path.c_str(), geo_path.c_str());
+			printf("failed to load shader at paths:\n\t%ls\t%ls\t%ls\n", vert_path.c_str(), frag_path.c_str(), geo_path.c_str());
 			return false;
 		} else {
 			return true;

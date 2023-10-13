@@ -64,8 +64,10 @@ namespace seam::nodes {
 			: node_name (_name) 
 		{
 			// if quickly creating and destroying nodes this may be a bad idea
-			// but I don't think that's the use case for event nodes...?
+			// but I don't think that's the use case for nodes...?
 			instance_name = std::string(node_name);
+
+			id = IdsDistributor::GetInstance().NextNodeId();
 		}
 
 		virtual ~INode() { }
@@ -84,6 +86,10 @@ namespace seam::nodes {
 		/// to be called during OF's draw() loop
 		/// should be overridden by visual nodes
 		virtual void Draw(DrawParams* params) { }
+
+		virtual void OnPinConnected(pins::PinInput* pinIn, pins::PinOutput* pinOut) { }
+
+		virtual void OnPinDisconnected(pins::PinInput* pinIn, pins::PinOutput* pinOut) { }
 
 		// draw configurable and display-only properties that are internal to the node
 		// and should be exposed for editing.
@@ -157,6 +163,10 @@ namespace seam::nodes {
 				out_parents.push_back(parents[i].node);
 			}
 		}
+
+		/// @brief When the buffer for dynamically alloc'd pin inputs changes, this function needs to be called,
+		/// so that any Connections can re-cache each pointer to the PinInput
+		void RecacheInputConnections();
 
 		// nodes which draw to FBOs can set this member so the FBO is drawn as part of the node's center view.
 		ofFbo* gui_display_fbo = nullptr;

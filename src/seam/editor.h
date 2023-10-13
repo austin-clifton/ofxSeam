@@ -101,7 +101,6 @@ namespace seam {
 		FramePool alloc_pool = FramePool(8192);
 
 		// std::vector<pins::PinId> usedPinIds;
-		pins::PinId nextPinId = 1;
 
 		// list of all the event nodes the graph will draw
 		// this list does not need to be sorted

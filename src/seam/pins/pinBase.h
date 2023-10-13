@@ -1,6 +1,7 @@
 #pragma once
 
 #include "pinTypes.h"
+#include "seam/idsDistributor.h"
 #include <string>
 
 namespace seam::nodes {
@@ -69,7 +70,7 @@ namespace seam::pins {
 
     // base struct for pin types, holds metadata about the pin
     struct Pin {
-        PinId id = 0;
+        PinId id;
 
         PinType type;
 
@@ -87,6 +88,10 @@ namespace seam::pins {
         PinFlags flags = (PinFlags)0;
 
         virtual ~Pin() { }
+
+        Pin() {
+            id = IdsDistributor::GetInstance().NextPinId();
+        }
     };
 
     NodePropertyType PinTypeToPropType(PinType pinType);

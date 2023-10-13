@@ -17,8 +17,8 @@ namespace seam::pins {
     public:
         PinInput() {
             type = PinType::TYPE_NONE;
-            channel.data = nullptr;
-            channel.size = 0;
+            buffer = nullptr;
+            totalElements = 0;
         }
 
         PinInput(PinType _type, 
@@ -37,8 +37,8 @@ namespace seam::pins {
             node = _node;
             isQueue = false;
             flags = (PinFlags)(flags | PinFlags::INPUT);
-            channel.data = _channelsData;
-            channel.size = _channelsSize;
+            buffer = _channelsData;
+            totalElements = _channelsSize;
             sizeInBytes = _elementSizeInBytes;
             pinMetadata = _pinMetadata;
         }
@@ -58,7 +58,7 @@ namespace seam::pins {
             flags = (PinFlags)(flags | PinFlags::INPUT | PinFlags::EVENT_QUEUE);
             pinMetadata = _pinMetadata;
             sizeInBytes = _elementSizeInBytes;
-            eventQueue.data = malloc(sizeInBytes * MAX_EVENTS);
+            buffer = malloc(sizeInBytes * MAX_EVENTS);
         }
 
         PinInput(const std::string_view _name,
@@ -89,8 +89,8 @@ namespace seam::pins {
         /// <param name="size">will be set to the size of the returned array</param>
         /// <returns>An opaque pointer to the array of channels the input Pin owns.</returns>
         void* GetChannels(size_t& size) {
-            size = channel.size;
-            return channel.data;
+            size = totalElements;
+            return buffer;
         }
 
         void* PinMetadata() {
@@ -100,24 +100,34 @@ namespace seam::pins {
         template <typename T>
         inline void PushEvents(T* events, size_t numEvents) {
             assert(isQueue);
-            size_t offset = eventQueue.size * sizeof(T);
-            memcpy_s(((T*)eventQueue.data) + offset, sizeInBytes * MAX_EVENTS - offset, events, numEvents * sizeof(T));
-            eventQueue.size = std::min(MAX_EVENTS, eventQueue.size + numEvents);
+            size_t offset = totalElements * sizeof(T);
+            memcpy_s(((T*)buffer) + offset, sizeInBytes * MAX_EVENTS - offset, events, numEvents * sizeof(T));
+            totalElements = std::min(MAX_EVENTS, totalElements + numEvents);
         }
 
         inline void* GetEvents(size_t& size) {
             assert(isQueue);
-            size = eventQueue.size;
-            return eventQueue.data;
+            size = totalElements;
+            return buffer;
         }
 
         inline void ClearEvents(size_t expected) {
             assert(isQueue);
             // This is just a check in case any multithreading funkiness happens;
             // Pins shouldn't be pushed to outside of an update loop, or events WILL be lost.
-            assert(expected == eventQueue.size);
-            memset(eventQueue.data, 0, eventQueue.size * sizeInBytes);
-            eventQueue.size = 0;
+            assert(expected == totalElements);
+            memset(buffer, 0, totalElements * sizeInBytes);
+            totalElements = 0;
+        }
+
+        /// @brief Bytes needed to contain the input's buffer
+        inline size_t BufferSize() {
+            return sizeInBytes * totalElements;
+        }
+
+        inline void SetBuffer(void* buff, size_t elements) {
+            buffer = buff;
+            totalElements = elements;
         }
 
         inline void FlowCallback() {
@@ -133,17 +143,7 @@ namespace seam::pins {
         PinOutput* connection = nullptr;
 
     private:
-        const size_t MAX_EVENTS = 16;
-
-        struct Channel {
-            void* data;
-            size_t size;
-        };
-
-        struct EventQueue {
-            void* data;
-            size_t size;
-        };
+        const static size_t MAX_EVENTS;
 
         bool isQueue;
 
@@ -153,13 +153,8 @@ namespace seam::pins {
         // Size of each element pointed to by void* members.
         size_t sizeInBytes;
 
-        union {
-            // Only used by non-event non-flow pins.
-            Channel channel;
-
-            // Only used by event queue inputs.
-            EventQueue eventQueue;
-        };
+        void* buffer;
+        size_t totalElements;
 
         // Only used by flow pins. Exists outside the union so the copy constructor can still exist.
         std::function<void(void)> Callback;
