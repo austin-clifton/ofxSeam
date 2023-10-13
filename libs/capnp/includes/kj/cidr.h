@@ -1,4 +1,5 @@
-// Copyright (c) 2017 Sandstorm Development Group, Inc. and contributors
+
+// Copyright (c) 2013-2014 Sandstorm Development Group, Inc. and contributors
 // Licensed under the MIT License:
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -21,26 +22,41 @@
 
 #pragma once
 
-#include <kj/string.h>
-#include <kj/array.h>
-#include <capnp/common.h>
+#include "common.h"
+#include <cstdint>
 
-CAPNP_BEGIN_HEADER
+KJ_BEGIN_HEADER
 
-namespace capnp {
-namespace compiler {
+struct sockaddr;
 
-uint64_t generateChildId(uint64_t parentId, kj::StringPtr childName);
-uint64_t generateGroupId(uint64_t parentId, uint16_t groupIndex);
-uint64_t generateMethodParamsId(uint64_t parentId, uint16_t methodOrdinal, bool isResults);
-// Generate a default type ID for various symbols. These are used only if the developer did not
-// specify an ID explicitly.
-//
-// The returned ID always has the most-significant bit set. The remaining bits are generated
-// pseudo-randomly from the input using an algorithm that should produce a uniform distribution of
-// IDs.
+namespace kj {
 
-}  // namespace compiler
-}  // namespace capnp
+class CidrRange {
+public:
+  CidrRange(StringPtr pattern);
 
-CAPNP_END_HEADER
+  static CidrRange inet4(ArrayPtr<const byte> bits, uint bitCount);
+  static CidrRange inet6(ArrayPtr<const uint16_t> prefix, ArrayPtr<const uint16_t> suffix,
+                         uint bitCount);
+  // Zeros are inserted between `prefix` and `suffix` to extend the address to 128 bits.
+
+  uint getSpecificity() const { return bitCount; }
+
+  bool matches(const struct sockaddr* addr) const;
+  bool matchesFamily(int family) const;
+
+  String toString() const;
+
+private:
+  int family;
+  byte bits[16];
+  uint bitCount;    // how many bits in `bits` need to match
+
+  CidrRange(int family, ArrayPtr<const byte> bits, uint bitCount);
+
+  void zeroIrrelevantBits();
+};
+
+}  // namespace kj
+
+KJ_END_HEADER
