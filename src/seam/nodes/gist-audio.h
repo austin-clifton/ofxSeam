@@ -1,6 +1,6 @@
 #pragma once
 
-#include "i-node.h"
+#include "iNode.h"
 
 // #include "Gist.h"
 
