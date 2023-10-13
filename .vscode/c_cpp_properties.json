@@ -1,0 +1,51 @@
+{
+    "env": {
+        "myDefaultIncludePath": [
+            "${workspaceFolder}/src",
+
+            "${workspaceRoot}/../../../addons/ofxSeam/src/",
+            "${workspaceRoot}/../../../addons/ofxSeam/libs/capnp/includes/",
+            "${workspaceRoot}/../../../libs/openFrameworks/",
+            "${workspaceRoot}/../../../libs/openFrameworks/utils/"
+
+        ],
+        "myCompilerPath": "C:/msys64/ucrt64/bin/gcc.exe"
+    },
+    "configurations": [
+        {
+            "name": "msys64",
+            "intelliSenseMode": "windows-gcc-x64",
+            "cppStandard": "c++17",
+            "cStandard": "c11",
+            "compilerPath": "C:/msys64/ucrt64/bin/gcc.exe",
+            "includePath": [
+                "C:/msys64/ucrt64/include/",
+                "C:/msys64/ucrt64/include/cairo/",
+                "${workspaceFolder}/src",
+                "${workspaceRoot}/../../libs",
+                "${workspaceRoot}/../../addons",
+                "${workspaceRoot}/../../libs/**",
+                "${workspaceRoot}/../../libs/openFrameworks/**",
+                "${workspaceRoot}/../../libs/boost/include",
+                "${workspaceRoot}/../../libs/FreeImage/include",
+                "${workspaceRoot}/../../libs/freetype/include",
+                "${workspaceRoot}/../../libs/glm/include",
+                "${workspaceRoot}/../../libs/json/include",
+                "${workspaceRoot}/../../libs/pugixml/include",
+                "${workspaceRoot}/../../libs/tess2/include",
+                "${workspaceRoot}/../../libs/uriparser/include",
+                "${workspaceRoot}/../../libs/utf8/include",
+                "${workspaceRoot}/../../libs/videoInput/include",
+                "${workspaceRoot}/../../addons/ofxSeam/src/",
+                "${workspaceRoot}/../../libs/openFrameworks/",
+                "${workspaceRoot}/../../addons/ofxSeam/libs/capnp/includes/",
+                "${workspaceRoot}/../../addons/ofxSeam/libs/capnp/includes/",
+                "${workspaceRoot}/../../addons/ofxImGuiNodeEditor/src/**",
+                "${workspaceRoot}/../../addons/ofxImGuiNodeEditor/libs/imgui/src/",
+                "${workspaceRoot}/../../addons/ofxAudioAnalyzer/src/",
+                "${workspaceRoot}/../../addons/ofxAudioAnalyzer/libs/**"
+            ]
+        }
+    ],
+    "version": 4
+}
