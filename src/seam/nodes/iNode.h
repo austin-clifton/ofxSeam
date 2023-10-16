@@ -97,11 +97,11 @@ namespace seam::nodes {
 
 		virtual void GuiDrawNodeCenter();
 
-		virtual std::vector<NodeProperty> GetProperties() {
-			return std::vector<NodeProperty>();
+		virtual std::vector<props::NodeProperty> GetProperties() {
+			return std::vector<props::NodeProperty>();
 		}
 
-		virtual NodeProperty* TryCreateProperty(const std::string& name, NodePropertyType type) {
+		virtual props::NodeProperty* TryCreateProperty(const std::string& name, props::NodePropertyType type) {
 			return nullptr;
 		}
 

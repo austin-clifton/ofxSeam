@@ -14,6 +14,7 @@
 #include "imgui-utils/properties.h"
 #include "nfd.h"
 
+#include "seam/properties/nodeProperty.h"
 #include "seam/pins/pinConnection.h"
 
 using namespace seam;
@@ -218,8 +219,13 @@ void Editor::NewGraph() {
 	visibleNodes.clear();
 	nodesUpdateOverTime.clear();
 	nodesUpdateEveryFrame.clear();
+	audioNodes.clear();
 	links.clear();
 	loaded_file.clear();
+
+	selected_node = nullptr;
+	new_link_pin = nullptr;
+	show_create_dialog = false;
 
 	IdsDistributor::GetInstance().ResetIds();
 }
@@ -301,8 +307,8 @@ void Editor::SaveGraph(const std::string_view filename, const std::vector<INode*
 
 		// Assign unassigned input pins.
 		for (size_t i = 0; i < inputs_size; i++) {
-			assert(false);
 			size_t pin_id = input_pins[i].id;
+			// TODO remove this loop, this shouldn't ever happen anymore!
 			assert(pin_id != 0);
 			if (pin_id == 0) {
 				while (input_pin_map.find(max_input_pin_id) != input_pin_map.end()) {
@@ -316,8 +322,9 @@ void Editor::SaveGraph(const std::string_view filename, const std::vector<INode*
 
 		// Assign unassigned output pins.
 		for (size_t i = 0; i < outputs_size; i++) {
-			assert(false);
 			size_t pin_id = output_pins[i].id;
+			// TODO remove this loop, this shouldn't ever happen anymore!
+			assert(pin_id != 0);
 			if (pin_id == 0) {
 				while (output_pin_map.find(max_output_pin_id) != output_pin_map.end()) {
 					max_output_pin_id++;
@@ -379,7 +386,7 @@ void Editor::SaveGraph(const std::string_view filename, const std::vector<INode*
 			void* channels = pin_in.GetChannels(channels_size);
 			auto channels_builder = input_builder.initChannels(channels_size);
 
-			Serialize(channels_builder, PinTypeToPropType(pin_in.type), channels, channels_size);
+			props::Serialize(channels_builder, PinTypeToPropType(pin_in.type), channels, channels_size);
 		}
 
 		// Serialize output pins
@@ -402,10 +409,13 @@ void Editor::SaveGraph(const std::string_view filename, const std::vector<INode*
 			const auto prop = properties[i];
 			auto propBuilder = propertiesBuilder[i];
 
-			propBuilder.setName(prop.name);
-			auto valuesBuilder = propBuilder.initValues(prop.count);
+			size_t valuesSize;
+			void* propValues = prop.getValues(valuesSize);
 
-			Serialize(valuesBuilder, prop.type, prop.data, prop.count);
+			propBuilder.setName(prop.name);
+			auto valuesBuilder = propBuilder.initValues(valuesSize);
+
+			Serialize(valuesBuilder, prop.type, propValues, valuesSize);
 		}
 	}
 
@@ -497,7 +507,7 @@ void Editor::LoadGraph(const std::string_view filename) {
 					size_t channels_size;
 					void* channels = match->GetChannels(channels_size);
 
-					Deserialize(serialized_channels, PinTypeToPropType(match->type), channels, channels_size);
+					props::Deserialize(serialized_channels, PinTypeToPropType(match->type), channels, channels_size);
 				}
 
 			} else if (dynamicPinsNode != nullptr) {
@@ -546,32 +556,63 @@ void Editor::LoadGraph(const std::string_view filename) {
 
 		// Deserialize properties
 		for (const auto& serializedProperty : serialized_node.getProperties()) {
-			const auto values = serializedProperty.getValues();
+			const auto propValues = serializedProperty.getValues();
 
-			if (!values.size()) {
+			if (!propValues.size()) {
 				continue;
 			}
 
-			NodePropertyType propertyType = pins::SerializedPinTypeToPropType(values[0].which());
+			props::NodePropertyType propertyType = props::SerializedPinTypeToPropType(propValues[0].which());
 
 			// First try to match the property against a known property in the Node's properties list.
 			// Ask for the properties list again after deserializing each property in case the list changed.
 			auto properties = node->GetProperties();
 			for (auto& prop : properties) {
 				if (prop.name == serializedProperty.getName().cStr()) {
-					Deserialize(values, propertyType, prop.data, prop.count);
+					if (prop.type != propertyType) {
+						printf("Serialized Node property %s doesn't have same type as the Node\n", prop.name.c_str());
+					}
+
+					switch (prop.type) {
+						case props::NodePropertyType::PROP_INT: {
+							std::vector<int32_t> values = props::Deserialize<int32_t>(propValues, prop.type);
+							prop.setValues(&values[0], values.size());
+							break;
+						}
+						case props::NodePropertyType::PROP_UINT: {
+							std::vector<uint32_t> values = props::Deserialize<uint32_t>(propValues, prop.type);
+							prop.setValues(&values[0], values.size());
+							break;
+						}
+						case props::NodePropertyType::PROP_FLOAT: {
+							std::vector<float> values = props::Deserialize<float>(propValues, prop.type);
+							prop.setValues(&values[0], values.size());
+							break;
+						}
+						case props::NodePropertyType::PROP_STRING: {
+							std::vector<std::string> values = props::Deserialize<std::string>(propValues, prop.type);
+							prop.setValues(&values[0], values.size());
+							break;
+						}
+						case props::NodePropertyType::PROP_BOOL: {
+							// Can't use std::vector<bool> since it packs data tighter than is desirable here.
+							bool* buff = new bool[propValues.size()];
+							props::Deserialize(propValues, prop.type, buff, propValues.size());
+							prop.setValues(buff, propValues.size());
+							delete[] buff;
+							break;
+						}
+						
+						default: {
+							throw std::logic_error("Node Property type is missing deserialization logic");
+						}
+					}
+				
+					continue;
 				}
 			}
 
-			// No match, the property could be dynamic though. Ask the Node to create it.
-			NodeProperty* prop = node->TryCreateProperty(serializedProperty.getName().cStr(), propertyType);
-			if (prop != nullptr) {
-				Deserialize(values, propertyType, prop->data, prop->count);
-			}
-			else {
-				printf("Serialized Node property %s could not be matched against a known property on Node %s.\n",
-					serializedProperty.getName().cStr(), node->NodeName().data());
-			}
+			// POSSIBLE IMPROVEMENT: is there a use case for PropertyBag here?
 		}
 	}
 

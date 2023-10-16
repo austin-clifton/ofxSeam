@@ -80,15 +80,44 @@ pins::PinOutput* Markov::PinOutputs(size_t& size) {
 	return &pinOutSelection;
 }
 
-std::vector<NodeProperty> Markov::GetProperties() {
+std::vector<props::NodeProperty> Markov::GetProperties() {
+	using namespace seam::props;
+
 	std::vector<NodeProperty> properties;
-	properties.push_back(NodeProperty("States Count", NodePropertyType::PROP_INT, &nodesCount, 1));
+	properties.push_back(
+		SetupIntProperty("States Count", [this](size_t& size) {
+			size = 1;
+			return &nodesCount;
+		}, [this](int32_t* newCount, size_t size) {
+			assert(size == 1);
+			nodesCount = max(2, *newCount);
+			Reconfigure();
+		})
+	);
 
 	for (size_t i = 0; i < markovNodes.size(); i++) {
 		auto& node = markovNodes[i];
 		std::string nodeName = "Node " + std::to_string(i) + " ";
-		properties.push_back(NodeProperty(nodeName + "Duration", NodePropertyType::PROP_FLOAT, &node.duration, 1));
-		properties.push_back(NodeProperty(nodeName + "Weights", NodePropertyType::PROP_FLOAT, node.transitionWeights.data(), node.transitionWeights.size()));
+
+		properties.push_back(
+			SetupFloatProperty(nodeName + "Duration", [this, i](size_t& size) {
+				size = 1;
+				return &markovNodes[i].duration;
+			}, [this, i](float* newDuration, size_t size) {
+				assert(size == 1);
+				markovNodes[i].duration = *newDuration;
+			}) 
+		);
+
+		properties.push_back(
+			SetupFloatProperty(nodeName + "Weights", [this, i](size_t& size) {
+				size = markovNodes[i].transitionWeights.size();
+				return markovNodes[i].transitionWeights.data();
+			}, [this, i](float* newWeights, size_t size) {
+				markovNodes[i].transitionWeights.resize(size);
+				std::copy(newWeights, newWeights + size, markovNodes[i].transitionWeights.data());
+			}) 
+		);
 	}
 
 	return properties;

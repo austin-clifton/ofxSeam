@@ -1,37 +1,12 @@
 #pragma once
 
 #include "pinTypes.h"
+#include "seam/properties/nodeProperty.h"
 #include "seam/idsDistributor.h"
 #include <string>
 
 namespace seam::nodes {
     class INode;
-}
-
-// TODO MOVE ME
-namespace seam {
-    enum NodePropertyType : uint8_t {
-		PROP_BOOL,
-		PROP_CHAR,
-		PROP_FLOAT,
-		PROP_INT,
-		PROP_UINT,
-		PROP_STRING
-	};
-
-	struct NodeProperty {
-		NodeProperty(const std::string& _name, NodePropertyType _type, void* _data, size_t _count) {
-			name = _name;
-			type = _type;
-			data = _data;
-			count = _count;
-		}
-
-		std::string name;
-		NodePropertyType type;
-		void* data;
-		size_t count;
-	};
 }
 
 namespace seam::pins {
@@ -94,6 +69,6 @@ namespace seam::pins {
         }
     };
 
-    NodePropertyType PinTypeToPropType(PinType pinType);
+    props::NodePropertyType PinTypeToPropType(PinType pinType);
     size_t PinTypeToElementSize(PinType type);
 }

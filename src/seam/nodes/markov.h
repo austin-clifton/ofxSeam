@@ -1,6 +1,7 @@
 #pragma once
 
 #include "iNode.h"
+#include "seam/properties/nodeProperty.h"
 
 using namespace seam::pins;
 
@@ -18,7 +19,7 @@ namespace seam::nodes {
 
 		PinOutput* PinOutputs(size_t& size) override;
 
-		std::vector<NodeProperty> GetProperties() override;
+		std::vector<props::NodeProperty> GetProperties() override;
 
 	private:
 		void Reconfigure();
