@@ -66,6 +66,14 @@ namespace {
 			printf("\t\t(%llu, %llu)\n", conn.getOutId(), conn.getInId());
 		}
 	}
+
+	template <typename T>
+	void Erase(std::vector<T*>& v, T* item) {
+		auto it = std::find(v.begin(), v.end(), item);
+		if (it != v.end()) {
+			v.erase(it);
+		}
+	}
 }
 
 Editor::~Editor() {
@@ -859,12 +867,46 @@ void Editor::GuiDraw() {
 			ed::NodeId node_id = 0;
 			while (ed::QueryDeletedNode(&node_id)) {
 				if (ed::AcceptDeletedItem()) {
+					INode* node = node_id.AsPointer<INode>();
 
-					// TODO TODO TODO
+					size_t size;
 
-					/*auto id = std::find_if(s_Nodes.begin(), s_Nodes.end(), [nodeId](auto& node) { return node.ID == nodeId; });
-					if (id != s_Nodes.end())
-						s_Nodes.erase(id);*/
+					// Undo Input connections.
+					PinInput* pinInputs = node->PinInputs(size);
+					for (size_t i = 0; i < size; i++) {
+						if (pinInputs[i].connection != nullptr) {
+							Disconnect(&pinInputs[i], pinInputs[i].connection);
+						}
+					}
+
+					// Undo Output connections.
+					PinOutput* pinOutputs = node->PinOutputs(size);
+					for (size_t i = 0; i < size; i++) {
+						// Loop in reverse since connections will be removed as we go.
+						for (size_t j = pinOutputs[i].connections.size(); j > 0; j--) {
+							Disconnect(pinOutputs[i].connections[j - 1].input, &pinOutputs[i]);
+						}
+					}
+
+					// Remove the Node from whatever lists it's in...
+					Erase(nodes, node);
+					Erase(nodesToDraw, node);
+					Erase(visibleNodes, node);
+					Erase(nodesUpdateEveryFrame, node);
+					Erase(nodesUpdateOverTime, node);
+					
+					IAudioNode* audioNode = dynamic_cast<IAudioNode*>(node);
+					if (audioNode != nullptr) {
+						Erase(audioNodes, audioNode);
+					}
+
+					// If this node is the selected node, unselect.
+					if (selected_node == node) {
+						selected_node = nullptr;
+					}
+
+					// Finally, delete the Node.
+					delete node;
 				}
 			}
 		}

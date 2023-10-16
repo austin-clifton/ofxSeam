@@ -44,9 +44,6 @@ Known issues
 #### GUI Bugs
 - Clicking the top-left arrow in the Seam Editor will cause the editor to collapse and it won't re-expand; `imgui.ini` in your app's `bin/` directory will need to be deleted to restore the editor.
 
-#### GUI Missing Features
-- Nodes can't be deleted yet.
-
 #### Visual Studio Install
 The Visual Studio addon install via the Project Generator seems not to respect options in the `addon_config.mk` file. I am currently unsure if this is due to the addon or OpenFrameworks. To work around this, right click on your project in Visual Studio, go to Properties, and then in the Properties pane:
 - Navigate to "Configuration Properties" --> "C++" --> "Additional Include Directories" and remove all sub-directories of `addons\ofxSeam\libs\capnp\includes`.
