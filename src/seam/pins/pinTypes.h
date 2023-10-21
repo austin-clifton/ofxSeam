@@ -3,10 +3,10 @@
 #include <cstdint>
 
 namespace seam::pins {
-        enum PinType : uint8_t {
+        enum PinType : uint16_t {
         // invalid pin type
         // used internally but should not be used for actual pins
-        TYPE_NONE,
+        TYPE_NONE = 0,
 
         /// @brief Only valid for input pins
         ANY,

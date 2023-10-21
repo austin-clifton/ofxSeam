@@ -7,7 +7,6 @@
 #include <string>
 
 #include "seam/pins/pin.h"
-#include "seam/pins/push.h"
 #include "seam/frame-pool.h"
 
 #include "blueprints/builders.h"
@@ -58,7 +57,7 @@ namespace seam::nodes {
 	};
 
 	/// Base class for all nodes that use the eventing system
-	class INode {
+	class INode : public pins::IInPinnable, public pins::IOutPinnable {
 	public:
 		INode(const char* _name) 
 			: node_name (_name) 
@@ -74,11 +73,17 @@ namespace seam::nodes {
 
 		/// \param size should be set to the size (in elements) of the returned array
 		/// \return a pointer to the array of pointers to pin inputs
-		virtual pins::PinInput* PinInputs(size_t& size) = 0;
+		pins::PinInput* PinInputs(size_t& size) override {
+			size = 0;
+			return nullptr;
+		}
 
 		/// \param size should be set to the size (in elements) of the returned array
 		/// \return a pointer to the array of pin outputs
-		virtual pins::PinOutput* PinOutputs(size_t& size) = 0;
+		pins::PinOutput* PinOutputs(size_t& size) override {
+			size = 0;
+			return nullptr;
+		}
 
 		/// to be called during OF's update() loop
 		virtual void Update(UpdateParams* params) { }
@@ -105,7 +110,9 @@ namespace seam::nodes {
 			return nullptr;
 		}
 
-		void GuiDraw( ed::Utilities::BlueprintNodeBuilder& builder );
+		void GuiDrawInputPin(ed::Utilities::BlueprintNodeBuilder& builder, pins::PinInput* inPin);
+		void GuiDrawOutputPin(ed::Utilities::BlueprintNodeBuilder& builder, pins::PinOutput* outPin);
+		void GuiDraw(ed::Utilities::BlueprintNodeBuilder& builder);
 
 		inline NodeFlags Flags() {
 			return flags;
@@ -219,14 +226,28 @@ namespace seam::nodes {
 	/// </summary>
 	class IDynamicPinsNode : public INode {
 	public:
+		struct PinInArgs {
+			PinInArgs(pins::PinType _type, const std::string_view _name, size_t _channelsSize, size_t _index) {
+				type = _type;
+				name = _name;
+				channelsSize = _channelsSize;
+				index = _index;
+			}
+
+			pins::PinType type;
+			std::string_view name;
+			size_t channelsSize;
+			size_t index;
+		};
+
 		IDynamicPinsNode(const char* name) : INode(name) {
 
 		}
 
 		virtual ~IDynamicPinsNode() { }
 
-		virtual pins::PinInput* AddPinIn(pins::PinType type, const std::string_view name, size_t elementSize, size_t elementCount) = 0;
-		virtual pins::PinOutput* AddPinOut(pins::PinOutput&& pinOut) = 0;
+		virtual pins::PinInput* AddPinIn(PinInArgs args) = 0;
+		virtual pins::PinOutput* AddPinOut(pins::PinOutput&& pinOut, size_t index) = 0;
 	};
 
 	/// <summary>

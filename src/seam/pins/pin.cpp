@@ -245,4 +245,30 @@ namespace seam::pins {
 			throw std::runtime_error("Unknown pin type! You need to provide the element size in bytes yourself.");
 		}
 	}
+
+	PinInput* FindPinInByName(PinInput* pins, size_t pinsSize, std::string_view name) {
+		return std::find_if(pins, pins + pinsSize, [name](const PinInput& pin_in) {
+			std::string name_copy = pin_in.name;
+			std::transform(name_copy.begin(), name_copy.end(), name_copy.begin(), [](unsigned char c) {return std::tolower(c); });
+			return name_copy == name;
+		});
+	}
+
+	PinInput* FindPinInByName(IInPinnable* pinnable, std::string_view name) {
+		size_t size;
+		PinInput* pins = pinnable->PinInputs(size);
+		return FindPinInByName(pins, size, name);
+	}
+
+	PinOutput* FindPinOutByName(PinOutput* pins, size_t pinsSize, std::string_view name) {
+		return std::find_if(pins, pins + pinsSize, [name](const PinOutput& pin_out) 
+			{ return name == pin_out.name; }
+		);
+	}
+	
+	PinOutput* FindPinOutByName(IOutPinnable* pinnable, std::string_view name) {
+		size_t size;
+		PinOutput* pins = pinnable->PinOutputs(size);
+		return FindPinOutByName(pins, size, name);
+	}
 }

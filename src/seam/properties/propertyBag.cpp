@@ -110,4 +110,5 @@ PropertyBag::Property<T> PropertyBag::GetProperty(
 
         return prop;
     }
+    return Property<T>();
 }

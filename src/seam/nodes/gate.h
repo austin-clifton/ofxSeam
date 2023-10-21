@@ -16,9 +16,9 @@ namespace seam::nodes {
 
 		PinOutput* PinOutputs(size_t& size) override;
 
-		PinInput* AddPinIn(PinType type, const std::string_view name, size_t elementSize, size_t elementCount) override;
+		PinInput* AddPinIn(PinInArgs args) override;
 		
-		PinOutput* AddPinOut(PinOutput&& pinOut) override;
+		PinOutput* AddPinOut(PinOutput&& pinOut, size_t index) override;
 
 		bool GuiDrawPropertiesList() override;
 

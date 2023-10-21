@@ -117,14 +117,22 @@ NodeProperty SetupFloatProperty(std::string&& name,
 }
 
 NodeProperty SetupIntProperty(std::string&& name, 
-    std::function<int*(size_t&)> getter, std::function<void(int*, size_t)> setter)
+    std::function<int32_t*(size_t&)> getter, std::function<void(int32_t*, size_t)> setter)
 {
-    // Wrap the type-specific getter and setter around getters and setters that accept void*.
-    // This isn't cheap, but properties are meant to be convenient, not fast...
     return NodeProperty(std::move(name), NodePropertyType::PROP_INT, [getter](size_t& size) -> void* {
         return getter(size);
     }, [setter](void* data, size_t size) {
-        setter((int*)data, size);
+        setter((int32_t*)data, size);
+    });
+}
+
+NodeProperty SetupUintProperty(std::string&& name, 
+    std::function<uint32_t*(size_t&)> getter, std::function<void(uint32_t*, size_t)> setter)
+{
+    return NodeProperty(std::move(name), NodePropertyType::PROP_UINT, [getter](size_t& size) -> void* {
+        return getter(size);
+    }, [setter](void* data, size_t size) {
+        setter((uint32_t*)data, size);
     });
 }
 

@@ -74,6 +74,132 @@ namespace {
 			v.erase(it);
 		}
 	}
+
+	using PinInputsBuilder 	= ::capnp::List<::seam::schema::PinIn, ::capnp::Kind::STRUCT>::Builder;
+	using PinOutputsBuilder = ::capnp::List<::seam::schema::PinOut, ::capnp::Kind::STRUCT>::Builder;
+	using PinInputsReader	= ::capnp::List<::seam::schema::PinIn, ::capnp::Kind::STRUCT>::Reader;
+	using PinOutputsReader 	= ::capnp::List<::seam::schema::PinOut, ::capnp::Kind::STRUCT>::Reader;
+
+	void SerializePinInputsList(PinInputsBuilder& inputsBuilder, PinInput* inputs, size_t size) 
+	{
+		// Serialize input pins
+		for (size_t i = 0; i < size; i++) {
+			auto& pinIn = inputs[i];
+			auto builder = inputsBuilder[i];
+			builder.setName(pinIn.name);
+			builder.setId(pinIn.id);
+
+			size_t childrenSize;
+			PinInput* children = pinIn.PinInputs(childrenSize);
+
+			if (childrenSize > 0) {
+				auto serializedChildren = builder.initChildren(childrenSize);
+				SerializePinInputsList(serializedChildren, children, childrenSize);
+			}
+
+			// Don't serialize channels if this input type doesn't have serializable state
+			if (pinIn.type == PinType::FLOW
+				|| pinIn.type == PinType::FBO
+				|| pinIn.type == PinType::MATERIAL
+				|| pinIn.type == PinType::NOTE_EVENT
+			) {
+				continue;
+			}
+
+			size_t channelsSize;
+			void* channels = pinIn.GetChannels(channelsSize);
+			auto channelsBuilder = builder.initChannels(channelsSize);
+
+			props::Serialize(channelsBuilder, PinTypeToPropType(pinIn.type), channels, channelsSize);
+		}
+	}
+
+	void SerializePinOutputsList(PinOutputsBuilder& outputsBuilder, PinOutput* outputs, size_t size,
+		std::vector<std::pair<PinId, PinId>>& connections) 
+	{
+		for (size_t i = 0; i < size; i++) {
+			auto pinOut = outputs[i];
+			auto builder = outputsBuilder[i];
+
+			builder.setId(pinOut.id);
+			builder.setName(pinOut.name);
+
+			// Remember what connections this output has so we can serialize all the connections after this loop.
+			for (size_t conn_index = 0; conn_index < pinOut.connections.size(); conn_index++) {
+				auto& conn = pinOut.connections[conn_index];
+				connections.push_back(std::make_pair(pinOut.id, conn.input->id));
+			}
+						
+			size_t childrenSize;
+			PinOutput* children = pinOut.PinOutputs(childrenSize);
+			if (childrenSize > 0) {
+				auto serializedChildren = builder.initChildren(childrenSize);
+				SerializePinOutputsList(serializedChildren, children, childrenSize, connections);
+			}
+		}
+	}
+
+	void DeserializePinInput(const seam::schema::PinIn::Reader& serializedPin, PinInput* pinIn) {
+		pinIn->id = serializedPin.getId();
+		const auto serializedChannels = serializedPin.getChannels();
+
+		if (serializedChannels.size()) {
+			size_t channels_size;
+			void* channels = pinIn->GetChannels(channels_size);
+
+			props::Deserialize(serializedChannels, PinTypeToPropType(pinIn->type), channels, channels_size);
+		}
+
+		size_t childrenSize;
+		PinInput* children = pinIn->PinInputs(childrenSize);
+
+		for (const auto& child : serializedPin.getChildren()) {
+			PinInput* match = FindPinInByName(children, childrenSize, child.getName().cStr());
+			if (match != children + childrenSize) {
+				DeserializePinInput(child, match);
+			}
+		}
+	}
+
+	PinId UpdatePinMap(PinInput* pinIn, std::map<PinId, Pin*>& pinMap) {
+		pinMap.emplace(pinIn->id, pinIn);
+		size_t maxId = pinIn->id;
+
+		size_t childrenSize;
+		PinInput* children = pinIn->PinInputs(childrenSize);
+		for (size_t i = 0; i < childrenSize; i++) {
+			maxId = std::max(UpdatePinMap(&children[i], pinMap), maxId);
+		}
+
+		return maxId;
+	}
+
+	PinId UpdatePinMap(PinOutput* pinOut, std::map<PinId, Pin*>& pinMap) {
+		pinMap.emplace(pinOut->id, pinOut);
+		size_t maxId = pinOut->id;
+
+		size_t childrenSize;
+		PinOutput* children = pinOut->PinOutputs(childrenSize);
+		for (size_t i = 0; i < childrenSize; i++) {
+			maxId = std::max(UpdatePinMap(&children[i], pinMap), maxId);
+		}
+
+		return maxId;
+	}
+
+	void DeserializePinOutput(const seam::schema::PinOut::Reader& serializedPin, PinOutput* pinOut) {
+		pinOut->id = serializedPin.getId();
+		
+		size_t childrenSize;
+		PinOutput* children = pinOut->PinOutputs(childrenSize);
+
+		for (const auto& child : serializedPin.getChildren()) {
+			PinOutput* match = FindPinOutByName(children, childrenSize, child.getName().cStr());
+			if (match != children + childrenSize) {
+				DeserializePinOutput(child, match);
+			}
+		}
+	}
 }
 
 Editor::~Editor() {
@@ -235,6 +361,8 @@ void Editor::NewGraph() {
 	new_link_pin = nullptr;
 	show_create_dialog = false;
 
+	ed::ClearSelection();
+
 	IdsDistributor::GetInstance().ResetIds();
 }
 
@@ -242,8 +370,8 @@ void Editor::SaveGraph(const std::string_view filename, const std::vector<INode*
 	// Build maps of IDs to nodes, input pins, and output pins.
 	// ID assignment will happen now for anything that isn't already assigned.
 	std::map<seam::nodes::NodeId, INode*> node_map;
-	std::map<seam::pins::PinId, PinInput*> input_pin_map;
-	std::map<seam::pins::PinId, PinOutput*> output_pin_map;
+	std::map<seam::pins::PinId, Pin*> input_pin_map;
+	std::map<seam::pins::PinId, Pin*> output_pin_map;
 	seam::nodes::NodeId max_node_id = 1;
 	seam::pins::PinId max_input_pin_id = 1, max_output_pin_id = 1;
 
@@ -267,31 +395,12 @@ void Editor::SaveGraph(const std::string_view filename, const std::vector<INode*
 
 			// Find assigned input pin IDs.
 			for (size_t i = 0; i < inputs_size; i++) {
-				size_t pin_id = input_pins[i].id;
-				if (pin_id != 0) {
-					if (input_pin_map.find(pin_id) != input_pin_map.end()) {
-						assert(0);
-						printf("[Serialization]: Input pin has ID matching another input pin, clearing this Pin's ID. This shouldn't happen!\n");
-						input_pins[i].id = 0;
-					} else {
-						input_pin_map.emplace(std::make_pair(pin_id, &input_pins[i]));
-						max_input_pin_id = std::max(pin_id, max_input_pin_id);
-					}
-				} 
+				UpdatePinMap(&input_pins[i], input_pin_map);
 			}
 
 			// Find assigned output pin IDs.
 			for (size_t i = 0; i < outputs_size; i++) {
-				size_t pin_id = output_pins[i].id;
-				if (pin_id != 0) {
-					if (output_pin_map.find(pin_id) != output_pin_map.end()) {
-						printf("[Serialization]: Output pin has ID matching another output pin, clearing this Pin's ID. This shouldn't happen!\n");
-						output_pins[i].id = 0;
-					} else {
-						output_pin_map.emplace(std::make_pair(pin_id, &output_pins[i]));
-						max_output_pin_id = std::max(pin_id, max_output_pin_id);
-					}
-				}
+				UpdatePinMap(&output_pins[i], output_pin_map);
 			}
 		}
 	}
@@ -300,6 +409,7 @@ void Editor::SaveGraph(const std::string_view filename, const std::vector<INode*
 	for (size_t i = 0; i < nodes_to_save.size(); i++) {
 		auto node_id = nodes_to_save[i]->id;
 		// Find the next available ID if unassigned.
+		assert(node_id != 0);
 		if (node_id == 0) {
 			while (node_map.find(max_node_id) != node_map.end()) {
 				max_node_id++;
@@ -374,43 +484,8 @@ void Editor::SaveGraph(const std::string_view filename, const std::vector<INode*
 		auto outputs_builder = node_builder.initOutputPins(outputs_size);
 		auto propertiesBuilder = node_builder.initProperties(properties.size());
 
-		// Serialize input pins
-		for (size_t i = 0; i < inputs_size; i++) {
-			auto& pin_in = input_pins[i];
-			auto input_builder = inputs_builder[i];
-			input_builder.setName(pin_in.name);
-			input_builder.setId(pin_in.id);
-
-			// Bail out of channel serialization if this input type doesn't have serializable state
-			if (pin_in.type == PinType::FLOW
-				|| pin_in.type == PinType::FBO
-				|| pin_in.type == PinType::MATERIAL
-				|| pin_in.type == PinType::NOTE_EVENT
-			) {
-				continue;
-			}
-
-			size_t channels_size;
-			void* channels = pin_in.GetChannels(channels_size);
-			auto channels_builder = input_builder.initChannels(channels_size);
-
-			props::Serialize(channels_builder, PinTypeToPropType(pin_in.type), channels, channels_size);
-		}
-
-		// Serialize output pins
-		for (size_t i = 0; i < outputs_size; i++) {
-			auto pin_out = output_pins[i];
-			auto output_builder = outputs_builder[i];
-
-			output_builder.setId(pin_out.id);
-			output_builder.setName(pin_out.name);
-
-			// Remember what connections this output has so we can serialize all the connections after this loop.
-			for (size_t conn_index = 0; conn_index < pin_out.connections.size(); conn_index++) {
-				auto& conn = pin_out.connections[conn_index];
-				connections.push_back(std::make_pair(pin_out.id, conn.input->id));
-			}
-		}
+		SerializePinInputsList(inputs_builder, input_pins, inputs_size);
+		SerializePinOutputsList(outputs_builder, output_pins, outputs_size, connections);
 
 		// Serialize properties
 		for (size_t i = 0; i < properties.size(); i++) {
@@ -490,53 +565,45 @@ void Editor::LoadGraph(const std::string_view filename) {
 		auto dynamicPinsNode = dynamic_cast<IDynamicPinsNode*>(node);
 
 		// Deserialize inputs
+		uint32_t inputIndex = 0;
 		for (const auto& serialized_pin_in : serialized_node.getInputPins()) {
 			std::string serialized_pin_name = serialized_pin_in.getName().cStr();
 			std::transform(serialized_pin_name.begin(), serialized_pin_name.end(), serialized_pin_name.begin(), 
 				[](unsigned char c) {return std::tolower(c); });
 
 			// Try to find an input pin on the node with a matching name.
-			auto matchPos = std::find_if(input_pins, input_pins + inputs_size, [serialized_pin_name](const PinInput& pin_in) {
-				std::string name_copy = pin_in.name;
-				std::transform(name_copy.begin(), name_copy.end(), name_copy.begin(), [](unsigned char c) {return std::tolower(c); });
-				return name_copy == serialized_pin_name;
-			});
+			auto matchPos = FindPinInByName(input_pins, inputs_size, serialized_pin_name);
 
 			const auto serialized_channels = serialized_pin_in.getChannels();
 
 			if (matchPos != (input_pins + inputs_size)) {
 				PinInput* match = matchPos;
-				match->id = serialized_pin_in.getId();
-				maxPinId = std::max(match->id, maxPinId);
-
-				input_pin_map.emplace(std::make_pair(match->id, match));
-
-				if (serialized_channels.size()) {
-					size_t channels_size;
-					void* channels = match->GetChannels(channels_size);
-
-					props::Deserialize(serialized_channels, PinTypeToPropType(match->type), channels, channels_size);
-				}
+				DeserializePinInput(serialized_pin_in, match);
+				maxPinId = std::max(maxPinId, UpdatePinMap(match, input_pin_map));
 
 			} else if (dynamicPinsNode != nullptr) {
-				PinType pinType = SerializedPinTypeToPinType(serialized_channels[0].which());
-				PinInput* added = dynamicPinsNode->AddPinIn(pinType, serialized_pin_name,
-					PinTypeToElementSize(pinType), serialized_channels.size());
+				PinType pinType = (PinType)serialized_pin_in.getType();
+				IDynamicPinsNode::PinInArgs pinArgs(pinType, serialized_pin_name, 
+					serialized_channels.size(), inputIndex);
+
+				PinInput* added = dynamicPinsNode->AddPinIn(pinArgs);
 
 				if (added == nullptr) {
 					printf("Dynamic Pins Node %s refused to add a pin named %s\n",
 						node->NodeName().data(), serialized_pin_name.c_str());
 				} else {
+					maxPinId = std::max(maxPinId, UpdatePinMap(added, input_pin_map));
+
 					// Refresh the input pins list!
-					added->id = serialized_pin_in.getId();
 					input_pins = node->PinInputs(inputs_size);
-					input_pin_map.emplace(std::make_pair(added->id, added));
 				}
 
 			} else {
 				printf("Could not match serialized input pin with name %s on node %s\n", 
 					serialized_pin_name.c_str(), serialized_node.getDisplayName().cStr());
 			}
+
+			inputIndex += 1;
 		}
 
 		// Deserialize outputs
@@ -549,13 +616,11 @@ void Editor::LoadGraph(const std::string_view filename) {
 			);
 
 			if (match != (output_pins + outputs_size)) {
-				match->id = serialized_pin_out.getId();
-				maxPinId = std::max(match->id, maxPinId);
-				output_pin_map.emplace(std::make_pair(match->id, (Pin*)match));
-			} else if (dynamicPinsNode != nullptr) {
-				// TODO....
-				throw std::runtime_error("oh shit I should implement this.....");
+				DeserializePinOutput(serialized_pin_out, match);
+				maxPinId = std::max(maxPinId, UpdatePinMap(match, output_pin_map));
 
+			} else if (dynamicPinsNode != nullptr) {
+				assert(false);//shit shit dooo me ples
 			} else {
 				printf("Could not match serialized output pin with name %s on node %s\n",
 					pin_name.data(), serialized_node.getDisplayName().cStr());
@@ -626,8 +691,10 @@ void Editor::LoadGraph(const std::string_view filename) {
 
 	// Now add any valid connections.
 	for (const auto& conn : node_graph.getConnections()) {
-		auto output_pin = output_pin_map.find(conn.getOutId());
-		auto input_pin = input_pin_map.find(conn.getInId());
+		size_t outId = conn.getOutId();
+		size_t inId = conn.getInId();
+		auto output_pin = output_pin_map.find(outId);
+		auto input_pin = input_pin_map.find(inId);
 		if (input_pin != input_pin_map.end() && output_pin != output_pin_map.end()) {
 			if (input_pin->second->type != output_pin->second->type) {
 				continue;

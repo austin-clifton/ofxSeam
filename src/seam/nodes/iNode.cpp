@@ -34,14 +34,14 @@ namespace {
 		}
 	};
 
-	void DrawPinIcon(const Pin& pin, bool connected, float alpha)
+	void DrawPinIcon(PinType type, bool connected, float alpha)
 	{
 		using IconType = ax::Drawing::IconType;
 
 		IconType icon_type;
-		ImColor color = GetIconColor(pin.type);
+		ImColor color = GetIconColor(type);
 		color.Value.w = alpha;
-		switch (pin.type) {
+		switch (type) {
 		case PinType::FLOW:		    icon_type = IconType::Flow;   break;
 		case PinType::BOOL:			icon_type = IconType::Circle; break;
 		case PinType::INT:			icon_type = IconType::Circle; break;
@@ -126,7 +126,65 @@ void INode::SetDirty() {
 	}
 }
 
-void INode::GuiDraw( ed::Utilities::BlueprintNodeBuilder& builder ) {
+void INode::GuiDrawInputPin(ed::Utilities::BlueprintNodeBuilder& builder, pins::PinInput* pinIn) 
+{
+	builder.Input((ed::PinId)pinIn);
+
+	// Check if this Pin has children to be drawn.
+	size_t childrenSize;
+	PinInput* children = pinIn->PinInputs(childrenSize);
+	bool showChildren = false;
+
+	DrawPinIcon(pinIn->type, pinIn->connection != nullptr, 1.0f);
+	ImGui::Spring(0.f);
+
+	if (childrenSize > 0) {
+		showChildren = ImGui::TreeNode(pinIn->name.data());
+	} else {
+		ImGui::TextUnformatted(pinIn->name.data());
+	}
+
+	ImGui::Spring(0.f);
+	builder.EndInput();
+
+	if (showChildren) {
+		for (size_t i = 0; i < childrenSize; i++) {
+			GuiDrawInputPin(builder, &children[i]);
+		}
+		ImGui::TreePop();
+	}
+}
+
+void INode::GuiDrawOutputPin(ed::Utilities::BlueprintNodeBuilder& builder, pins::PinOutput* pinOut) 
+{
+	builder.Output((ed::PinId)pinOut);
+
+	// Check if this Pin has children to be drawn.
+	size_t childrenSize;
+	PinOutput* children = pinOut->PinOutputs(childrenSize);
+	bool showChildren = false;
+
+	DrawPinIcon(pinOut->type, pinOut->connections.size() > 0, 1.0f);
+	ImGui::Spring(0.f);
+
+	if (childrenSize > 0) {
+		showChildren = ImGui::TreeNode(pinOut->name.data());
+	} else {
+		ImGui::TextUnformatted(pinOut->name.data());
+	}
+
+	ImGui::Spring(0.f);
+	builder.EndOutput();
+
+	if (showChildren) {
+		for (size_t i = 0; i < childrenSize; i++) {
+			GuiDrawOutputPin(builder, &children[i]);
+		}
+		ImGui::TreePop();
+	}
+}
+
+void INode::GuiDraw(ed::Utilities::BlueprintNodeBuilder& builder) {
 	builder.Begin(ed::NodeId(this));
 
 	size_t size;
@@ -138,40 +196,18 @@ void INode::GuiDraw( ed::Utilities::BlueprintNodeBuilder& builder ) {
 	ImGui::Dummy(ImVec2(0, 28));
 	builder.EndHeader();
 
-	// draw input pins
 	PinInput* inputs = PinInputs(size);
 	for (size_t i = 0; i < size; i++) {
-		// TODO push alpha when new links are being created
-		// ImGui::PushStyleVar(ImGuiStyleVar_Alpha, alpha);
-
-		builder.Input((ed::PinId)&inputs[i]);
-		
-		DrawPinIcon(inputs[i], inputs[i].connection != nullptr, 1.0f);
-		ImGui::Spring(0.f);
-		ImGui::TextUnformatted(inputs[i].name.data());
-		ImGui::Spring(0.f);
-
-		builder.EndInput();
+		GuiDrawInputPin(builder, &inputs[i]);
 	}
 
 	// draw the node's center
 	builder.Middle();
 	GuiDrawNodeCenter();
 
-	// draw the output pins
 	PinOutput* outputs = PinOutputs(size);
 	for (size_t i = 0; i < size; i++) {
-		// TODO alpha again
-
-		builder.Output((ed::PinId)&outputs[i]);
-
-		ImGui::Spring(0.f);
-		ImGui::TextUnformatted(outputs[i].name.data());
-		ImGui::Spring(0.f);
-		DrawPinIcon(outputs[i], outputs[i].connections.size() > 0, 1.0f);
-
-
-		builder.EndOutput();
+		GuiDrawOutputPin(builder, &outputs[i]);
 	}
 
 	builder.End();
@@ -188,25 +224,11 @@ void INode::GuiDrawNodeCenter() {
 }
 
 pins::PinInput* INode::FindPinInput(PinId id) {
-	size_t size;
-	pins::PinInput* pins = PinInputs(size);
-	for (size_t i = 0; i < size; i++) {
-		if (pins[i].id == id) {
-			return &pins[i];
-		}
-	}
-	return nullptr;
+	return IInPinnable::FindPinIn(this, id);
 }
 
 pins::PinOutput* INode::FindPinOutput(PinId id) {
-	size_t size;
-	pins::PinOutput* pins = PinOutputs(size);
-	for (size_t i = 0; i < size; i++) {
-		if (pins[i].id == id) {
-			return &pins[i];
-		}
-	}
-	return nullptr;
+	return IOutPinnable::FindPinOut(this, id);
 }
 
 void INode::RecacheInputConnections() {

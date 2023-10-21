@@ -46,6 +46,9 @@ namespace seam::props {
 	NodeProperty SetupIntProperty(std::string&& name, 
 		std::function<int32_t*(size_t&)> getter, std::function<void(int32_t*, size_t)> setter);
 
+	NodeProperty SetupUintProperty(std::string&& name, 
+		std::function<uint32_t*(size_t&)> getter, std::function<void(uint32_t*, size_t)> setter);
+
 	void Deserialize(const ValuesReader& serializedValues, 
 		NodePropertyType type, void* dstBuff, size_t dstElementsCount);
 

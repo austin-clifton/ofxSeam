@@ -41,7 +41,6 @@ void Markov::Update(UpdateParams* params) {
 		float currentStateF = currentState;
 
 		params->push_patterns->Push(pinOutSelection, &currentState, 1);
-		params->push_patterns->Push(PinOutSelectionF, &currentStateF, 1);
 		params->push_patterns->PushFlow(pinOutChangedEvent);
 		currentStateDuration = 0.f;
 	}

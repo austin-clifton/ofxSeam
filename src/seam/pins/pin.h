@@ -13,6 +13,8 @@
 #include "seam/pins/pinTypes.h"
 #include "seam/pins/pinInput.h"
 #include "seam/pins/pinOutput.h"
+#include "seam/pins/iInPinnable.h"
+#include "seam/pins/iOutPinnable.h"
 #include "seam/pins/pinConnection.h"
 #include "seam/pins/push.h"
 
@@ -95,6 +97,31 @@ namespace seam {
 			PinFlags flags = PinFlags::FLAGS_NONE,
 			void* userp = nullptr
 		);
+		
+		PinInput* FindPinInByName(PinInput* pins, size_t pinsSize, std::string_view name);
+
+		PinInput* FindPinInByName(IInPinnable* pinnable, std::string_view name);
+
+		PinOutput* FindPinOutByName(PinOutput* pins, size_t pinsSize, std::string_view name);
+		
+		PinOutput* FindPinOutByName(IOutPinnable* pinnable, std::string_view name);
+
+		class Vec2PinInput {
+        public:
+            PinInput SetupVec2Pin(nodes::INode* node, glm::vec2& v, std::string_view name) {
+                childPins = {
+                    pins::SetupInputPin(PinType::FLOAT, node, &v.x, 1, "X"),
+                    pins::SetupInputPin(PinType::FLOAT, node, &v.y, 1, "Y"),
+                };
+
+                PinInput pinIn = pins::SetupInputPin(PinType::FLOAT, node, &v, 2, name);
+                pinIn.SetChildren(childPins.data(), childPins.size());
+                return pinIn;
+            }
+
+        private:
+            std::array<pins::PinInput, 2> childPins;
+        };
 
 		/// Queries a linked shader program's active uniforms and creates a PinInput list from them.
 		/// \param shader The linked shader program to query the uniforms of.

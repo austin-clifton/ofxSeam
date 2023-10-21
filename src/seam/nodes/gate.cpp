@@ -37,13 +37,13 @@ pins::PinOutput* Gate::PinOutputs(size_t& size) {
 	return &pinOutSelection;
 }
 
-pins::PinInput* Gate::AddPinIn(PinType type, const std::string_view name, size_t elementSize, size_t elementCount) {
+pins::PinInput* Gate::AddPinIn(PinInArgs args) {
 	// Expect gate value input pins.
-	assert(type == PinType::FLOAT && elementCount == 1 && elementSize == sizeof(float));
-	return AddGatePin(name);
+	assert(args.type == PinType::FLOAT && args.channelsSize == 1);
+	return AddGatePin(args.name);
 }
 
-pins::PinOutput* Gate::AddPinOut(PinOutput&& pinOut) {
+pins::PinOutput* Gate::AddPinOut(PinOutput&& pinOut, size_t index) {
 	// No dynamic outputs expected.
 	return nullptr;
 }

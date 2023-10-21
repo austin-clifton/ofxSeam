@@ -9,8 +9,10 @@ struct Vector2 {
 }
 
 struct PinOut {
-    name @0 :Text;
-    id @1 :UInt64;
+    name        @0 :Text;
+    id          @1 :UInt64;
+    type        @2 :UInt16;
+    children    @3 :List(PinOut);
 }
 
 struct PinValue {
@@ -24,35 +26,36 @@ struct PinValue {
 }
 
 struct PinIn {
-    name @0 :Text;
-    id @1 :UInt64;
-
-    channels @2 :List(PinValue);
+    name        @0 :Text;
+    id          @1 :UInt64;
+    channels    @2 :List(PinValue);
+    type        @3 :UInt16;
+    children    @4 :List(PinIn);
 }
 
 struct Property {
-    name @0 :Text;
-    values @1 :List(PinValue);
+    name    @0 :Text;
+    values  @1 :List(PinValue);
 }
 
 struct Node {
-    position @0 :Vector2;
+    position    @0 :Vector2;
     displayName @1 :Text;
-    nodeName @2 :Text;
-    id @3 :UInt64;
+    nodeName    @2 :Text;
+    id          @3 :UInt64;
     
-    inputPins @4 :List(PinIn);
-    outputPins @5 :List(PinOut);
-    properties @6 :List(Property);
+    inputPins   @4 :List(PinIn);
+    outputPins  @5 :List(PinOut);
+    properties  @6 :List(Property);
 }
 
 struct PinConnection {
-    outId @0 :UInt64;
-    inId @1 :UInt64;
+    outId   @0 :UInt64;
+    inId    @1 :UInt64;
 }
 
 struct NodeGraph {
-    nodes @0 :List(Node);
+    nodes       @0 :List(Node);
     connections @1 :List(PinConnection);
-    name @2 :Text;
+    name        @2 :Text;
 }

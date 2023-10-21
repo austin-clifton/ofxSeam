@@ -8,12 +8,13 @@
 
 #include "pinBase.h"
 #include "pinTypes.h"
+#include "seam/pins/iInPinnable.h"
 
 namespace seam::pins {
 
     class PinOutput;
 
-    class PinInput : public Pin {
+    class PinInput final : public Pin, public IInPinnable {
     public:
         PinInput() {
             type = PinType::TYPE_NONE;
@@ -135,6 +136,16 @@ namespace seam::pins {
             Callback();
         }
 
+        PinInput* PinInputs(size_t &size) override {
+            size = childrenSize;
+            return childInputs;
+        }
+
+        void SetChildren(PinInput* _childInputs, size_t _childrenSize) {
+            childInputs = _childInputs;
+            childrenSize = _childrenSize;
+        }
+
         /// push pattern id
         PushId push_id;
 
@@ -155,6 +166,9 @@ namespace seam::pins {
 
         void* buffer;
         size_t totalElements;
+
+        PinInput* childInputs = nullptr;
+        size_t childrenSize = 0;
 
         // Only used by flow pins. Exists outside the union so the copy constructor can still exist.
         std::function<void(void)> Callback;
