@@ -700,7 +700,7 @@ void Editor::LoadGraph(const std::string_view filename) {
 				continue;
 			}
 			
-			Connect(output_pin->second, input_pin->second);
+			Connect((PinInput*)input_pin->second, (PinOutput*)output_pin->second);
 		}
 	}
 
@@ -726,7 +726,7 @@ void Editor::DrawSelectedNode() {
 
 void Editor::GuiDraw() {
 
-	im::Begin("Seam Editor", nullptr, ImGuiWindowFlags_MenuBar);
+	im::Begin("Seam Editor", nullptr, ImGuiWindowFlags_MenuBar | ImGuiWindowFlags_NoCollapse);
 
 	if (ImGui::BeginMenuBar()) {
 
@@ -853,7 +853,7 @@ void Editor::GuiDraw() {
 					if (canConvert || pin_in->type == PinType::ANY) {
 						showLabel("+ Create Link", ImColor(32, 45, 32, 180));
 						if (ed::AcceptNewItem(ImColor(128, 255, 128), 4.0f)) {
-							bool connected = Connect(pin_out, pin_in);
+							bool connected = Connect((PinInput*)pin_in, (PinOutput*)pin_out);
 							assert(connected);
 						}
 					} else {
@@ -873,7 +873,7 @@ void Editor::GuiDraw() {
 				} else {
 					showLabel("+ Create Link", ImColor(32, 45, 32, 180));
 					if (ed::AcceptNewItem(ImColor(128, 255, 128), 4.0f)) {
-						bool connected = Connect(pin_out, pin_in);
+						bool connected = Connect((PinInput*)pin_in, (PinOutput*)pin_out);
 						assert(connected);
 					}
 				}
@@ -984,43 +984,29 @@ void Editor::GuiDraw() {
 
 	ed::End();
 
-	if (selected_node) {
-		
-		ImVec2 window_size = im::GetContentRegionAvail();
-		ImVec2 window_pos = im::GetWindowPos();
-		ImVec2 child_size = ImVec2(512, 256);
-		im::SetNextWindowPos(ImVec2(
-			window_pos.x + window_size.x,
-			editor_cursor_start_pos.y + window_pos.y)
-			// add padding
-			+ ImVec2(-8.f, 8.f),
-			0,
-			ImVec2(1.f, 0.f)
-		);
+	im::End();
 
+	if (selected_node) {
 		ImGui::PushStyleVar(ImGuiStyleVar_ChildBorderSize, 2.f);
 		ImGui::PushStyleVar(ImGuiStyleVar_ChildRounding, 4.f);
 		ImGui::PushStyleColor(ImGuiCol_Border, ImVec4(0.5f, 0.5f, 0.5f, 0.5f));
 
-		if (im::BeginChild(WINDOW_NAME_NODE_MENU, child_size, true)) {
-			ImGui::Text("Update: %d", selected_node->update_order);
-			ImGui::Text("Pins:");
-			bool dirty = props::DrawPinInputs(selected_node);
-			ImGui::Text("Properties:");
-			dirty = selected_node->GuiDrawPropertiesList() || dirty;
-			if (dirty) {
-				selected_node->SetDirty();
-			}
+		im::Begin(WINDOW_NAME_NODE_MENU, nullptr, ImGuiWindowFlags_NoCollapse);
+		ImGui::Text("Update: %d", selected_node->update_order);
+		ImGui::Text("Pins:");
+		bool dirty = props::DrawPinInputs(selected_node);
+		ImGui::Text("Properties:");
+		dirty = selected_node->GuiDrawPropertiesList() || dirty;
+		if (dirty) {
+			selected_node->SetDirty();
 		}
-		im::EndChild();
+
+		im::End();
 		
 		ImGui::PopStyleVar(2);
 		ImGui::PopStyleColor(1);
-
 	}
 
-
-	im::End();
 }
 
 INode* Editor::CreateAndAdd(NodeId node_id) {
@@ -1034,11 +1020,10 @@ INode* Editor::CreateAndAdd(NodeId node_id) {
 			visibleNodes.insert(it, node);
 		}
 
-		assert(!(node->UpdatesEveryFrame() && node->UpdatesOverTime()));
-
 		if (node->UpdatesEveryFrame()) {
 			nodesUpdateEveryFrame.push_back(node);
-		} else if (node->UpdatesOverTime()) {
+		} 
+		if (node->UpdatesOverTime()) {
 			nodesUpdateOverTime.push_back(node);
 		}
 
@@ -1056,7 +1041,7 @@ INode* Editor::CreateAndAdd(const std::string_view node_name) {
 	return CreateAndAdd(SCHash(node_name.data(), node_name.length()));
 }
 
-bool Editor::Connect(Pin* pin_co, Pin* pin_ci) {
+bool Editor::Connect(PinInput* pin_ci, PinOutput* pin_co) {
 	// pin_co == pin connection out
 	// pin_ci == pin connection in
 	// names are hard :(
@@ -1103,7 +1088,7 @@ bool Editor::Connect(Pin* pin_co, Pin* pin_ci) {
 	return true;
 }
 
-bool Editor::Disconnect(Pin* pinIn, Pin* pinOut) {
+bool Editor::Disconnect(PinInput* pinIn, PinOutput* pinOut) {
 	assert((pinIn->flags & PinFlags::INPUT) == PinFlags::INPUT);
 	assert((pinOut->flags & PinFlags::OUTPUT) == PinFlags::OUTPUT);
 

@@ -45,9 +45,9 @@ namespace seam {
 
 		/// Connect an output pin to an input pin.
 		/// \return true if the Pins were successfully connected.
-		bool Connect(Pin* pin_out, Pin* pin_in);
+		bool Connect(PinInput* pinIn, PinOutput* pinOut);
 
-		bool Disconnect(Pin* pin_out, Pin* pin_in);
+		bool Disconnect(PinInput* pinIn, PinOutput* pinOut);
 
 		/// <summary>
 		///  Clear the current graph.
