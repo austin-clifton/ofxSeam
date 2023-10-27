@@ -1,11 +1,10 @@
 #include "audioAnalyzer.h"
-#include "implot.h"
 
 using namespace seam;
 using namespace seam::nodes;
 
 AudioAnalyzer::AudioAnalyzer(const ofSoundStreamSettings& settings) : INode("Audio Analyzer") {
-	flags = (NodeFlags)(flags | NodeFlags::UPDATES_EVERY_FRAME);
+	flags = (NodeFlags)(flags | NodeFlags::UPDATES_OVER_TIME);
 
     audioAnalyzer.setup(settings.sampleRate, settings.bufferSize, settings.numInputChannels);
 	// Disable all the audio analyzer algorithms by default, enable _some_ back when audio is actually playing.
@@ -33,18 +32,33 @@ PinInput* AudioAnalyzer::PinInputs(size_t& size) {
 }
 
 PinOutput* AudioAnalyzer::PinOutputs(size_t& size) {
-	size = 0;
-    return nullptr;
+	size = pinOutputs.size();
+	return pinOutputs.data();
 }
 
 void AudioAnalyzer::Update(UpdateParams* params) {
+	// Always push RMS.
+	params->push_patterns->Push(pinOutputs[0], &lastRms, 1);
 
+	for (size_t i = 0; i < multiValueAlgos.size(); i++) {
+		auto& algo = multiValueAlgos[i];
+		if (multiValueAlgos[i].enabled) {
+			if (algo.pinOutChannelsSize != nullptr) {
+				uint32_t channelsSize = (uint32_t)algo.values0.size();
+				params->push_patterns->Push(*algo.pinOutChannelsSize, &channelsSize, 1);
+			}
+			params->push_patterns->Push(*algo.pinOutChannels, algo.values0.data(), algo.values0.size());
+		}
+	}
+
+	// Reset lastRms now that it's been sent along.
+	lastRms = 0.f;
 }
 
 void AudioAnalyzer::ProcessAudio(ofSoundBuffer& input) {
 	audioAnalyzer.analyze(input);
 	float currRms = audioAnalyzer.getValue(ofxAAAlgorithm::RMS, 0);
-	audioSample = std::max(audioSample, currRms);
+	lastRms = std::max(lastRms, currRms);
 
 	for (size_t algIndex = 0; algIndex < multiValueAlgos.size(); algIndex++) {
 		auto& algo = multiValueAlgos[algIndex];
@@ -52,7 +66,7 @@ void AudioAnalyzer::ProcessAudio(ofSoundBuffer& input) {
 		// auto& vals1 = audioAnalyzer.getValues(algo.algorithm, 1);
 
 		for (size_t i = 0; i < vals0.size() && i < algo.values0.size(); i++) {
-			algo.values0[i] = std::max(vals0[i] * currRms, algo.values0[i]);
+			algo.values0[i] = std::max(vals0[i], algo.values0[i]);
 		}
 	} 
 
@@ -60,6 +74,10 @@ void AudioAnalyzer::ProcessAudio(ofSoundBuffer& input) {
 }
 
 void AudioAnalyzer::GuiDrawNodeCenter() {
+
+}
+
+bool AudioAnalyzer::GuiDrawPropertiesList() {
 	// TODO:
 	// Display a checkmark or a lit up thingy if we're detecting audio input (RMS > 0)
 	if (ImGui::Checkbox("Beat Tracking", &enableOnsets)) {
@@ -127,7 +145,9 @@ void AudioAnalyzer::GuiDrawNodeCenter() {
 	
 	ImGui::NewLine();
 	
-	if (audioSample > 0.f) {
+	if (lastRms > 0.f) {
+		const double xScale = 44100.0 / 256.0;
+
 		// Plot multi value algos with histograms
 		for (size_t i = 0; i < multiValueAlgos.size(); i++) {
 			if (i % 2 == 1) {
@@ -135,11 +155,13 @@ void AudioAnalyzer::GuiDrawNodeCenter() {
 			}
 
 			auto& algo = multiValueAlgos[i];
-			if (algo.enabled && ImPlot::BeginPlot(algo.name, ImVec2(200,200))) {
-				ImPlot::SetupAxisLimits(ImAxis_Y1, algo.limits.x, algo.limits.y);
-				ImPlot::PlotLine("left", algo.values0.data(), algo.values0.size());
-				ImPlot::PlotLine("right", algo.values1.data(), algo.values1.size());
+			if (algo.enabled && ImPlot::BeginPlot(algo.name, ImVec2(512,512))) {
+				ImPlot::SetupAxisLimits(ImAxis_Y1, algo.limits.x, algo.limits.y, ImPlotCond_Always);
+				ImPlot::SetupAxisScale(ImAxis_X1, algo.scale);
 
+				ImPlot::PlotLine("left", algo.values0.data(), algo.values0.size(), xScale);
+				ImPlot::PlotLine("right", algo.values1.data(), algo.values1.size(), xScale);
+				
 				algo.values0.assign(algo.values0.size(), -100.f);
 				algo.values1.assign(algo.values0.size(), -100.f);
 
@@ -164,7 +186,7 @@ void AudioAnalyzer::GuiDrawNodeCenter() {
 				// TODO use audio sample from audio loop RMS...
 				float f0 = audioAnalyzer.getValue(algo.algorithm, 0);
 				float f1 = audioAnalyzer.getValue(algo.algorithm, 1);
-				algo.AddPoint(pow(f0, 6.f), f0);
+				algo.AddPoint(f0, f1);
 				ImPlot::SetupAxisLimits(ImAxis_Y1, algo.limits.x, algo.limits.y);
         		// ImPlot::SetupAxisScale(ImAxis_Y1, ImPlotScale_SymLog);
 				ImPlot::PlotLine("left", algo.values0.data(), algo.values0.size(), 1.0, 0, algo.offset);
@@ -174,9 +196,7 @@ void AudioAnalyzer::GuiDrawNodeCenter() {
 			}
 		}
 	}
-}
+	
 
-bool AudioAnalyzer::GuiDrawPropertiesList() {
-	GuiDrawNodeCenter();
 	return false;
 }
