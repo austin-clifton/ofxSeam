@@ -2,6 +2,20 @@
 
 const size_t seam::pins::PinInput::MAX_EVENTS = 16;
 
+namespace {
+	bool StrCmpLower(std::string_view s1, std::string_view s2) {
+		if (s1.length() != s2.length()) {
+			return false;
+		}
+
+		bool same = true;
+		for (size_t i = 0; same && i < s1.length(); i++) {
+			same = std::tolower(s1[i]) == std::tolower(s2[i]);
+		}
+		return same;
+	}
+}
+
 namespace seam::pins {
 	props::NodePropertyType PinTypeToPropType(PinType pinType) {
 		using namespace seam::props;
@@ -57,16 +71,11 @@ namespace seam::pins {
 		return pin_out;
 	}
 
-	/// <summary>
-	/// 
-	/// </summary>
-	/// <param name="shader"></param>
-	/// <param name="node"></param>
-	/// <returns>A vector containing all the found uniforms that map to pins.
-	/// Each pin has memory allocated for its channels data.
-	/// TODO: handle deallocation of allocated memory with a helper function.
-	/// </returns>
-	std::vector<PinInput> UniformsToPinInputs(ofShader& shader, nodes::INode* node) {
+	std::vector<PinInput> UniformsToPinInputs(
+		ofShader& shader, 
+		nodes::INode* node, 
+		std::vector<char>& pinBuffer
+	) {
 		// sanity check there were no errors before now
 		assert(glGetError() == GL_NO_ERROR);
 
@@ -86,6 +95,12 @@ namespace seam::pins {
 
 		std::vector<PinInput> pin_inputs;
 		pin_inputs.reserve(uniforms_count);
+
+		// Clear out any old uniform buffer data, and keep track
+		// of how much space is needed for the new uniform data.
+		pinBuffer.clear();
+		size_t totalBytesNeeded = 0;
+
 		// query each uniform variable and make a PinInput for it
 		for (GLint i = 0; i < uniforms_count; i++) {
 			// glGetActiveUniform() writes uniform metadata to each of these
@@ -111,28 +126,36 @@ namespace seam::pins {
 			// TODO filter out uniforms prefixed with "gl_"?
 
 			bool failed = false;
+			PinType pinType = PinType::TYPE_NONE;
+			size_t channelsSize = 0;
 
 			// Now make a PinInput for the uniform.
 			// First need to figure out what kind of Pin is needed.
 			// TODO many more possible types here, including textures.
 			switch (uniform_type) {
 			case GL_FLOAT:
-				pin_inputs.push_back(SetupInputPin(PinType::FLOAT, node, new float, 1, snippedName));
+				pinType = PinType::FLOAT;
+				channelsSize = 1;
 				break;
 			case GL_INT:
-				pin_inputs.push_back(SetupInputPin(PinType::INT, node, new int32_t, 1, snippedName));
+				pinType = PinType::INT;
+				channelsSize = 1;
 				break;
 			case GL_UNSIGNED_INT:
-				pin_inputs.push_back(SetupInputPin(PinType::UINT, node, new uint32_t, 1, snippedName));
+				pinType = PinType::UINT;
+				channelsSize = 1;
 				break;
 			case GL_FLOAT_VEC2:
-				pin_inputs.push_back(SetupInputPin(PinType::FLOAT, node, new glm::vec2(), 2, snippedName));
+				pinType = PinType::FLOAT;
+				channelsSize = 2;
 				break;
 			case GL_INT_VEC2:
-				pin_inputs.push_back(SetupInputPin(PinType::INT, node, new glm::ivec2(), 2, snippedName));
+				pinType = PinType::INT;
+				channelsSize = 2;
 				break;
 			case GL_UNSIGNED_INT_VEC2:
-				pin_inputs.push_back(SetupInputPin(PinType::INT, node, new glm::u32vec2(), 2, snippedName));
+				pinType = PinType::UINT;
+				channelsSize = 2;
 			default:
 				printf("uniform to PinInput for GL with enum type %d not implemented yet\n", uniform_type);
 				failed = true;
@@ -144,32 +167,49 @@ namespace seam::pins {
 				continue;
 			}
 
-			PinInput& pin = pin_inputs[pin_inputs.size() - 1];
+			const size_t bytesPerChannel = PinTypeToElementSize(pinType);
+			totalBytesNeeded += bytesPerChannel * channelsSize;
+
+			pin_inputs.push_back(SetupInputPin(pinType, node, nullptr, channelsSize, snippedName));
+
+		}
+
+		// Resize the pin buffer now and point each Pin's channel buffer at it.
+		pinBuffer.resize(totalBytesNeeded, 0);
+		size_t currentByte = 0;
+
+		for (auto& pinIn : pin_inputs) {
+			pinIn.node = node;
+
+			// Now that memory has been alloc'd for the uniform channels buffer,
+			// set each Pin's channels buffer to point to the right place.
+			size_t channelsSize;
+			void* channels = pinIn.GetChannels(channelsSize);
+			channels = &pinBuffer[currentByte];
+			pinIn.SetBuffer(channels, channelsSize);
+			currentByte += PinTypeToElementSize(pinIn.type) * channelsSize;
 
 			// grab the location of the uniform so we can set initial values for the Pin
-			GLint uniform_location = glGetUniformLocation(program, snippedName.data());
+			GLint uniform_location = glGetUniformLocation(program, pinIn.name.c_str());
 			assert(glGetError() == GL_NO_ERROR);
 
 			// fill the Pin's default values
-			size_t size;
-			void* channels = pin.GetChannels(size);
-			switch (pin.type) {
+			switch (pinIn.type) {
 			case PinType::FLOAT:
-				glGetnUniformfv(program, uniform_location, size * sizeof(float), (float*)channels);
+				glGetnUniformfv(program, uniform_location, 
+					channelsSize * sizeof(float), (float*)channels);
 				break;
 			case PinType::INT:
-				glGetnUniformiv(program, uniform_location, size * sizeof(int), (int*)channels);
+				glGetnUniformiv(program, uniform_location, 
+					channelsSize * sizeof(int32_t), (int32_t*)channels);
 				break;
 			case PinType::UINT:
-				glGetnUniformuiv(program, uniform_location, size * sizeof(uint32_t), (uint32_t*)channels);
+				glGetnUniformuiv(program, uniform_location, 
+					channelsSize * sizeof(uint32_t), (uint32_t*)channels);
 				break;
 			}
 
 			assert(glGetError() == GL_NO_ERROR);
-
-			// add it to the list
-			pin.node = node;
-			pin_inputs.push_back(pin);
 		}
 
 		return pin_inputs;
@@ -247,11 +287,10 @@ namespace seam::pins {
 	}
 
 	PinInput* FindPinInByName(PinInput* pins, size_t pinsSize, std::string_view name) {
-		return std::find_if(pins, pins + pinsSize, [name](const PinInput& pin_in) {
-			std::string name_copy = pin_in.name;
-			std::transform(name_copy.begin(), name_copy.end(), name_copy.begin(), [](unsigned char c) {return std::tolower(c); });
-			return name_copy == name;
+		auto it = std::find_if(pins, pins + pinsSize, [name](const PinInput& pinIn) {
+			return StrCmpLower(name, pinIn.name);
 		});
+		return it != pins + pinsSize ? it : nullptr;
 	}
 
 	PinInput* FindPinInByName(IInPinnable* pinnable, std::string_view name) {
@@ -261,9 +300,10 @@ namespace seam::pins {
 	}
 
 	PinOutput* FindPinOutByName(PinOutput* pins, size_t pinsSize, std::string_view name) {
-		return std::find_if(pins, pins + pinsSize, [name](const PinOutput& pin_out) 
-			{ return name == pin_out.name; }
-		);
+		auto it = std::find_if(pins, pins + pinsSize, [name](const PinOutput& pin_out) { 
+			return StrCmpLower(name, pin_out.name); 
+		});
+		return it != pins + pinsSize ? it : nullptr;
 	}
 	
 	PinOutput* FindPinOutByName(IOutPinnable* pinnable, std::string_view name) {

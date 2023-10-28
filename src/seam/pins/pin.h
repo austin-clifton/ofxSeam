@@ -126,9 +126,16 @@ namespace seam {
 		/// Queries a linked shader program's active uniforms and creates a PinInput list from them.
 		/// \param shader The linked shader program to query the uniforms of.
 		/// \param node The node the shader's Pins will be added to. 
+		/// \param pinBuffer Is used to allocate a buffer for pin values. 
+		///	This needs the same life cycle scope as the returned list!
 		/// \return The list of PinInputs which maps to the uniforms in the shader.
 		/// All IPinInput structs are heap-allocated, and must be freed when no longer in use.
-		std::vector<PinInput> UniformsToPinInputs(ofShader& shader, nodes::INode* node);
+		std::vector<PinInput> UniformsToPinInputs(
+			ofShader& shader, 
+			nodes::INode* node, 
+			std::vector<char>& pinBuffer
+		);
+		
  		PinType SerializedPinTypeToPinType(seam::schema::PinValue::Which pinType);
 	}
 };

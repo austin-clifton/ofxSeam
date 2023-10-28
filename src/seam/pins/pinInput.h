@@ -9,11 +9,9 @@
 #include "pinBase.h"
 #include "pinTypes.h"
 #include "seam/pins/iInPinnable.h"
+#include "seam/pins/pinOutput.h"
 
 namespace seam::pins {
-
-    class PinOutput;
-
     class PinInput final : public Pin, public IInPinnable {
     public:
         PinInput() {
@@ -80,9 +78,7 @@ namespace seam::pins {
             sizeInBytes = 0;
         }
 
-        ~PinInput() {
-            // Nothing to do...?
-        }
+        ~PinInput();
 
         /// <summary>
         /// Get a pointer to the input pin's raw channels data.

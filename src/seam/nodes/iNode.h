@@ -15,6 +15,7 @@ namespace ed = ax::NodeEditor;
 namespace seam {
 	class EventNodeFactory;
 	class Editor;
+	class SeamGraph;
 }
 
 namespace seam::nodes {
@@ -131,7 +132,14 @@ namespace seam::nodes {
 			return instance_name;
 		}
 
-		void SetDirty();
+		inline void SetDirty() {
+			dirty = true;
+			// dirtying a node dirties its children
+			// need to clean up those dirty kids!
+			for (size_t i = 0; i < children.size(); i++) {
+				children[i].node->SetDirty();
+			}
+		}
 
 		inline bool UpdatesOverTime() {
 			return (flags & NodeFlags::UPDATES_OVER_TIME) == NodeFlags::UPDATES_OVER_TIME;
@@ -219,6 +227,7 @@ namespace seam::nodes {
 		friend class seam::EventNodeFactory;
 		// the editor is a friend class so it can manage the node's inputs and outputs lists
 		friend class seam::Editor;
+		friend class seam::SeamGraph;
 	};
 
 	/// <summary>

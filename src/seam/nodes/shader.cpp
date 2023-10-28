@@ -22,13 +22,13 @@ Shader::~Shader() {
 }
 
 PinInput* Shader::PinInputs(size_t& size) {
-	size = pin_inputs.size();
-	return pin_inputs.data();
+	size = pinInputs.size();
+	return pinInputs.data();
 }
 
 PinOutput* Shader::PinOutputs(size_t& size) {
 	size = 1;
-	return &pin_out_material;
+	return &pinOutMaterial;
 }
 
 void Shader::Draw(DrawParams* params) {
@@ -36,8 +36,8 @@ void Shader::Draw(DrawParams* params) {
 	fbo.clearColorBuffer(ofFloatColor(0.0f));
 	shader.begin();
 
-	for (size_t i = 0; i < pin_inputs.size(); i++) {
-		PinInput& pin = pin_inputs[i];
+	for (size_t i = 0; i < pinInputs.size(); i++) {
+		PinInput& pin = pinInputs[i];
 		size_t size;
 		void* channels = pin.GetChannels(size);
 		
@@ -80,13 +80,21 @@ void Shader::Draw(DrawParams* params) {
 }
 
 bool Shader::AttemptShaderLoad(const std::string& shader_name) {
-	if (ShaderUtils::LoadShader(shader, shader_name)) {
-		// reloaded
+	if (ShaderUtils::LoadShader(shader, "screen-rect.vert", shader_name + ".frag")) {
+		std::vector<seam::pins::PinInput> newPins = UniformsToPinInputs(shader, this, pinBuffer);
 
-		// TODO proper handling of connected input pins being deleted, pins shifting index, etc. etc.
-		// just danger assign it for now so I can see it's doing something
-		// THIS IS LEAKING MEMORY IF PIN INPUTS CURRENTLY EXIST!
-		pin_inputs = UniformsToPinInputs(shader, this);
+		// Loop over each new pin, and make sure ids and connections are preserved.
+		for (auto& pinIn : newPins) {
+			PinInput* match = FindPinInByName(this, pinIn.name);
+			if (match != nullptr) {
+				pinIn.id = match->id;
+				pinIn.connection = match->connection;
+				match->connection = nullptr;
+			}
+		}
+
+		pinInputs = newPins;
+		RecacheInputConnections();
 
 		return true;
 	}

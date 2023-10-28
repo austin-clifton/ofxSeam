@@ -33,7 +33,7 @@ namespace seam::nodes {
 			pins::SetupInputPin(PinType::FLOAT, this, &inRangeMax, 1, "Input Range Max"),
 			pins::SetupInputPin(PinType::FLOAT, this, &inValue, 1, "Input Value"),
 			pins::SetupInputPin(PinType::FLOAT, this, &outRangeMin, 1, "Output Range Min"),
-			pins::SetupInputPin(PinType::FLOAT, this, &outRangeMax, 1, "Output Range Min"),
+			pins::SetupInputPin(PinType::FLOAT, this, &outRangeMax, 1, "Output Range Max"),
 		};
 
 		PinOutput pin_out_value = pins::SetupOutputPin(this, pins::PinType::FLOAT, "value");

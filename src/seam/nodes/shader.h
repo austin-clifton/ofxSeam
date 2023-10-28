@@ -26,14 +26,16 @@ namespace seam::nodes {
 	private:
 		bool AttemptShaderLoad(const std::string& shader_name );
 
-		std::string shader_name = "step-grid";
+		std::vector<char> pinBuffer;
+
+		std::string shader_name = "simple-glass";
 		ofShader shader;
 		ofFbo fbo;
 
 		glm::ivec2 tex_size = glm::ivec2(1920, 1080);
 		
 		// input pins are dynamically created based on the shader's uniforms
-		std::vector<PinInput> pin_inputs;
-		PinOutput pin_out_material = pins::SetupOutputPin(this, pins::PinType::MATERIAL, "material");
+		std::vector<PinInput> pinInputs;
+		PinOutput pinOutMaterial = pins::SetupOutputPin(this, pins::PinType::MATERIAL, "material");
 	};
 }

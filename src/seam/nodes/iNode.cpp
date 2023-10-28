@@ -117,15 +117,6 @@ bool INode::AddChild(INode* child) {
 	}
 }
 
-void INode::SetDirty() {
-	dirty = true;
-	// dirtying a node dirties its children
-	// need to clean up those dirty kids!
-	for (size_t i = 0; i < children.size(); i++) {
-		children[i].node->SetDirty();
-	}
-}
-
 void INode::GuiDrawInputPin(ed::Utilities::BlueprintNodeBuilder& builder, pins::PinInput* pinIn) 
 {
 	builder.Input((ed::PinId)pinIn);
