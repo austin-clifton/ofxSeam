@@ -134,6 +134,6 @@ namespace seam::nodes {
 			pins::SetupInputQueuePin(PinType::NOTE_EVENT, this, "Notes Off Stream"),
 		};
 
-		PinOutput pin_out_material = pins::SetupOutputPin(this, pins::PinType::MATERIAL, "material");
+		PinOutput pin_out_material = pins::SetupOutputPin(this, pins::PinType::FBO, "material");
 	};
 }
