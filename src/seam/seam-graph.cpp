@@ -83,7 +83,6 @@ namespace {
 			// Don't serialize channels if this input type doesn't have serializable state
 			if (pinIn.type == PinType::FLOW
 				|| pinIn.type == PinType::FBO
-				|| pinIn.type == PinType::MATERIAL
 				|| pinIn.type == PinType::NOTE_EVENT
 			) {
 				continue;
@@ -138,8 +137,10 @@ namespace {
 
 		for (const auto& child : serializedPin.getChildren()) {
 			PinInput* match = FindPinInByName(children, childrenSize, child.getName().cStr());
-			if (match != children + childrenSize) {
+			if (match != nullptr) {
 				DeserializePinInput(child, match);
+			} else {
+				printf("DeserializePinInput(): couldn't find matching pin for %s\n", child.getName().cStr());
 			}
 		}
 	}
@@ -374,10 +375,13 @@ bool SeamGraph::Connect(PinInput* pinIn, PinOutput* pinOut) {
 	pinOut->connections.push_back(PinConnection(pinIn, pinOut->type));
 	pinIn->connection = pinOut;
 
-	// add to the links list
+	PinConnectedArgs connectedArgs;
+	connectedArgs.pinIn = pinIn;
+	connectedArgs.pinOut = pinOut;
+	connectedArgs.pushPatterns = &push_patterns;
 
-	parent->OnPinConnected(pinIn, pinOut);
-	child->OnPinConnected(pinIn, pinOut);
+	parent->OnPinConnected(connectedArgs);
+	child->OnPinConnected(connectedArgs);
 
 	// give the input pin the default push pattern
 	pinIn->push_id = push_patterns.Default().id;
@@ -628,7 +632,7 @@ bool SeamGraph::SaveGraph(const std::string_view filename, const std::vector<INo
     return false;
 }
 
-bool SeamGraph::LoadGraph(const std::string_view filename) {
+bool SeamGraph::LoadGraph(const std::string_view filename, std::vector<SeamGraph::Link>& links) {
     FILE* file = fopen(filename.data(), "rb");
 	if (file == NULL) {
 		printf("Error opening file for read back: %d\n", errno);
@@ -658,80 +662,13 @@ bool SeamGraph::LoadGraph(const std::string_view filename) {
 		auto position = ImVec2(serialized_node.getPosition().getX(), serialized_node.getPosition().getY());
 		ed::SetNodePosition((ed::NodeId)node, position);
 
-		// TODO HERE!
-		// Different nodes will have different conditions for deserialization. Like Shader is gonna need to load its shader first.
-		// You need to let the node do this instead, with a base class implementation that can be overridden.
-
 		size_t inputs_size, outputs_size;
 		auto input_pins = node->PinInputs(inputs_size);
 		auto output_pins = node->PinOutputs(outputs_size);
 
 		auto dynamicPinsNode = dynamic_cast<IDynamicPinsNode*>(node);
 
-		// Deserialize inputs
-		uint32_t inputIndex = 0;
-		for (const auto& serialized_pin_in : serialized_node.getInputPins()) {
-			std::string serialized_pin_name = serialized_pin_in.getName().cStr();
-			std::transform(serialized_pin_name.begin(), serialized_pin_name.end(), serialized_pin_name.begin(), 
-				[](unsigned char c) {return std::tolower(c); });
-
-			// Try to find an input pin on the node with a matching name.
-			auto matchPos = FindPinInByName(input_pins, inputs_size, serialized_pin_name);
-
-			const auto serialized_channels = serialized_pin_in.getChannels();
-
-			if (matchPos != (input_pins + inputs_size)) {
-				PinInput* match = matchPos;
-				DeserializePinInput(serialized_pin_in, match);
-				maxPinId = std::max(maxPinId, UpdatePinMap(match, input_pin_map));
-
-			} else if (dynamicPinsNode != nullptr) {
-				PinType pinType = (PinType)serialized_pin_in.getType();
-				IDynamicPinsNode::PinInArgs pinArgs(pinType, serialized_pin_name, 
-					serialized_channels.size(), inputIndex);
-
-				PinInput* added = dynamicPinsNode->AddPinIn(pinArgs);
-
-				if (added == nullptr) {
-					printf("Dynamic Pins Node %s refused to add a pin named %s\n",
-						node->NodeName().data(), serialized_pin_name.c_str());
-				} else {
-					maxPinId = std::max(maxPinId, UpdatePinMap(added, input_pin_map));
-
-					// Refresh the input pins list!
-					input_pins = node->PinInputs(inputs_size);
-				}
-
-			} else {
-				printf("Could not match serialized input pin with name %s on node %s\n", 
-					serialized_pin_name.c_str(), serialized_node.getDisplayName().cStr());
-			}
-
-			inputIndex += 1;
-		}
-
-		// Deserialize outputs
-		for (const auto& serialized_pin_out : serialized_node.getOutputPins()) {
-			std::string_view pin_name = serialized_pin_out.getName().cStr();
-
-			// Try to find an input pin on the node with a matching name.
-			auto match = std::find_if(output_pins, output_pins + outputs_size, [pin_name](const PinOutput& pin_out) 
-				{ return pin_name == pin_out.name; }
-			);
-
-			if (match != (output_pins + outputs_size)) {
-				DeserializePinOutput(serialized_pin_out, match);
-				maxPinId = std::max(maxPinId, UpdatePinMap(match, output_pin_map));
-
-			} else if (dynamicPinsNode != nullptr) {
-				assert(false);//shit shit dooo me ples
-			} else {
-				printf("Could not match serialized output pin with name %s on node %s\n",
-					pin_name.data(), serialized_node.getDisplayName().cStr());
-			}
-		}
-
-		// Deserialize properties
+		// Deserialize properties before inputs and outputs, since setting properties might create some pins.
 		for (const auto& serializedProperty : serialized_node.getProperties()) {
 			const auto propValues = serializedProperty.getValues();
 
@@ -791,9 +728,79 @@ bool SeamGraph::LoadGraph(const std::string_view filename) {
 
 			// POSSIBLE IMPROVEMENT: is there a use case for PropertyBag here?
 		}
+
+		// Deserialize inputs
+		uint32_t inputIndex = 0;
+		for (const auto& serialized_pin_in : serialized_node.getInputPins()) {
+			std::string serialized_pin_name = serialized_pin_in.getName().cStr();
+			std::transform(serialized_pin_name.begin(), serialized_pin_name.end(), serialized_pin_name.begin(), 
+				[](unsigned char c) {return std::tolower(c); });
+
+			// Try to find an input pin on the node with a matching name.
+			auto matchPos = FindPinInByName(input_pins, inputs_size, serialized_pin_name);
+
+			const auto serialized_channels = serialized_pin_in.getChannels();
+
+			if (matchPos != (input_pins + inputs_size)) {
+				PinInput* match = matchPos;
+				// If this is a vector pin, first set its size.
+				if ((match->flags & PinFlags::VECTOR) == PinFlags::VECTOR) {
+					VectorPinInputBase* vectorPin = (VectorPinInputBase*)match->seamp;
+					vectorPin->UpdateSize(match, serialized_pin_in.getChildren().size());
+				}
+				
+				DeserializePinInput(serialized_pin_in, match);
+				maxPinId = std::max(maxPinId, UpdatePinMap(match, input_pin_map));
+
+			} else if (dynamicPinsNode != nullptr) {
+				PinType pinType = (PinType)serialized_pin_in.getType();
+				IDynamicPinsNode::PinInArgs pinArgs(pinType, serialized_pin_name, 
+					serialized_channels.size(), inputIndex);
+
+				PinInput* added = dynamicPinsNode->AddPinIn(pinArgs);
+
+				if (added == nullptr) {
+					printf("Dynamic Pins Node %s refused to add a pin named %s\n",
+						node->NodeName().data(), serialized_pin_name.c_str());
+				} else {
+					maxPinId = std::max(maxPinId, UpdatePinMap(added, input_pin_map));
+
+					// Refresh the input pins list!
+					input_pins = node->PinInputs(inputs_size);
+				}
+
+			} else {
+				printf("Could not match serialized input pin with name %s on node %s\n", 
+					serialized_pin_name.c_str(), serialized_node.getDisplayName().cStr());
+			}
+
+			inputIndex += 1;
+		}
+
+		// Deserialize outputs
+		for (const auto& serialized_pin_out : serialized_node.getOutputPins()) {
+			std::string_view pin_name = serialized_pin_out.getName().cStr();
+
+			// Try to find an input pin on the node with a matching name.
+			auto match = std::find_if(output_pins, output_pins + outputs_size, [pin_name](const PinOutput& pin_out) 
+				{ return pin_name == pin_out.name; }
+			);
+
+			if (match != (output_pins + outputs_size)) {
+				DeserializePinOutput(serialized_pin_out, match);
+				maxPinId = std::max(maxPinId, UpdatePinMap(match, output_pin_map));
+
+			} else if (dynamicPinsNode != nullptr) {
+				assert(false);//shit shit dooo me ples
+			} else {
+				printf("Could not match serialized output pin with name %s on node %s\n",
+					pin_name.data(), serialized_node.getDisplayName().cStr());
+			}
+		}
 	}
 
 	// Now add any valid connections.
+	links.clear();
 	for (const auto& conn : node_graph.getConnections()) {
 		size_t outId = conn.getOutId();
 		size_t inId = conn.getInId();
@@ -804,7 +811,9 @@ bool SeamGraph::LoadGraph(const std::string_view filename) {
 				continue;
 			}
 			
-			Connect((PinInput*)input_pin->second, (PinOutput*)output_pin->second);
+			if (Connect((PinInput*)input_pin->second, (PinOutput*)output_pin->second)) {
+				links.push_back(Link(output_pin->second->node, outId, input_pin->second->node, inId));
+			}
 		}
 	}
 

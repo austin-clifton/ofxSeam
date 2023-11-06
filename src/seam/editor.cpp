@@ -112,7 +112,8 @@ void Editor::SaveGraph(const std::string_view filename, const std::vector<INode*
 }
 
 void Editor::LoadGraph(const std::string_view filename) {
-	if (graph->LoadGraph(filename)) {
+	NewGraph();
+	if (graph->LoadGraph(filename, links)) {
 		loaded_file = filename;
 	}	
 }
@@ -319,9 +320,9 @@ void Editor::GuiDraw() {
 			ed::LinkId link_id = 0;
 			while (ed::QueryDeletedLink(&link_id)) {
 				if (ed::AcceptDeletedItem()) {
-					Link* link = dynamic_cast<Link*>(link_id.AsPointer<Link>());
+					SeamGraph::Link* link = dynamic_cast<SeamGraph::Link*>(link_id.AsPointer<SeamGraph::Link>());
 					assert(link);
-					auto it = std::find_if(links.begin(), links.end(), [link](const Link& other) {
+					auto it = std::find_if(links.begin(), links.end(), [link](const SeamGraph::Link& other) {
 						return link->inPin == other.inPin && link->outPin == other.outPin;
 					});
 					assert(it != links.end());
@@ -381,7 +382,7 @@ void Editor::GuiDraw() {
 bool Editor::Connect(PinInput* pinIn, PinOutput* pinOut) {
 	bool connected = graph->Connect(pinIn, pinOut);
 	assert(connected);
-	links.push_back(Link(pinOut->node, pinOut->id, pinIn->node, pinIn->id));
+	links.push_back(SeamGraph::Link(pinOut->node, pinOut->id, pinIn->node, pinIn->id));
 	return connected;
 }
 
@@ -390,7 +391,7 @@ bool Editor::Disconnect(PinInput* pinIn, PinOutput* pinOut) {
 	assert(disconnected);
 
 	// Remove from links list
-	Link l(pinOut->node, pinOut->id, pinIn->node, pinIn->id);
+	SeamGraph::Link l(pinOut->node, pinOut->id, pinIn->node, pinIn->id);
 	auto it = std::find(links.begin(), links.end(), l);
 	assert(it != links.end());
 	links.erase(it);

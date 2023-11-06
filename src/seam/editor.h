@@ -36,23 +36,7 @@ namespace seam {
 		seam::EventNodeFactory* GetFactory() { return graph->GetFactory(); }
 	
 	private:
-		struct Link {
-			INode* outNode;
-			PinId outPin;
-			INode* inNode;
-			PinId inPin;
 
-			Link(INode* _outNode, PinId _outPin, INode* _inNode, PinId _inPin) {
-				outNode = _outNode;
-				outPin = _outPin;
-				inNode = _inNode;
-				inPin = _inPin;
-			}
-
-			inline bool operator==(const Link& other) {
-				return outPin == other.outPin && inPin == other.inPin;
-			}
-		};
 
 		void NewGraph();
 		void SaveGraph(const std::string_view filename, const std::vector<INode*>& nodesToSave);
@@ -66,8 +50,8 @@ namespace seam {
 
 		ax::NodeEditor::EditorContext* nodeEditorContext = nullptr;
 
-		// sorted list of all links between pins, mostly for GUI display + interactions
-		std::vector<Link> links;
+		// List of all links between pins, mostly for GUI display + interactions
+		std::vector<SeamGraph::Link> links;
 
 		// book keeping for GUI interactions
 		Pin* new_link_pin;

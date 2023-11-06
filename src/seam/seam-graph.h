@@ -14,6 +14,24 @@ namespace seam {
     /// NOT responsible for drawing the GUI; see the Editor for GUI drawing.
     class SeamGraph {
     public:
+		struct Link {
+			INode* outNode;
+			PinId outPin;
+			INode* inNode;
+			PinId inPin;
+
+			Link(INode* _outNode, PinId _outPin, INode* _inNode, PinId _inPin) {
+				outNode = _outNode;
+				outPin = _outPin;
+				inNode = _inNode;
+				inPin = _inPin;
+			}
+
+			inline bool operator==(const Link& other) {
+				return outPin == other.outPin && inPin == other.inPin;
+			}
+		};
+
         SeamGraph(const ofSoundStreamSettings& soundSettings);
         ~SeamGraph();
 
@@ -28,7 +46,7 @@ namespace seam {
 
 		void NewGraph();
         bool SaveGraph(const std::string_view filename, const std::vector<INode*>& nodesToSave);
-		bool LoadGraph(const std::string_view filename);
+		bool LoadGraph(const std::string_view filename, std::vector<Link>& outLinks);
 
         /// Uses the node factory to create a node given its node id.
 		/// \param node_id the hash generated from the node's human-readable name by SCHash()
