@@ -49,7 +49,6 @@ namespace {
 		case PinType::FLOAT:		icon_type = IconType::Circle; break;
 		case PinType::STRING:		icon_type = IconType::Circle; break;
 		case PinType::FBO:			icon_type = IconType::Square; break;
-		case PinType::MATERIAL:		icon_type = IconType::Square; break;
 		case PinType::NOTE_EVENT:	icon_type = IconType::Grid; break;
 		case PinType::ANY:			icon_type = IconType::Diamond; break;
 
@@ -220,23 +219,4 @@ pins::PinInput* INode::FindPinInput(PinId id) {
 
 pins::PinOutput* INode::FindPinOutput(PinId id) {
 	return IOutPinnable::FindPinOut(this, id);
-}
-
-void INode::RecacheInputConnections() {
-	size_t size;
-	PinInput* pins = PinInputs(size);
-
-	for (size_t i = 0; i < size; i++) {
-		// If the Input pin is connected, re-cache the PinOutput's pointer to the PinInput.
-		if (pins[i].connection != nullptr) {
-			// Find the input pin in the Output pin's connections
-			std::vector<pins::PinConnection>& connections = pins[i].connection->connections;
-			for (size_t j = 0; j < connections.size(); j++) {
-				if (connections[j].inputPinId == pins[i].id) {
-					connections[j].input = &pins[i];
-					break;
-				}
-			}
-		}
-	}
 }

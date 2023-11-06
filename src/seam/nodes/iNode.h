@@ -57,6 +57,12 @@ namespace seam::nodes {
 		// not sure what else is needed here yet
 	};
 
+	struct PinConnectedArgs {
+		pins::PinInput* pinIn;
+		pins::PinOutput* pinOut;
+		seam::pins::PushPatterns* pushPatterns;
+	};
+
 	/// Base class for all nodes that use the eventing system
 	class INode : public pins::IInPinnable, public pins::IOutPinnable {
 	public:
@@ -93,7 +99,7 @@ namespace seam::nodes {
 		/// should be overridden by visual nodes
 		virtual void Draw(DrawParams* params) { }
 
-		virtual void OnPinConnected(pins::PinInput* pinIn, pins::PinOutput* pinOut) { }
+		virtual void OnPinConnected(PinConnectedArgs args) { }
 
 		virtual void OnPinDisconnected(pins::PinInput* pinIn, pins::PinOutput* pinOut) { }
 
@@ -178,10 +184,6 @@ namespace seam::nodes {
 				out_parents.push_back(parents[i].node);
 			}
 		}
-
-		/// @brief When the buffer for dynamically alloc'd pin inputs changes, this function needs to be called,
-		/// so that any Connections can re-cache each pointer to the PinInput
-		void RecacheInputConnections();
 
 		// nodes which draw to FBOs can set this member so the FBO is drawn as part of the node's center view.
 		ofFbo* gui_display_fbo = nullptr;

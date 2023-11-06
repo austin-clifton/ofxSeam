@@ -7,6 +7,19 @@
 using namespace seam::pins;
 
 namespace seam::props {
+	template <typename T>
+	bool DrawVectorResize(PinInput* pinIn) {
+		VectorPinInput<T>* v = (VectorPinInput<T>*)pinIn->seamp;
+		std::string name = pinIn->name + " Size";
+		size_t size = v->Get().size();
+		if (ImGui::DragScalar(name.c_str(), ImGuiDataType_U64, &size)) {
+			// Resize requested.
+			v->UpdateSize(pinIn, size);
+			return true;
+		}
+		return false;
+	}
+
 	bool DrawTextInput(std::string_view label, std::string& v) {
 		char buf[256] = { 0 };
 		// TODO not strcpy
@@ -28,12 +41,32 @@ namespace seam::props {
 	}
 
 	bool DrawPinInput(PinInput* input) {
+		bool sizeChanged = false;
+
+		// If this is a vector pin, draw the vector resize GUI.
+		if ((input->flags & PinFlags::VECTOR) > 0) {
+			switch (input->type) {
+			case PinType::FLOAT:
+				sizeChanged = DrawVectorResize<float>(input); break;
+			case PinType::INT:
+				sizeChanged = DrawVectorResize<int32_t>(input); break;
+			case PinType::UINT:
+				sizeChanged = DrawVectorResize<uint32_t>(input); break;
+			case PinType::FBO:
+				sizeChanged = DrawVectorResize<ofFbo*>(input); break;
+			default:
+				throw std::logic_error("DrawPinInput() vector resize: Not implemented (please implement me)");
+			}
+		}
+
+		bool pinsChanged = false;
+
 		size_t num_channels = 0;
 		void* channels = input->GetChannels(num_channels);
 		switch (input->type) {
 		case PinType::INT: {
 			PinIntMeta* meta = (PinIntMeta*)input->PinMetadata();
-			return ImGui::DragScalarN(
+			pinsChanged = ImGui::DragScalarN(
 				input->name.c_str(),
 				ImGuiDataType_S32,
 				channels,
@@ -44,10 +77,11 @@ namespace seam::props {
 				"%d",
 				0
 			);
+			break;
 		}
 		case PinType::UINT: {
 			PinUintMeta* meta = (PinUintMeta*)input->PinMetadata();
-			return ImGui::DragScalarN(
+			pinsChanged = ImGui::DragScalarN(
 				input->name.c_str(),
 				ImGuiDataType_U32,
 				channels,
@@ -58,10 +92,11 @@ namespace seam::props {
 				"%u",
 				0
 			);
+			break;
 		}
 		case PinType::FLOAT: {
 			PinFloatMeta* meta = (PinFloatMeta*)input->PinMetadata();
-			return ImGui::DragScalarN(
+			pinsChanged = ImGui::DragScalarN(
 				input->name.c_str(),
 				ImGuiDataType_Float,
 				channels,
@@ -72,17 +107,20 @@ namespace seam::props {
 				"%.3f",
 				0
 			);
+			break;
 		}
 		case PinType::BOOL: {
 			// TODO how to draw more than one bool?
 			assert(num_channels == 1);
-			return ImGui::Checkbox(input->name.c_str(), (bool*)channels);
+			pinsChanged = ImGui::Checkbox(input->name.c_str(), (bool*)channels);
+			break;
 		}
 		case PinType::FLOW: {
 			if (ImGui::Button(input->name.c_str())) {
-				input->FlowCallback();
-				return true;
+				input->Callback();
+				pinsChanged = true;
 			}
+			break;
 		}
 		case PinType::ANY:
 		case PinType::NOTE_EVENT:
@@ -90,13 +128,13 @@ namespace seam::props {
 		{
 			// TODO maybe allow note events to be "mocked" here;
 			// there isn't really anything else to draw for these otherwise.
-			return false;
+			break;
 		}
 		default:
-			// TODO
-			assert(false);
-			return false;
+			throw std::logic_error("DrawPinInputs(): Not implemented (please implement me)");
 		}
+
+		return pinsChanged || sizeChanged;
 	}
 
 	bool DrawPinInputs(nodes::INode* node) {

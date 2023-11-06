@@ -24,8 +24,8 @@ namespace seam::nodes {
 		float value = 0.f;
 
 		std::array<PinInput, 1> pin_inputs = {
-			pins::SetupInputPin(PinType::FLOAT, this, &inc, 1,
-				"incrementer", sizeof(float), nullptr, "will be added to the output value every frame"),
+			pins::SetupInputPin(PinType::FLOAT, this, &inc, 1, "incrementer", 
+				pins::PinInOptions("will be added to the output value every frame")),	
 		};
 
 		PinOutput pin_out_value = pins::SetupOutputPin(this, pins::PinType::FLOAT, "value");

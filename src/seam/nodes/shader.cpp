@@ -31,6 +31,13 @@ PinOutput* Shader::PinOutputs(size_t& size) {
 	return &pinOutMaterial;
 }
 
+void Shader::OnPinConnected(PinConnectedArgs args) {
+	if (args.pinOut->id == pinOutMaterial.id) {
+		ofFbo* fbos = { &fbo };
+		args.pushPatterns->Push(pinOutMaterial, &fbos, 1);
+	}
+}
+
 void Shader::Draw(DrawParams* params) {
 	fbo.begin();
 	fbo.clearColorBuffer(ofFloatColor(0.0f));

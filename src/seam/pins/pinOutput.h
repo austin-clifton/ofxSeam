@@ -11,9 +11,6 @@ namespace seam::pins {
     struct PinOutput final : public Pin, public IOutPinnable {
         std::vector<seam::pins::PinConnection> connections;
 
-        // user data, if any is needed
-        void* userp = nullptr;
-
         PinOutput* PinOutputs(size_t& size) {
             size = childrenSize;
             return childOutputs;
@@ -23,6 +20,10 @@ namespace seam::pins {
             childOutputs = children;
             childrenSize = size;
         }
+
+        /// @brief If internals of Pin Output data changes but a push isn't needed 
+        /// (for instance, an FBO's contents updated), you can skip push patterns and just dirty connections.
+        void DirtyConnections();
 
     private:
         PinOutput* childOutputs = nullptr;

@@ -93,6 +93,6 @@ namespace seam::nodes {
 			pins::SetupInputPin(PinType::FLOAT, this, &particle_wave_distance, 1, "Particle Wave Distance"),
 		};
 
-		PinOutput pin_out_material = pins::SetupOutputPin(this, pins::PinType::MATERIAL, "material");
+		PinOutput pin_out_material = pins::SetupOutputPin(this, pins::PinType::FBO, "FBO");
 	};
 }

@@ -27,8 +27,10 @@ namespace seam::nodes {
 
 		std::array<PinInput, 4> pin_inputs = {
 			pins::SetupInputPin(PinType::FLOAT, this, &frequency, 1, "Frequency"),
-			pins::SetupInputPin(PinType::FLOAT, this, &leadingEdge, 1, "Leading Edge", sizeof(float), nullptr,  "right before the saw wave snap, the value will be this"),
-			pins::SetupInputPin(PinType::FLOAT, this, &fallingEdge, 1, "Falling Edge", sizeof(float), nullptr, "right after the saw wave snap, the value will be this"),
+			pins::SetupInputPin(PinType::FLOAT, this, &leadingEdge, 1, "Leading Edge", 
+				PinInOptions("right before the saw wave snap, the value will be this")),
+			pins::SetupInputPin(PinType::FLOAT, this, &fallingEdge, 1, "Falling Edge", 
+				PinInOptions("right after the saw wave snap, the value will be this")),
 			pins::SetupInputFlowPin(this, [&] { Reset(); }, "Reset"),
 		};
 

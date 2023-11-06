@@ -29,10 +29,10 @@ namespace seam::nodes {
 
 		std::array<PinInput, 3> pin_inputs = { 
 			pins::SetupInputQueuePin(PinType::NOTE_EVENT, this, "Notes On Stream"),
-			pins::SetupInputPin(PinType::FLOAT, this, &curveModifier, 1, "Curve Modifier", sizeof(float), nullptr, 
-				"0 for linear, positive for an x^N curve, negative for x^(1 / -N) curve"),
-			pins::SetupInputPin(PinType::FLOAT, this, &totalTriggerTime, 1, "Total Trigger Time", sizeof(float), nullptr, 
-				"the total amount of time each trigger animation runs for, in seconds"),
+			pins::SetupInputPin(PinType::FLOAT, this, &curveModifier, 1, "Curve Modifier", 
+				PinInOptions("0 for linear, positive for an x^N curve, negative for x^(1 / -N) curve")),
+			pins::SetupInputPin(PinType::FLOAT, this, &totalTriggerTime, 1, "Total Trigger Time", 
+				PinInOptions("the total amount of time each trigger animation runs for, in seconds")),
 		};
 
 		PinOutput pin_out_curve = pins::SetupOutputPin(this, pins::PinType::FLOAT, "trigger curve");

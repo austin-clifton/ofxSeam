@@ -12,9 +12,9 @@ namespace seam::nodes {
 		Feedback();
 		~Feedback();
 
-		void Update(UpdateParams* params) override;
-
 		void Draw(DrawParams* params) override;
+
+		void Update(UpdateParams* params) override;
 
 		PinInput* PinInputs(size_t& size) override;
 
@@ -24,6 +24,7 @@ namespace seam::nodes {
 
 	private:
 		bool ReloadShader();
+		void RebindTexture();
 
 		// Use two FBOs to ping pong for feedback.
 		ofFbo fbo1;
@@ -31,9 +32,6 @@ namespace seam::nodes {
 		bool write_to_fbo1 = true;
 
 		ofShader feedback_shader;
-
-		GLuint bound_texture_id = 0;
-		bool bound_texture_dirty = false;
 
 		ofFbo* inTexture = nullptr;
 		float decay = 0.05f;
@@ -43,10 +41,11 @@ namespace seam::nodes {
 		PinFloatMeta decayMeta = PinFloatMeta(0.f, 1.f);
 			
 		std::array<PinInput, 4> pin_inputs = {
-			pins::SetupInputPin(PinType::FBO, this, &inTexture, 1, "Input Texture", sizeof(ofFbo*)),
-			pins::SetupInputPin(PinType::FLOAT, this, &decay, 1, "Decay", sizeof(float), &decayMeta),
-			pins::SetupInputPin(PinType::FLOAT, this, &filterColor, 4, "Filter Color", sizeof(glm::vec4)),
-			pins::SetupInputPin(PinType::FLOAT, this, &feedbackOffset, 2, "Feedback Offset", sizeof(glm::vec2)),
+			pins::SetupInputPin(PinType::FBO, this, &inTexture, 1, "Input FBO", 
+				PinInOptions(std::bind(&Feedback::RebindTexture, this))),
+			pins::SetupInputPin(PinType::FLOAT, this, &decay, 1, "Decay", PinInOptions("", &decayMeta)),
+			pins::SetupInputPin(PinType::FLOAT, this, &filterColor, 4, "Filter Color"),
+			pins::SetupInputPin(PinType::FLOAT, this, &feedbackOffset, 2, "Feedback Offset"),
 		};
 
 		PinOutput pin_out_texture = pins::SetupOutputPin(this, pins::PinType::FBO, "output");

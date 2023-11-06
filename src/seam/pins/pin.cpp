@@ -223,6 +223,7 @@ namespace seam::pins {
 		const std::string_view name,
 		size_t elementSizeInBytes,
 		void* pinMetadata,
+        std::function<void(void)>&& callback,
 		const std::string_view description
 	) {
 		// TODO: Validate inputs in debug mode...?
@@ -231,8 +232,40 @@ namespace seam::pins {
 			elementSizeInBytes = PinTypeToElementSize(pinType);
 		}
 
+		return PinInput(
+			pinType, 
+			name, 
+			description, 
+			node, 
+			channels, 
+			numChannels, 
+			elementSizeInBytes, 
+			std::move(callback),
+			pinMetadata);
+	}
 
-		return PinInput(pinType, name, description, node, channels, numChannels, elementSizeInBytes, pinMetadata);
+	PinInput SetupInputPin(
+		PinType pinType,
+		nodes::INode* node,
+		void* channels,
+		const size_t numChannels,
+		const std::string_view name,
+		PinInOptions&& options
+	) {
+		size_t elementSize = options.elementSize > 0 
+			? options.elementSize : PinTypeToElementSize(pinType);
+
+		return PinInput(
+			pinType,
+			name,
+			options.description,
+			node,
+			channels, 
+			numChannels,
+			elementSize,
+			std::move(options.callback),
+			options.pinMetadata
+		);
 	}
 
 	PinInput SetupInputQueuePin(

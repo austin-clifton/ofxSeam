@@ -27,6 +27,7 @@ namespace seam::pins {
             void* _channelsData,
             size_t _channelsSize,
             size_t _elementSizeInBytes,
+            std::function<void(void)>&& _callback,
             void* _pinMetadata
             )
         {
@@ -39,6 +40,7 @@ namespace seam::pins {
             buffer = _channelsData;
             totalElements = _channelsSize;
             sizeInBytes = _elementSizeInBytes;
+            callback = std::move(_callback);
             pinMetadata = _pinMetadata;
         }
 
@@ -63,7 +65,7 @@ namespace seam::pins {
         PinInput(const std::string_view _name,
             const std::string_view _description,
             nodes::INode* _node,
-            std::function<void(void)>&& callback,
+            std::function<void(void)>&& _callback,
             void* _pinMetadata
         )
         {
@@ -74,7 +76,7 @@ namespace seam::pins {
             isQueue = false;
             flags = (PinFlags)(flags | PinFlags::INPUT);
             pinMetadata = _pinMetadata;
-            Callback = std::move(callback);
+            callback = std::move(_callback);
             sizeInBytes = 0;
         }
 
@@ -127,9 +129,14 @@ namespace seam::pins {
             totalElements = elements;
         }
 
-        inline void FlowCallback() {
-            assert(type == PinType::FLOW);
-            Callback();
+        inline void Callback() {
+            if (callback) {
+                callback();
+            }
+        }
+
+        inline void SetCallback(std::function<void(void)>&& cb) {
+            callback = cb;
         }
 
         PinInput* PinInputs(size_t &size) override {
@@ -154,9 +161,6 @@ namespace seam::pins {
 
         bool isQueue;
 
-        // Should be set by pin types which have GUI metadata for mins/maxes etc.
-        void* pinMetadata;
-
         // Size of each element pointed to by void* members.
         size_t sizeInBytes;
 
@@ -166,7 +170,9 @@ namespace seam::pins {
         PinInput* childInputs = nullptr;
         size_t childrenSize = 0;
 
-        // Only used by flow pins. Exists outside the union so the copy constructor can still exist.
-        std::function<void(void)> Callback;
+        std::function<void(void)> callback;
+
+        // Should be set by pin types which have GUI metadata for mins/maxes etc.
+        void* pinMetadata;
     };
 }

@@ -28,10 +28,8 @@ Feedback::~Feedback() {
 }
 
 void Feedback::Update(UpdateParams* params) {
-	if (inTexture != nullptr && bound_texture_id != inTexture->getId()) {
-		bound_texture_id = inTexture->getId();
-		bound_texture_dirty = true;
-	}
+	ofFbo* fbos = { gui_display_fbo };
+	params->push_patterns->Push(pin_out_texture, &fbos, 1);
 }
 
 void Feedback::Draw(DrawParams* params) {
@@ -50,11 +48,6 @@ void Feedback::Draw(DrawParams* params) {
 
 	feedback_shader.begin();
 
-	if (bound_texture_dirty && inTexture != nullptr) {
-		feedback_shader.setUniformTexture("imgTex", inTexture->getTexture(), 1);
-	}
-
-	// feedback_shader.setUniformTexture("feedbackTex", fbo_read->getTexture(), 0);
 	feedback_shader.setUniform1f("decay", decay);
 	feedback_shader.setUniform4f("filterColor", filterColor);
 	feedback_shader.setUniform2f("feedbackOffset", feedbackOffset);
@@ -87,4 +80,13 @@ bool Feedback::GuiDrawPropertiesList() {
 
 bool Feedback::ReloadShader() {
 	return ShaderUtils::LoadShader(feedback_shader, "screen-rect.vert", "feedback.frag");
+}
+
+void Feedback::RebindTexture() {
+	if (inTexture != nullptr) {
+		// Have to set the feedback shader as the current program before re-binding the texture.
+		feedback_shader.begin();
+		feedback_shader.setUniformTexture("imgTex", inTexture->getTexture(), 1);
+		feedback_shader.end();
+	}
 }

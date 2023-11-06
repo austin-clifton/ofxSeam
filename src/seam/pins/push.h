@@ -82,6 +82,9 @@ namespace seam::pins {
 					// Figure out the size of each element in the destination.
 					size_t inputElementSize = pins::PinTypeToElementSize(conn.input->type);
 					conn.convertMulti(data, numElements * sizeof(T), dst, dstSize * inputElementSize);
+				
+					// Fire whatever user callback was provided, if any.
+					conn.input->Callback();
 				}
 			}
 		}
@@ -89,7 +92,7 @@ namespace seam::pins {
 		void PushFlow(const PinOutput& pinOut) {
 			assert(pinOut.type == PinType::FLOW);
 			for (auto& conn : pinOut.connections) {
-				conn.input->FlowCallback();
+				conn.input->Callback();
 			}
 		}
 

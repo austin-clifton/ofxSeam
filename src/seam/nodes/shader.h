@@ -23,6 +23,8 @@ namespace seam::nodes {
 
 		PinOutput* PinOutputs(size_t& size) override;
 
+        void OnPinConnected(PinConnectedArgs args) override;
+
 	private:
 		bool AttemptShaderLoad(const std::string& shader_name );
 
@@ -36,6 +38,6 @@ namespace seam::nodes {
 		
 		// input pins are dynamically created based on the shader's uniforms
 		std::vector<PinInput> pinInputs;
-		PinOutput pinOutMaterial = pins::SetupOutputPin(this, pins::PinType::MATERIAL, "material");
+		PinOutput pinOutMaterial = pins::SetupOutputPin(this, pins::PinType::FBO, "material");
 	};
 }

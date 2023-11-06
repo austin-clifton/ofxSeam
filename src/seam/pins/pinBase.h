@@ -33,8 +33,11 @@ namespace seam::pins {
         /// rather than treating the Pin's underlying vector as value channels.
         /// Is useful for receiving note events or any kind of event stream.
         EVENT_QUEUE = 1 << 3,
-    };
 
+        /// @brief Valid for Input pins only; means Pin channels are resizable,
+        /// and the void* backing the Pin points to a vector<T>
+        VECTOR = 1 << 4,
+    };
 
     // TODO move me
     enum RangeType : uint8_t {
@@ -61,6 +64,12 @@ namespace seam::pins {
         nodes::INode* node = nullptr;
 
         PinFlags flags = (PinFlags)0;
+ 
+        /// @brief Don't touch! For seam internal usage.
+        void* seamp = nullptr;
+
+        /// @brief Unused pointer for user data, if any is needed.
+        void* userp = nullptr;
 
         virtual ~Pin() { }
 
