@@ -108,7 +108,7 @@ bool Shader::AttemptShaderLoad(const std::string& shader_name) {
 	return false;
 }
 
-bool Shader::GuiDrawPropertiesList() {
+bool Shader::GuiDrawPropertiesList(UpdateParams* params) {
 	// first ask the GUI to draw an input for the shader path.
 	// if the shader paths changes, then also attempt re-loading the shader.
 	return props::DrawShaderPath("shader name", shader_name)

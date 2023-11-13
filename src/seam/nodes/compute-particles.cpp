@@ -221,7 +221,7 @@ void ComputeParticles::Draw(DrawParams* params) {
 	fbo.end();
 }
 
-bool ComputeParticles::GuiDrawPropertiesList() {
+bool ComputeParticles::GuiDrawPropertiesList(UpdateParams* params) {
 	if (ImGui::Button("refresh")) {
 		if (!LoadComputeShader(compute_shader_name, compute_shader)) {
 			printf("compute shader failed to reload!\n");

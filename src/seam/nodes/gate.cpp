@@ -48,7 +48,7 @@ pins::PinOutput* Gate::AddPinOut(PinOutput&& pinOut, size_t index) {
 	return nullptr;
 }
 
-bool Gate::GuiDrawPropertiesList() {
+bool Gate::GuiDrawPropertiesList(UpdateParams* params) {
 	uint32_t newGatesCount = gatesCount;
 	if (ImGui::InputScalar("Gates Count", ImGuiDataType_U32, &newGatesCount)) {
 		if (newGatesCount > gatesCount) {

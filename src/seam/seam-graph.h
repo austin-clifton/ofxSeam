@@ -68,7 +68,14 @@ namespace seam {
 		bool Disconnect(PinInput* pinIn, PinOutput* pinOut);
 
         inline EventNodeFactory* GetFactory() { return factory; }
+
         inline const std::vector<INode*>& GetNodes() { return nodes; }
+		
+		inline UpdateParams* GetUpdateParams() {
+			updateParams.time = ofGetElapsedTimef();
+			updateParams.delta_time = ofGetLastFrameTime();
+			return &updateParams;
+		}
 
     private:
 		/// @brief Recursively traverse a visual node's parent tree and update nodes in order.
@@ -103,8 +110,10 @@ namespace seam {
 		std::vector<IAudioNode*> audioNodes;
 
 		EventNodeFactory* factory = nullptr;
-		PushPatterns push_patterns;
-		FramePool alloc_pool = FramePool(8192);
+		PushPatterns pushPatterns;
+		FramePool allocPool = FramePool(8192);
+
+		UpdateParams updateParams;
 
         friend class seam::Editor;
     };

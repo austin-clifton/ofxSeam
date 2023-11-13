@@ -24,7 +24,7 @@ namespace seam::nodes {
 
 		void OnPinDisconnected(pins::PinInput* pinIn, pins::PinOutput* pinOut) override;
 
-		bool GuiDrawPropertiesList() override;
+		bool GuiDrawPropertiesList(UpdateParams* params) override;
 
         std::vector<props::NodeProperty> GetProperties() override;
 

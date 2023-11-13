@@ -7,9 +7,9 @@ using namespace seam::nodes;
 NotesPrinter::NotesPrinter() : INode("Notes Printer") {
 	// this is a debug tool which will never be part of a visual chain (it has no outputs).
 	// check for Update() every frame.
-	flags = (NodeFlags)(flags | NodeFlags::UPDATES_EVERY_FRAME);
+	flags = (NodeFlags)(flags | NodeFlags::UPDATES_EVERY_FRAME | NodeFlags::UPDATES_OVER_TIME | NodeFlags::IS_VISUAL);
 	pinNotesOnStream = &pin_inputs[0];
-	pinNotesOnStream = &pin_inputs[1];
+	pinNotesOffStream = &pin_inputs[1];
 }
 
 NotesPrinter::~NotesPrinter() {
@@ -42,6 +42,7 @@ void NotesPrinter::PrintNoteOffEvent(notes::NoteOffEvent* ev) {
 void NotesPrinter::Update(UpdateParams* params) {
 	size_t size;
 	notes::NoteOnEvent** onEvents = (notes::NoteOnEvent**)pinNotesOnStream->GetEvents(size);
+	bool hasEvents = size > 0;
 
 	// drain any notes that were pushed to each notes stream and print their values
 	for (size_t i = 0; i < size; i++) {
@@ -55,4 +56,9 @@ void NotesPrinter::Update(UpdateParams* params) {
 		PrintNoteOffEvent(offEvents[i]);
 	}
 	pinNotesOffStream->ClearEvents(size);
+	hasEvents = hasEvents || size > 0;
+
+	if (hasEvents) {
+		std::cout << std::endl;
+	}
 }

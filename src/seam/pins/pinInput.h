@@ -159,13 +159,13 @@ namespace seam::pins {
     private:
         const static size_t MAX_EVENTS;
 
-        bool isQueue;
+        bool isQueue = false;
 
         // Size of each element pointed to by void* members.
-        size_t sizeInBytes;
+        size_t sizeInBytes = 0;
 
-        void* buffer;
-        size_t totalElements;
+        void* buffer = nullptr;
+        size_t totalElements = 0;
 
         PinInput* childInputs = nullptr;
         size_t childrenSize = 0;

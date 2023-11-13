@@ -18,13 +18,17 @@ namespace seam::nodes {
 
 		PinOutput* PinOutputs(size_t& size) override;
 
+		bool GuiDrawPropertiesList(UpdateParams* params) override;
+
 	private:
+		void Retrigger(float velocity, PushPatterns* push);
+
 		float trigger_time = 0.f;
 		float trigger_max_vel = 0.f;
 		float output = 0.f;
 
-		float curveModifier;
-		float totalTriggerTime;
+		float curveModifier = 4.0f;
+		float totalTriggerTime = 0.4f;
 		PinInput* pinNotesOnStream;
 
 		std::array<PinInput, 3> pin_inputs = { 
@@ -35,6 +39,7 @@ namespace seam::nodes {
 				PinInOptions("the total amount of time each trigger animation runs for, in seconds")),
 		};
 
-		PinOutput pin_out_curve = pins::SetupOutputPin(this, pins::PinType::FLOAT, "trigger curve");
+		PinOutput pinOutCurve = pins::SetupOutputPin(this, pins::PinType::FLOAT, "Trigger Curve");
+		PinOutput pinOutTriggered = pins::SetupOutputPin(this, pins::PinType::FLOW, "On Triggered");
 	};
 }

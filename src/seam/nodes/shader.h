@@ -17,7 +17,7 @@ namespace seam::nodes {
 
 		void Draw(DrawParams* params) override;
 
-		bool GuiDrawPropertiesList() override;
+		bool GuiDrawPropertiesList(UpdateParams* params) override;
 
 		PinInput* PinInputs(size_t& size) override;
 

@@ -21,7 +21,7 @@ namespace seam::nodes {
 
 		void GuiDrawNodeCenter() override;
 
-		bool GuiDrawPropertiesList() override;
+		bool GuiDrawPropertiesList(UpdateParams* params) override;
 
 		void ProcessAudio(ofSoundBuffer& input) override;
 	private:

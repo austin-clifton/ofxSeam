@@ -38,7 +38,7 @@ PinOutput* ForceGrid::PinOutputs(size_t& size) {
 	return &pin_out_material;
 }
 
-bool ForceGrid::GuiDrawPropertiesList() {
+bool ForceGrid::GuiDrawPropertiesList(UpdateParams* params) {
 	// TODO? there may be nothing to do here
 	return false;
 }

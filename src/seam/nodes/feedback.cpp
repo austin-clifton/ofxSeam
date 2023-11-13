@@ -70,7 +70,7 @@ PinOutput* Feedback::PinOutputs(size_t& size) {
 	return &pin_out_texture;
 }
 
-bool Feedback::GuiDrawPropertiesList() {
+bool Feedback::GuiDrawPropertiesList(UpdateParams* params) {
 	if (ImGui::Button("Reload Shaders")) {
 		return ReloadShader();
 	}

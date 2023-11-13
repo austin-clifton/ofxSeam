@@ -36,6 +36,17 @@ PercussiveTrigger::~PercussiveTrigger() {
 	// NO-OP?
 }
 
+void PercussiveTrigger::Retrigger(float velocity, PushPatterns* push) {
+		// reset trigger time
+		trigger_time = totalTriggerTime;
+
+		// TODO: should this be aware of the last max velocity, in cases where the last trigger hasn't finished?
+		trigger_max_vel = velocity;
+
+		// Push to the triggered pin.
+		push->PushFlow(pinOutTriggered);
+}
+
 void PercussiveTrigger::Update(UpdateParams* params) {
 	float max_vel = 0.f;
 	bool retrigger = false;
@@ -56,11 +67,7 @@ void PercussiveTrigger::Update(UpdateParams* params) {
 	pinNotesOnStream->ClearEvents(size);
 
 	if (retrigger) {
-		// reset trigger time
-		trigger_time = totalTriggerTime;
-
-		// TODO: should this be aware of the last max velocity, in cases where the last trigger hasn't finished?
-		trigger_max_vel = max_vel;
+		Retrigger(max_vel, params->push_patterns);
 	}
 
 	if (trigger_time > 0.f) {
@@ -68,11 +75,11 @@ void PercussiveTrigger::Update(UpdateParams* params) {
 		output = CalcTriggerCurve(trigger_time, totalTriggerTime, curveModifier);
 		trigger_time = std::max(0.f, trigger_time - delta_time);
 		
-		params->push_patterns->Push(pin_out_curve, &output, 1);
+		params->push_patterns->Push(pinOutCurve, &output, 1);
 	} else if (trigger_time == 0.f) {
 		// one last guaranteed trigger to reset to min value
 		output = CalcTriggerCurve(trigger_time, totalTriggerTime, curveModifier);
-		params->push_patterns->Push(pin_out_curve, &output, 1);
+		params->push_patterns->Push(pinOutCurve, &output, 1);
 		trigger_time = -1.0f;
 	}
 }
@@ -83,6 +90,14 @@ PinInput* PercussiveTrigger::PinInputs(size_t& size) {
 }
 
 PinOutput* PercussiveTrigger::PinOutputs(size_t& size) {
-	size = 1;
-	return &pin_out_curve;
+	size = 2;
+	return &pinOutCurve;
+}
+
+bool PercussiveTrigger::GuiDrawPropertiesList(UpdateParams* params) {
+	if (ImGui::Button("Trigger")) {
+		Retrigger(0.9f, params->push_patterns);
+		return true;
+	}
+	return false;
 }

@@ -24,7 +24,7 @@ namespace seam::nodes {
 
 		PinOutput* PinOutputs(size_t& size) override;
 
-		bool GuiDrawPropertiesList() override;
+		bool GuiDrawPropertiesList(UpdateParams* params) override;
 
 	private:
 		bool LoadShaders();

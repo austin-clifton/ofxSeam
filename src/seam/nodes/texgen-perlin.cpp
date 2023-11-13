@@ -57,7 +57,7 @@ PinOutput* TexgenPerlin::PinOutputs(size_t& size) {
 }
 
 /*
-bool TexgenPerlin::GuiDrawPropertiesList() {
+bool TexgenPerlin::GuiDrawPropertiesList(UpdateParams* params) {
 	if ( props::DrawShaderPath("shader name", shader_name) 
 		&& ShaderUtils::LoadShader(shader, shader_name)
 	) {

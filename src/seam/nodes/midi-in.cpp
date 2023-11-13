@@ -100,7 +100,7 @@ void MidiIn::newMidiMessage(ofxMidiMessage& msg) {
 	SetDirty();
 }
 
-bool MidiIn::GuiDrawPropertiesList() {
+bool MidiIn::GuiDrawPropertiesList(UpdateParams* params) {
 	// TODO display recently received MIDI messages?
 
 	bool changed = false;

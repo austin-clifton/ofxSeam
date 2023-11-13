@@ -319,7 +319,7 @@ bool Fireflies::LoadShaders() {
 	return compute_ff_loaded && compute_ffaa_loaded && geo_loaded && compute_moms_loaded;
 }
 
-bool Fireflies::GuiDrawPropertiesList() {
+bool Fireflies::GuiDrawPropertiesList(UpdateParams* params) {
 	if (ImGui::Button("refresh")) {
 		LoadShaders();
 		return true;

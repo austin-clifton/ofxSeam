@@ -78,7 +78,7 @@ void ChannelMap::OnPinDisconnected(pins::PinInput* pinIn, pins::PinOutput* pinOu
     // Is there anything to do here...?
 }
 
-bool ChannelMap::GuiDrawPropertiesList() {
+bool ChannelMap::GuiDrawPropertiesList(UpdateParams* params) {
     bool changed = false;
 
     if (ImGui::TreeNode("Inputs")) {

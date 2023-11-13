@@ -46,7 +46,7 @@ void Markov::Update(UpdateParams* params) {
 	}
 }
 
-bool Markov::GuiDrawPropertiesList() {
+bool Markov::GuiDrawPropertiesList(UpdateParams* params) {
 	bool nodesCountChanged = ImGui::DragInt("States Count", &nodesCount, 1.f, 2);
 	nodesCount = max(2, nodesCount);
 	if (nodesCountChanged) {

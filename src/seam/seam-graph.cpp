@@ -188,6 +188,9 @@ namespace {
 
 SeamGraph::SeamGraph(const ofSoundStreamSettings& soundSettings) {
     factory = new EventNodeFactory(soundSettings);
+
+	updateParams.push_patterns = &pushPatterns;
+    updateParams.alloc_pool = &allocPool;
 }
 
 SeamGraph::~SeamGraph() {
@@ -247,27 +250,22 @@ void SeamGraph::Update() {
     }
 
     // Clear the per-frame allocation pool
-    alloc_pool.Clear();
+    allocPool.Clear();
 
-    // Assemble update parameters
-    UpdateParams params;
-    params.push_patterns = &push_patterns;
-    params.alloc_pool = &alloc_pool;
-    params.time = ofGetElapsedTimef();
-    params.delta_time = ofGetLastFrameTime();
+	UpdateParams* params = GetUpdateParams();
 
     // Traverse Nodes which must be updated every frame;
     // these are usually nodes which handle some kind of external input and/or can be dirtied by other threads
     for (auto n : nodesUpdateEveryFrame) {
         // Assume the node will dirty itself if it needs to Update()
         if (n->dirty) {
-            n->Update(&params);
+            n->Update(params);
         }
     }
 
     // Traverse the visible node graph and update nodes that need to be updated
     for (auto n : visibleNodes) {
-        UpdateVisibleNodeGraph(n, &params);
+        UpdateVisibleNodeGraph(n, params);
     }
 }
 
@@ -378,13 +376,13 @@ bool SeamGraph::Connect(PinInput* pinIn, PinOutput* pinOut) {
 	PinConnectedArgs connectedArgs;
 	connectedArgs.pinIn = pinIn;
 	connectedArgs.pinOut = pinOut;
-	connectedArgs.pushPatterns = &push_patterns;
+	connectedArgs.pushPatterns = &pushPatterns;
 
 	parent->OnPinConnected(connectedArgs);
 	child->OnPinConnected(connectedArgs);
 
 	// give the input pin the default push pattern
-	pinIn->push_id = push_patterns.Default().id;
+	pinIn->push_id = pushPatterns.Default().id;
 
 	// add to each node's parents and children list
 	// if this connection rearranged the node graph, 

@@ -20,7 +20,7 @@ namespace seam::nodes {
 		
 		PinOutput* AddPinOut(PinOutput&& pinOut, size_t index) override;
 
-		bool GuiDrawPropertiesList() override;
+		bool GuiDrawPropertiesList(UpdateParams* params) override;
 
 	private:
 		PinInput* AddGatePin(const std::string_view name);

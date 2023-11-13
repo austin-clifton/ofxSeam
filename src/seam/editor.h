@@ -37,7 +37,6 @@ namespace seam {
 	
 	private:
 
-
 		void NewGraph();
 		void SaveGraph(const std::string_view filename, const std::vector<INode*>& nodesToSave);
 		void LoadGraph(const std::string_view filename);

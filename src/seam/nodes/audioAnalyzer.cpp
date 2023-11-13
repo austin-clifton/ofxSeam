@@ -77,7 +77,7 @@ void AudioAnalyzer::GuiDrawNodeCenter() {
 
 }
 
-bool AudioAnalyzer::GuiDrawPropertiesList() {
+bool AudioAnalyzer::GuiDrawPropertiesList(UpdateParams* params) {
 	// TODO:
 	// Display a checkmark or a lit up thingy if we're detecting audio input (RMS > 0)
 	if (ImGui::Checkbox("Beat Tracking", &enableOnsets)) {

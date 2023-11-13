@@ -366,7 +366,8 @@ void Editor::GuiDraw() {
 		ImGui::Text("Pins:");
 		bool dirty = props::DrawPinInputs(selected_node);
 		ImGui::Text("Properties:");
-		dirty = selected_node->GuiDrawPropertiesList() || dirty;
+
+		dirty = selected_node->GuiDrawPropertiesList(graph->GetUpdateParams()) || dirty;
 		if (dirty) {
 			selected_node->SetDirty();
 		}

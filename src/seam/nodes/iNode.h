@@ -105,7 +105,7 @@ namespace seam::nodes {
 
 		// draw configurable and display-only properties that are internal to the node
 		// and should be exposed for editing.
-		virtual bool GuiDrawPropertiesList() { return false; }
+		virtual bool GuiDrawPropertiesList(UpdateParams* params) { return false; }
 
 		virtual void GuiDrawNodeCenter();
 
