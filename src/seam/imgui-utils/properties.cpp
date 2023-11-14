@@ -130,6 +130,19 @@ namespace seam::props {
 			// there isn't really anything else to draw for these otherwise.
 			break;
 		}
+		case PinType::STRUCT:
+		{
+			// Draw child pins; should this just be done for all pin inputs though...?
+			size_t childrenSize; 
+			PinInput* children = input->PinInputs(childrenSize);
+			ImGui::Indent();
+			ImGui::Text("%s", input->name.c_str());
+			for (size_t i = 0; i < childrenSize; i++) {
+				pinsChanged = DrawPinInput(&children[i]) || pinsChanged;
+			}
+			ImGui::Unindent();
+			break;
+		}
 		default:
 			throw std::logic_error("DrawPinInputs(): Not implemented (please implement me)");
 		}

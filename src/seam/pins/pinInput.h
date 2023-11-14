@@ -12,6 +12,31 @@
 #include "seam/pins/pinOutput.h"
 
 namespace seam::pins {
+    struct PinInOptions {
+        PinInOptions() { }
+
+        PinInOptions(std::function<void(void)>&& _callback) {
+            callback = std::move(_callback);
+        }
+
+        PinInOptions(
+            std::string_view _description,
+            void* _pinMetadata = nullptr, 
+            std::function<void(void)>&& _callback = std::function<void(void)>(),
+            size_t _elementSize = 0
+        ) {
+            pinMetadata = _pinMetadata;
+            description = _description;
+            elementSize = _elementSize;
+            callback = std::move(_callback);
+        }
+
+        void* pinMetadata = nullptr;
+        std::string_view description;
+        size_t elementSize = 0;
+        std::function<void(void)> callback;
+    };
+
     class PinInput final : public Pin, public IInPinnable {
     public:
         PinInput() {

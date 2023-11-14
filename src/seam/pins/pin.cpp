@@ -149,6 +149,10 @@ namespace seam::pins {
 				pinType = PinType::FLOAT;
 				channelsSize = 2;
 				break;
+			case GL_FLOAT_VEC3:
+				pinType = PinType::FLOAT;
+				channelsSize = 3;
+				break;
 			case GL_INT_VEC2:
 				pinType = PinType::INT;
 				channelsSize = 2;
@@ -156,6 +160,7 @@ namespace seam::pins {
 			case GL_UNSIGNED_INT_VEC2:
 				pinType = PinType::UINT;
 				channelsSize = 2;
+				break;
 			default:
 				printf("uniform to PinInput for GL with enum type %d not implemented yet\n", uniform_type);
 				failed = true;
@@ -305,6 +310,7 @@ namespace seam::pins {
 			return sizeof(float);
 		case PinType::ANY:
 		case PinType::FLOW:
+		case PinType::STRUCT:
 			return 0;
 		case PinType::INT:
 			return sizeof(int32_t);

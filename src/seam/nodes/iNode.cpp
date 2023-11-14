@@ -28,7 +28,8 @@ namespace {
 		case PinType::INT:      return ImColor(68, 201, 156);
 		case PinType::FLOAT:    return ImColor(147, 226, 74);
 		case PinType::STRING:   return ImColor(124, 21, 153);
-		case PinType::FBO:  return ImColor(51, 150, 215);
+		case PinType::FBO:  	return ImColor(51, 150, 215);
+		case PinType::STRUCT: 	return ImColor(128);
 		// case PinType::Function: return ImColor(218, 0, 183);
 		// case PinType::Delegate: return ImColor(255, 48, 48);
 		}
@@ -51,6 +52,7 @@ namespace {
 		case PinType::FBO:			icon_type = IconType::Square; break;
 		case PinType::NOTE_EVENT:	icon_type = IconType::Grid; break;
 		case PinType::ANY:			icon_type = IconType::Diamond; break;
+		case PinType::STRUCT:		icon_type = IconType::Square; break;
 
 		// case PinType::Object:   icon_type = IconType::Circle; break;
 		// case PinType::Function: icon_type = IconType::Circle; break;

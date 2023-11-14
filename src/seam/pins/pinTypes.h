@@ -29,5 +29,8 @@ namespace seam::pins {
         // note events send a pointer to a struct from notes.h, 
         // or a struct that inherits one of those structs
         NOTE_EVENT,
+
+        // Not assignable, for pins which are really just containers for child pins
+        STRUCT,
     };
 }
