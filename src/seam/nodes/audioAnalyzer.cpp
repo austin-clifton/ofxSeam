@@ -48,6 +48,8 @@ void AudioAnalyzer::Update(UpdateParams* params) {
 				params->push_patterns->Push(*algo.pinOutChannelsSize, &channelsSize, 1);
 			}
 			params->push_patterns->Push(*algo.pinOutChannels, algo.values0.data(), algo.values0.size());
+			std::fill(algo.values0.begin(), algo.values0.end(), 0.0f);
+			std::fill(algo.values1.begin(), algo.values1.end(), 0.0f);
 		}
 	}
 
@@ -145,58 +147,52 @@ bool AudioAnalyzer::GuiDrawPropertiesList(UpdateParams* params) {
 	
 	ImGui::NewLine();
 	
-	if (lastRms > 0.f) {
-		const double xScale = 44100.0 / 256.0;
+	const double xScale = 44100.0 / 256.0;
 
-		// Plot multi value algos with histograms
-		for (size_t i = 0; i < multiValueAlgos.size(); i++) {
-			if (i % 2 == 1) {
-				ImGui::SameLine();
-			}
-
-			auto& algo = multiValueAlgos[i];
-			if (algo.enabled && ImPlot::BeginPlot(algo.name, ImVec2(512,512))) {
-				ImPlot::SetupAxisLimits(ImAxis_Y1, algo.limits.x, algo.limits.y, ImPlotCond_Always);
-				ImPlot::SetupAxisScale(ImAxis_X1, algo.scale);
-
-				ImPlot::PlotLine("left", algo.values0.data(), algo.values0.size(), xScale);
-				ImPlot::PlotLine("right", algo.values1.data(), algo.values1.size(), xScale);
-				
-				algo.values0.assign(algo.values0.size(), -100.f);
-				algo.values1.assign(algo.values0.size(), -100.f);
-
-				/*
-				ImPlot::SetupAxes(nullptr, nullptr, ImPlotAxisFlags_AutoFit, ImPlotAxisFlags_AutoFit);
-				ImPlot::PlotHistogram(algo.name, values.data(), values.size(), 
-					ImPlotBin_Sturges, 1.0, ImPlotRange(), ImPlotHistogramFlags_Density);
-				*/
-
-				ImPlot::EndPlot();
-			}
+	// Plot multi value algos with histograms
+	for (size_t i = 0; i < multiValueAlgos.size(); i++) {
+		if (i % 2 == 1) {
+			ImGui::SameLine();
 		}
 
-		// Plot single value algos using line plots
-		for (size_t i = 0; i < linePlotAlgos.size(); i++) {
-			if (i % 2 == 1) {
-				ImGui::SameLine();
-			}
+		auto& algo = multiValueAlgos[i];
+		if (algo.enabled && ImPlot::BeginPlot(algo.name, ImVec2(512,512))) {
+			ImPlot::SetupAxisLimits(ImAxis_Y1, algo.limits.x, algo.limits.y, ImPlotCond_Always);
+			ImPlot::SetupAxisScale(ImAxis_X1, algo.scale);
 
-			auto& algo = linePlotAlgos[i];
-			if (algo.enabled && ImPlot::BeginPlot(algo.name, ImVec2(200, 200))) {
-				// TODO use audio sample from audio loop RMS...
-				float f0 = audioAnalyzer.getValue(algo.algorithm, 0);
-				float f1 = audioAnalyzer.getValue(algo.algorithm, 1);
-				algo.AddPoint(f0, f1);
-				ImPlot::SetupAxisLimits(ImAxis_Y1, algo.limits.x, algo.limits.y);
-        		// ImPlot::SetupAxisScale(ImAxis_Y1, ImPlotScale_SymLog);
-				ImPlot::PlotLine("left", algo.values0.data(), algo.values0.size(), 1.0, 0, algo.offset);
-				ImPlot::PlotLine("right", algo.values1.data(), algo.values1.size(), 1.0, 0, algo.offset);
+			ImPlot::PlotLine("left", algo.values0.data(), algo.values0.size(), xScale);
+			ImPlot::PlotLine("right", algo.values1.data(), algo.values1.size(), xScale);
+			
+			/*
+			ImPlot::SetupAxes(nullptr, nullptr, ImPlotAxisFlags_AutoFit, ImPlotAxisFlags_AutoFit);
+			ImPlot::PlotHistogram(algo.name, values.data(), values.size(), 
+				ImPlotBin_Sturges, 1.0, ImPlotRange(), ImPlotHistogramFlags_Density);
+			*/
 
-				ImPlot::EndPlot();
-			}
+			ImPlot::EndPlot();
+		}
+	}
+
+	// Plot single value algos using line plots
+	for (size_t i = 0; i < linePlotAlgos.size(); i++) {
+		if (i % 2 == 1) {
+			ImGui::SameLine();
+		}
+
+		auto& algo = linePlotAlgos[i];
+		if (algo.enabled && ImPlot::BeginPlot(algo.name, ImVec2(200, 200))) {
+			// TODO use audio sample from audio loop RMS...
+			float f0 = audioAnalyzer.getValue(algo.algorithm, 0);
+			float f1 = audioAnalyzer.getValue(algo.algorithm, 1);
+			algo.AddPoint(f0, f1);
+			ImPlot::SetupAxisLimits(ImAxis_Y1, algo.limits.x, algo.limits.y);
+			// ImPlot::SetupAxisScale(ImAxis_Y1, ImPlotScale_SymLog);
+			ImPlot::PlotLine("left", algo.values0.data(), algo.values0.size(), 1.0, 0, algo.offset);
+			ImPlot::PlotLine("right", algo.values1.data(), algo.values1.size(), 1.0, 0, algo.offset);
+
+			ImPlot::EndPlot();
 		}
 	}
 	
-
 	return false;
 }
