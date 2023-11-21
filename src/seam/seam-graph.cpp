@@ -743,8 +743,8 @@ bool SeamGraph::LoadGraph(const std::string_view filename, std::vector<SeamGraph
 				PinInput* match = matchPos;
 				// If this is a vector pin, first set its size.
 				if ((match->flags & PinFlags::VECTOR) == PinFlags::VECTOR) {
-					VectorPinInputBase* vectorPin = (VectorPinInputBase*)match->seamp;
-					vectorPin->UpdateSize(match, serialized_pin_in.getChildren().size());
+					VectorPinInput* vectorPin = (VectorPinInput*)match->seamp;
+					vectorPin->UpdateSize(serialized_pin_in.getChildren().size());
 				}
 				
 				DeserializePinInput(serialized_pin_in, match);

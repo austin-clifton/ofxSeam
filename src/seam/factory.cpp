@@ -3,6 +3,7 @@
 
 #include "nodes/add-store.h"
 #include "nodes/audioAnalyzer.h"
+#include "nodes/channelMap.h"
 #include "nodes/cos.h"
 #include "nodes/feedback.h"
 #include "nodes/gate.h"
@@ -15,6 +16,7 @@
 #include "nodes/shader.h"
 #include "nodes/step.h"
 #include "nodes/texgen-perlin.h"
+#include "nodes/threshold.h"
 #include "nodes/timer.h"
 #include "nodes/compute-particles.h"
 #include "nodes/percussive-trigger.h"
@@ -28,7 +30,8 @@ EventNodeFactory::EventNodeFactory(const ofSoundStreamSettings& soundSettings) {
 	Register([&soundSettings] {
 		return new nodes::AudioAnalyzer(soundSettings);
 	});
-	Register(MakeCreate<nodes::ComputeParticles>());
+	Register(MakeCreate<nodes::ChannelMap>());
+	// Register(MakeCreate<nodes::ComputeParticles>());
 	Register(MakeCreate<nodes::Cos>());
 	Register(MakeCreate<nodes::GistAudio>());
 	Register(MakeCreate<nodes::Markov>());
@@ -44,6 +47,7 @@ EventNodeFactory::EventNodeFactory(const ofSoundStreamSettings& soundSettings) {
 	Register(MakeCreate<nodes::Saw>());
 	Register(MakeCreate<nodes::Gate>());
 	Register(MakeCreate<nodes::Step>());
+	Register(MakeCreate<nodes::Threshold>());
 
 	// TODO register more seam internal generators here
 }

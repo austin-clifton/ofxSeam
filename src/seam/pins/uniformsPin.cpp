@@ -23,9 +23,7 @@ void UniformsPin::UpdateUniforms(PinInput* uniformsPin, ofShader& shader) {
         }
     }
 
-    childPins = newPins;
-
-    uniformsPin->SetChildren(childPins.data(), childPins.size());
+	uniformsPin->SetChildren(std::move(newPins));
     uniformsPin->node->RecacheInputConnections();
 }
 

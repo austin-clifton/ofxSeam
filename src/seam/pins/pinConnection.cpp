@@ -3,6 +3,15 @@
 #endif
  
 #include "pinConnection.h"
+#include "pinInput.h"
+#include "pin.h"
+
+namespace {
+    template <typename SrcT, typename DstT>
+    void Convert(void* src, void* dst) {
+        *(DstT*)dst = *(SrcT*)src;
+    }
+}
 
 namespace seam::pins {
     PinConnection::PinConnection(PinInput* _input, PinType outputType) {
@@ -15,7 +24,7 @@ namespace seam::pins {
         bool canConvert;
         convertSingle = GetConvertSingle(outputType, input->type, canConvert);
         assert(canConvert);
-        convertMulti = GetConvertMulti(outputType, input->type, canConvert);
+        convertMulti = GetConvertMulti(outputType, input, canConvert);
         assert(canConvert);
     }
 
@@ -103,29 +112,52 @@ namespace seam::pins {
         return ConvertSingle();
     }
 
-    ConvertMulti GetConvertMulti(PinType srcType, PinType dstType, bool& isConvertible) {
-        if (srcType == dstType) {
+    ConvertMulti GetConvertMulti(PinType srcType, PinInput* pinIn, bool& isConvertible) {
+        if (srcType == pinIn->type) {
             isConvertible = true;
-            size_t elementSize = PinTypeToElementSize(dstType);
-            return [elementSize](void* src, size_t srcSize, void* dst, size_t dstSize) {
-                size_t bytesToCopy = std::min(srcSize, dstSize);
-                std::copy((char*)src, (char*)src + bytesToCopy, (char*)dst);
-            };
-        } else {
-            ConvertSingle Convert = GetConvertSingle(srcType, dstType, isConvertible);
-            if (isConvertible) {
-                size_t srcElementSize = PinTypeToElementSize(srcType);
-                size_t dstElementSize = PinTypeToElementSize(dstType);
-                return [Convert, srcElementSize, dstElementSize](void* _src, size_t srcSize, void* _dst, size_t dstSize) {
+            size_t elementSize = PinTypeToElementSize(srcType);
+
+            // If there's no stride, just copy away.
+            if (pinIn->Stride() == elementSize) {
+                return [elementSize](void* src, size_t srcSize, PinInput* pinIn) {
+                    size_t size;
+                    void* dst = pinIn->GetChannels(size);
+                    size_t bytesToCopy = std::min(srcSize, pinIn->BufferSize());
+
+                    std::copy((char*)src, (char*)src + bytesToCopy, (char*)dst);
+                };
+            } else {
+                // Has to account for stride!
+                return [elementSize](void* _src, size_t srcSize, PinInput* pinIn) {
+                    size_t dstElements;
+                    char* dst = (char*)pinIn->GetChannels(dstElements);
+
                     char* src = (char*)_src;
                     char* srcEnd = src + srcSize;
-                    char* dst = (char*)_dst;
-                    char* dstEnd = dst + dstSize;
 
-                    while (src != srcEnd && dst != dstEnd) {
+                    for (size_t i = 0; i < dstElements && src != srcEnd; src += elementSize, i++) {
+                        char* dsti = dst + i * pinIn->Stride() + pinIn->Offset();
+                        std::copy(src, src + elementSize, dsti);
+                    }
+                };
+            }
+
+        } else {
+            ConvertSingle Convert = GetConvertSingle(srcType, pinIn->type, isConvertible);
+            if (isConvertible) {
+                size_t srcElementSize = PinTypeToElementSize(srcType);
+                size_t dstElementSize = PinTypeToElementSize(pinIn->type);
+                return [Convert, srcElementSize, dstElementSize](void* _src, size_t srcSize, PinInput* pinIn) {
+                    size_t dstElements;
+                    char* dst = (char*)pinIn->GetChannels(dstElements);
+                    const size_t stride = pinIn->Stride();
+                    
+                    char* src = (char*)_src;
+                    char* srcEnd = src + srcSize;
+                    // char* dstEnd = dst + dstSize;
+
+                    for (size_t i = 0; i < dstElements && src != srcEnd; src += srcElementSize, dst += stride) {
                         Convert(src, dst);
-                        src += srcElementSize;
-                        dst += dstElementSize;
                     }
                 };
             }
@@ -232,9 +264,12 @@ TEST_CASE("Test multi float to int pin converter") {
     std::array<float, 4> floats = { 1.0, 2.0, 3.5, -10.9 };
     std::array<int32_t, 4> ints = { 5, 10, 14, 20 };
     bool isConvertible;
-    pins::ConvertMulti Convert = seam::pins::GetConvertMulti(PinType::FLOAT, PinType::INT, isConvertible);
+
+    pins::PinInput pinIn = pins::SetupInputPin(PinType::INT, nullptr, &ints, ints.size(), "");
+
+    pins::ConvertMulti Convert = seam::pins::GetConvertMulti(PinType::FLOAT, &pinIn, isConvertible);
     CHECK(isConvertible);
-    Convert(floats.data(), floats.size() * sizeof(float), ints.data(), ints.size() * sizeof(int32_t));
+    Convert(floats.data(), floats.size() * sizeof(float), &pinIn);
     for (size_t i = 0; i < floats.size(); i++) {
         CHECK((int32_t)floats[i] == ints[i]);
     }
@@ -244,12 +279,38 @@ TEST_CASE("Test multi float to bool pin converter") {
     std::array<float, 4> floats = { 1.0, 2.0, 3.5, 0.0 };
     std::array<bool, 4> bools = { 0 };
     bool isConvertible;
-    pins::ConvertMulti Convert = seam::pins::GetConvertMulti(PinType::FLOAT, PinType::BOOL, isConvertible);
+
+    pins::PinInput pinIn = pins::SetupInputPin(PinType::BOOL, nullptr, &bools, bools.size(), "");
+
+    pins::ConvertMulti Convert = seam::pins::GetConvertMulti(PinType::FLOAT, &pinIn, isConvertible);
     CHECK(isConvertible);
-    Convert(floats.data(), floats.size() * sizeof(float), bools.data(), bools.size() * sizeof(bool));
+    Convert(floats.data(), floats.size() * sizeof(float), &pinIn);
     for (size_t i = 0; i < floats.size(); i++) {
         CHECK((bool)floats[i] == bools[i]);
     }
+}
+
+TEST_CASE("Test strided converter where source and destination are the same type") {
+    std::array<float, 5> dst = { 1.0, 1.0, 1.0, 1.0, 1.0 };
+    std::array<float, 2> src = { -1.0, -1.0 };
+    bool isConvertible;
+
+    pins::PinInput pinIn = pins::SetupInputPin(PinType::FLOAT, nullptr, &dst, dst.size(), "",
+        PinInOptions(sizeof(float) * 2));
+
+    pins::ConvertMulti Convert = seam::pins::GetConvertMulti(PinType::FLOAT, &pinIn, isConvertible);
+    CHECK(isConvertible);
+
+    Convert(src.data(), src.size() * sizeof(float), &pinIn);
+    CHECK(dst[0] == -1.0f);
+    CHECK(dst[1] == 1.0f);
+    CHECK(dst[2] == -1.0f);
+    CHECK(dst[3] == 1.0f);
+    CHECK(dst[4] == 1.0f);
+}
+
+TEST_CASE("Test strided converter where source and destination are different types") {
+    // ...TODO
 }
 
 };

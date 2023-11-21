@@ -74,14 +74,7 @@ namespace seam::pins {
 				for (auto& conn : pinOut.connections) {
 					// Dirty the input node
 					conn.input->node->SetDirty();
-
-					// Grab the destination data
-					size_t dstSize;
-					char* dst = (char*)conn.input->GetChannels(dstSize);
-
-					// Figure out the size of each element in the destination.
-					size_t inputElementSize = pins::PinTypeToElementSize(conn.input->type);
-					conn.convertMulti(data, numElements * sizeof(T), dst, dstSize * inputElementSize);
+					conn.convertMulti(data, numElements * sizeof(T), conn.input);
 				
 					// Fire whatever user callback was provided, if any.
 					conn.input->Callback();

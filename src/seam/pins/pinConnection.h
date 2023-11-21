@@ -1,18 +1,13 @@
 #pragma once
 
-#include "pinInput.h"
-#include "pinOutput.h"
-
-namespace {
-    template <typename SrcT, typename DstT>
-    void Convert(void* src, void* dst) {
-        *(DstT*)dst = *(SrcT*)src;
-    }
-}
+#include <functional>
+#include "seam/pins/pinBase.h"
 
 namespace seam::pins {
+    class PinInput;
+
     using ConvertSingle = std::function<void(void* src, void* dst)>;
-    using ConvertMulti = std::function<void(void* src, size_t srcSize, void* dst, size_t dstSize)>;
+    using ConvertMulti = std::function<void(void* src, size_t srcSize, PinInput* pinIn)>;
 
     struct PinConnection {
         PinConnection(PinInput* _input, PinType outputType);
@@ -23,8 +18,7 @@ namespace seam::pins {
         ConvertSingle convertSingle;
         ConvertMulti convertMulti;
     };
-
     
     ConvertSingle GetConvertSingle(PinType srcType, PinType dstType, bool& isConvertible);
-    ConvertMulti GetConvertMulti(PinType srcType, PinType dstType, bool& isConvertible);
+    ConvertMulti GetConvertMulti(PinType srcType, PinInput* pinIn, bool& isConvertible);
 }

@@ -1,0 +1,149 @@
+#include "seam/pins/vectorPin.h"
+#include "seam/nodes/iNode.h"
+
+using namespace seam::pins;
+
+VectorPinInput::VectorPinInput(PinType childPinType) {
+    elementSize = PinTypeToElementSize(childPinType);
+    
+    createCb = [this, childPinType](VectorPinInput* me, size_t i) -> PinInput {
+        assert(vectorPin != nullptr);
+        size_t size;
+        vectorPin->PinInputs(size);
+
+        return SetupInputPin(childPinType, nullptr,
+            nullptr, 0, std::to_string(size));
+    };
+
+    fixPointersCb = [this](void* buff, PinInput* pinIn) {
+        pinIn->SetBuffer(buff, 1);
+    };
+}
+
+VectorPinInput::VectorPinInput(
+    VectorPinInput::CreateCallback&& _createCb,
+    VectorPinInput::SetPinPointersCallback&& _setPinPointersCb,
+    size_t _elementSize
+) {
+    elementSize = _elementSize;
+    createCb = _createCb;
+    fixPointersCb = _setPinPointersCb;
+    assert(!createCb == false);
+    assert(!fixPointersCb == false);
+}
+
+PinInput VectorPinInput::SetupVectorPin(
+    nodes::INode* node, 
+    PinType pinType, 
+    const std::string_view name,
+    size_t initialSize
+) {
+    assert(elementSize != 0);
+    PinInput pinIn = SetupInputPin(pinType, node, nullptr, 0, name);
+    pinIn.flags = (PinFlags)(pinIn.flags | PinFlags::VECTOR);
+    pinIn.seamp = this;
+
+    vectorPin = &pinIn;
+
+    UpdateSize(initialSize);
+    return pinIn;
+}
+
+void VectorPinInput::SetCallbackOptions(Options&& _options) {
+    options = std::move(_options);
+
+    if (vectorPin == nullptr) {
+        return;
+    }
+
+    size_t size;
+    PinInput* childPins = vectorPin->PinInputs(size);
+
+    if (options.onPinChanged) {
+        // Make sure all existing pins' callbacks are updated.
+        // TODO this doesn't handle hierarchies / structs!
+        for (size_t i = 0; i < vectorPin->childPins.size(); i++) {
+            PinInput& childPin = vectorPin->childPins[i];
+            childPins[i].SetCallback([this, i]() {
+                options.onPinChanged(&vectorPin->childPins[i], i);
+            });
+        }
+    } else {
+        // Clear existing callbacks
+        for (size_t i = 0; i < size; i++) {
+            childPins[i].SetCallback(std::function<void(void)>());
+        }
+    }
+}
+
+void VectorPinInput::UpdateSize(size_t newSize) {
+    assert(vectorPin != nullptr);
+
+    if (Size() == newSize) {
+        return;
+    }
+
+    buff.resize(newSize * elementSize);
+    vectorPin->SetBuffer(buff.data(), buff.size());
+
+    // Set up any new additional child pins.
+    while (vectorPin->childPins.size() < newSize) {
+        std::function<void(void)> changedCb;
+        if (options.onPinChanged) {
+            size_t pinIndex = vectorPin->childPins.size();
+            changedCb = [this, pinIndex]() {
+                options.onPinChanged(&vectorPin->childPins[pinIndex], pinIndex);
+            };
+        }
+
+        PinInput childPin = createCb(this, vectorPin->childPins.size());
+        childPin.node = vectorPin->node;
+        childPin.SetCallback(std::move(changedCb));
+        vectorPin->childPins.push_back(std::move(childPin));
+
+        /*
+        childPins.push_back(SetupInputPin(pinIn->type, pinIn->node,
+            &v[childPins.size()], 1, std::to_string(childPins.size()), 
+            PinInOptions(std::move(changedCb)))
+        );
+
+        if (options.onPinAdded) {
+            options.onPinAdded(this, childPins.size() - 1);
+        }
+        */
+    }
+
+    // Cut off any pins that don't need to exist anymore.
+    if (vectorPin->childPins.size() > newSize) {
+        if (options.onPinRemoved) {
+            while (vectorPin->childPins.size() > newSize) {
+                options.onPinRemoved(this, vectorPin->childPins.size() - 1);
+                vectorPin->childPins.pop_back();
+            }
+        } else {
+            vectorPin->childPins.resize(newSize);
+        }
+    }
+
+    assert(buff.size() / elementSize == vectorPin->childPins.size());
+
+    // Assume the pointer to buff moved, and re-set each child pin's buffer.
+    for (size_t i = 0, j = 0; i < vectorPin->childPins.size() && j < buff.size(); i++, j+= elementSize) {
+        fixPointersCb((void*)&buff[j], &vectorPin->childPins[i]);
+
+        // childPins[i].SetBuffer(&buff[j], 1);
+        
+        /*
+        size_t size;
+        void* buff = childPins[i].GetChannels(size);
+
+        printf("%llu v = %p, buff = %p\n", i, (void*)&v[i], buff);
+        */
+    }
+
+    vectorPin->RecacheInputConnections();
+
+    if (options.onSizeChanged) {
+        options.onSizeChanged(this);
+    }
+}

@@ -14,9 +14,6 @@ namespace seam::pins {
         void SetShaderUniforms(PinInput* uniformsPin, ofShader& shader);
 
     private:
-		/// @brief Input pins are dynamically created based on the shader's uniforms
-        std::vector<PinInput> childPins;
-
         /// @brief Space for uniform pin data is allocated to this buffer.
         std::vector<char> uniformsBuffer;
     };

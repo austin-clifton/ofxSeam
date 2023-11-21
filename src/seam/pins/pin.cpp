@@ -226,35 +226,6 @@ namespace seam::pins {
 		void* channels,
 		const size_t numChannels,
 		const std::string_view name,
-		size_t elementSizeInBytes,
-		void* pinMetadata,
-        std::function<void(void)>&& callback,
-		const std::string_view description
-	) {
-		// TODO: Validate inputs in debug mode...?
-
-		if (elementSizeInBytes == 0) {
-			elementSizeInBytes = PinTypeToElementSize(pinType);
-		}
-
-		return PinInput(
-			pinType, 
-			name, 
-			description, 
-			node, 
-			channels, 
-			numChannels, 
-			elementSizeInBytes, 
-			std::move(callback),
-			pinMetadata);
-	}
-
-	PinInput SetupInputPin(
-		PinType pinType,
-		nodes::INode* node,
-		void* channels,
-		const size_t numChannels,
-		const std::string_view name,
 		PinInOptions&& options
 	) {
 		size_t elementSize = options.elementSize > 0 
@@ -268,6 +239,8 @@ namespace seam::pins {
 			channels, 
 			numChannels,
 			elementSize,
+			options.stride > 0 ? options.stride : elementSize,
+			options.offset,
 			std::move(options.callback),
 			options.pinMetadata
 		);
@@ -288,6 +261,21 @@ namespace seam::pins {
 		}
 
 		return PinInput(pinType, name, description, node, elementSizeInBytes, pinMetadata);
+	}
+
+	PinInput SetupVec2InputPin(
+		nodes::INode* node,
+		glm::vec2& v,
+		std::string_view name
+	) {
+		std::vector<PinInput> childPins = {
+			pins::SetupInputPin(PinType::FLOAT, node, &v.x, 1, "X"),
+			pins::SetupInputPin(PinType::FLOAT, node, &v.y, 1, "Y"),
+		};
+
+		PinInput pinIn = pins::SetupInputPin(PinType::FLOAT, node, &v, 2, name);
+		pinIn.SetChildren(std::move(childPins));
+		return pinIn;
 	}
 
 	PinInput SetupInputFlowPin(

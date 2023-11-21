@@ -7,14 +7,13 @@
 using namespace seam::pins;
 
 namespace seam::props {
-	template <typename T>
 	bool DrawVectorResize(PinInput* pinIn) {
-		VectorPinInput<T>* v = (VectorPinInput<T>*)pinIn->seamp;
+		VectorPinInput* v = (VectorPinInput*)pinIn->seamp;
 		std::string name = pinIn->name + " Size";
-		size_t size = v->Get().size();
+		size_t size = v->Size();
 		if (ImGui::DragScalar(name.c_str(), ImGuiDataType_U64, &size)) {
 			// Resize requested.
-			v->UpdateSize(pinIn, size);
+			v->UpdateSize(size);
 			return true;
 		}
 		return false;
@@ -45,18 +44,7 @@ namespace seam::props {
 
 		// If this is a vector pin, draw the vector resize GUI.
 		if ((input->flags & PinFlags::VECTOR) > 0) {
-			switch (input->type) {
-			case PinType::FLOAT:
-				sizeChanged = DrawVectorResize<float>(input); break;
-			case PinType::INT:
-				sizeChanged = DrawVectorResize<int32_t>(input); break;
-			case PinType::UINT:
-				sizeChanged = DrawVectorResize<uint32_t>(input); break;
-			case PinType::FBO:
-				sizeChanged = DrawVectorResize<ofFbo*>(input); break;
-			default:
-				throw std::logic_error("DrawPinInput() vector resize: Not implemented (please implement me)");
-			}
+			sizeChanged = DrawVectorResize(input);
 		}
 
 		bool pinsChanged = false;

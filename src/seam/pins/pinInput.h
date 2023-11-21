@@ -12,6 +12,8 @@
 #include "seam/pins/pinOutput.h"
 
 namespace seam::pins {
+    class VectorPinInput;
+
     struct PinInOptions {
         PinInOptions() { }
 
@@ -19,9 +21,18 @@ namespace seam::pins {
             callback = std::move(_callback);
         }
 
+        PinInOptions(size_t _stride, 
+            size_t _offset = 0,
+            std::function<void(void)>&& _callback = std::function<void(void)>()
+        ) {
+            stride = _stride;
+            offset = _offset;
+            callback = std::move(_callback);
+        }
+
         PinInOptions(
             std::string_view _description,
-            void* _pinMetadata = nullptr, 
+            void* _pinMetadata = nullptr,
             std::function<void(void)>&& _callback = std::function<void(void)>(),
             size_t _elementSize = 0
         ) {
@@ -34,6 +45,8 @@ namespace seam::pins {
         void* pinMetadata = nullptr;
         std::string_view description;
         size_t elementSize = 0;
+        size_t stride = 0;
+        size_t offset = 0;
         std::function<void(void)> callback;
     };
 
@@ -52,6 +65,8 @@ namespace seam::pins {
             void* _channelsData,
             size_t _channelsSize,
             size_t _elementSizeInBytes,
+            size_t _stride,
+            size_t _offset,
             std::function<void(void)>&& _callback,
             void* _pinMetadata
             )
@@ -65,8 +80,12 @@ namespace seam::pins {
             buffer = _channelsData;
             totalElements = _channelsSize;
             sizeInBytes = _elementSizeInBytes;
+            stride = _stride;
+            offset = _offset;
             callback = std::move(_callback);
             pinMetadata = _pinMetadata;
+
+            assert(stride >= sizeInBytes);
         }
 
         PinInput(PinType _type,
@@ -165,13 +184,20 @@ namespace seam::pins {
         }
 
         PinInput* PinInputs(size_t &size) override {
-            size = childrenSize;
-            return childInputs;
+            size = childPins.size();
+            return childPins.data();
         }
 
-        void SetChildren(PinInput* _childInputs, size_t _childrenSize) {
-            childInputs = _childInputs;
-            childrenSize = _childrenSize;
+        void SetChildren(std::vector<PinInput>&& children) {
+            childPins = children;
+        }
+
+        inline size_t Stride() {
+            return stride;
+        }
+
+        inline size_t Offset() {
+            return offset;
         }
 
         /// push pattern id
@@ -181,6 +207,8 @@ namespace seam::pins {
         // can be nullptr
         PinOutput* connection = nullptr;
 
+        friend class pins::VectorPinInput;
+
     private:
         const static size_t MAX_EVENTS;
 
@@ -189,11 +217,13 @@ namespace seam::pins {
         // Size of each element pointed to by void* members.
         size_t sizeInBytes = 0;
 
+        size_t stride = 0;
+        size_t offset = 0;
+
         void* buffer = nullptr;
         size_t totalElements = 0;
 
-        PinInput* childInputs = nullptr;
-        size_t childrenSize = 0;
+        std::vector<PinInput> childPins;
 
         std::function<void(void)> callback;
 

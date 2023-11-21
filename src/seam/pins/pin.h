@@ -106,22 +106,11 @@ namespace seam {
 		
 		PinOutput* FindPinOutByName(IOutPinnable* pinnable, std::string_view name);
 
-		class Vec2PinInput {
-        public:
-            PinInput SetupVec2Pin(nodes::INode* node, glm::vec2& v, std::string_view name) {
-                childPins = {
-                    pins::SetupInputPin(PinType::FLOAT, node, &v.x, 1, "X"),
-                    pins::SetupInputPin(PinType::FLOAT, node, &v.y, 1, "Y"),
-                };
-
-                PinInput pinIn = pins::SetupInputPin(PinType::FLOAT, node, &v, 2, name);
-                pinIn.SetChildren(childPins.data(), childPins.size());
-                return pinIn;
-            }
-
-        private:
-            std::array<pins::PinInput, 2> childPins;
-        };
+		PinInput SetupVec2InputPin(
+			nodes::INode* node,
+			glm::vec2& v,
+			std::string_view name
+		);
 
 		/// Queries a linked shader program's active uniforms and creates a PinInput list from them.
 		/// \param shader The linked shader program to query the uniforms of.
