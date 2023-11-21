@@ -180,10 +180,6 @@ void Editor::GuiDraw() {
 
 	ed::SetCurrentEditor(nodeEditorContext);
 
-	// remember the editor cursor's start position and the editor's window position,
-	// so we can offset other draws on top of the node editor's window
-	const ImVec2 editor_cursor_start_pos = ImGui::GetCursorPos();
-
 	ed::Begin("Event Flow");
 
 	ed::Utilities::BlueprintNodeBuilder builder;
