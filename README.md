@@ -2,6 +2,8 @@
 
 Seam is a GUI-based node graph editor [addon](https://openframeworks.cc/learning/01_basics/how_to_add_addon_to_project/) for [OpenFrameworks](https://openframeworks.cc/), designed for protoyping and building data-driven visual systems.
 
+Seam uses C++17 so OpenFrameworks 0.12 is recommended. Windows Visual Studio and msys2 library dependencies are pre-built; if you are using Linux or Mac, dependencies will need to be built (see the dependencies section).
+
 See the `example_usage` directory for a skeleton you can use to get started using Seam. The Seam Editor hooks into OpenFrameworks' `update()`, `draw()`, etc. functions in your `ofApp`.
 
 Seam is currently missing many quality of life features and has some annoying bugs. Node creation and connections are functional and node graph files can be saved and loaded, but don't expect a friendly experience _yet_. See the Known Issues section for more info.
@@ -37,7 +39,7 @@ These are already compiled for Windows, if you are using Linux or Mac OS you wil
 
 Compatibility
 ------------
-Seam has been tested in Visual Studio using OpenFrameworks 0.12. It _should_ work fine on other platforms, but has not been tested, and dependencies will need to be built (see above).
+Seam has been built and run using UCRT64 msys2 and Visual Studio 2019 using OpenFrameworks 0.12. It _should_ work fine on other platforms, but has not been tested, and dependencies will need to be built (see above).
 
 Known issues
 ------------
