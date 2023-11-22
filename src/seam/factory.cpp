@@ -27,9 +27,11 @@ using namespace seam;
 EventNodeFactory::EventNodeFactory(const ofSoundStreamSettings& soundSettings) {
 	// register seam-internal nodes here
 	Register(MakeCreate<nodes::AddStore>());
+	#if BUILD_AUDIO_ANALYSIS
 	Register([&soundSettings] {
 		return new nodes::AudioAnalyzer(soundSettings);
 	});
+	#endif
 	Register(MakeCreate<nodes::ChannelMap>());
 	// Register(MakeCreate<nodes::ComputeParticles>());
 	Register(MakeCreate<nodes::Cos>());

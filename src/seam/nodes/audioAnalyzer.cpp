@@ -1,3 +1,5 @@
+#if BUILD_AUDIO_ANALYSIS
+
 #include "audioAnalyzer.h"
 
 using namespace seam;
@@ -196,3 +198,5 @@ bool AudioAnalyzer::GuiDrawPropertiesList(UpdateParams* params) {
 	
 	return false;
 }
+
+#endif // BUILD_AUDIO_ANALYSIS

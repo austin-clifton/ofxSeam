@@ -1,5 +1,7 @@
 #pragma once
 
+#if BUILD_AUDIO_ANALYSIS
+
 #include "implot.h"
 #include "ofxAudioAnalyzer.h"
 
@@ -155,3 +157,5 @@ namespace seam::nodes {
 		bool onsetOccurred = false;
 	};
 }
+
+#endif // BUILD_AUDIO_ANALYSIS
