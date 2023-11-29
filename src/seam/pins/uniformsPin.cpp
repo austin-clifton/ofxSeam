@@ -31,6 +31,8 @@ void UniformsPin::SetShaderUniforms(PinInput* uniformsPin, ofShader& shader) {
     size_t uniformsSize;
 	PinInput* uniforms = uniformsPin->PinInputs(uniformsSize);
 
+	int textureIndex = 1;
+
 	for (size_t i = 0; i < uniformsSize; i++) {
 		PinInput& pin = uniforms[i];
 		size_t size;
@@ -67,6 +69,16 @@ void UniformsPin::SetShaderUniforms(PinInput* uniformsPin, ofShader& shader) {
 				glUniform1ui(shader.getUniformLocation(pin.name), *uchans);
 			} else {
 				glUniform2ui(shader.getUniformLocation(pin.name), uchans[0], uchans[1]);
+			}
+			break;
+		}
+		case pins::PinType::FBO: {
+			ofFbo** fbos = (ofFbo**)channels;
+			// TODO do sizes > 1 need to be handled?
+			assert(size == 1);
+			if (fbos[0] != nullptr) {
+				shader.setUniformTexture(pin.name, fbos[0]->getTexture(), textureIndex);
+				textureIndex += 1;
 			}
 			break;
 		}

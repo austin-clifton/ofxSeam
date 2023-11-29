@@ -161,8 +161,12 @@ namespace seam::pins {
 				pinType = PinType::UINT;
 				channelsSize = 2;
 				break;
+			case GL_SAMPLER_2D_ARB:
+				pinType = PinType::FBO;
+				channelsSize = 1;
+				break;
 			default:
-				printf("uniform to PinInput for GL with enum type %d not implemented yet\n", uniform_type);
+				printf("uniform to PinInput for %s with enum type %d not implemented yet\n", snippedName.data(), uniform_type);
 				failed = true;
 				break;
 			}
@@ -211,6 +215,10 @@ namespace seam::pins {
 			case PinType::UINT:
 				glGetnUniformuiv(program, uniform_location, 
 					channelsSize * sizeof(uint32_t), (uint32_t*)channels);
+				break;
+			case PinType::FBO:
+				ofFbo** fbo = (ofFbo**)channels;
+				*fbo = nullptr;
 				break;
 			}
 
