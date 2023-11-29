@@ -55,6 +55,7 @@ namespace seam {
 		// book keeping for GUI interactions
 		Pin* new_link_pin;
 		INode* selected_node = nullptr;
+		INode* lastSelectedVisualNode = nullptr;
 
 		bool show_create_dialog = false;
 

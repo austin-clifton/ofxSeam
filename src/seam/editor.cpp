@@ -41,11 +41,11 @@ void Editor::Draw() {
 	graph->Draw();
 
 	// draw the selected node's display FBO if it's a visual node
-	if (selected_node && selected_node->IsVisual()) {
+	if (lastSelectedVisualNode != nullptr) {
 		// visual nodes should set an FBO for GUI display!
 		// TODO this assert should be placed elsewhere (it shouldn't only fire when selected)
-		assert(selected_node->gui_display_fbo != nullptr);
-		selected_node->gui_display_fbo->draw(0, 0);
+		assert(lastSelectedVisualNode->gui_display_fbo != nullptr);
+		lastSelectedVisualNode->gui_display_fbo->draw(0, 0);
 	}
 }
 
@@ -99,6 +99,7 @@ void Editor::NewGraph() {
 	loaded_file.clear();
 
 	selected_node = nullptr;
+	lastSelectedVisualNode = nullptr;
 	new_link_pin = nullptr;
 	show_create_dialog = false;
 
@@ -121,11 +122,11 @@ void Editor::LoadGraph(const std::string_view filename) {
 
 void Editor::DrawSelectedNode() {
 	// draw the selected node's display FBO if it's a visual node
-	if (selected_node && selected_node->IsVisual()) {
+	if (lastSelectedVisualNode != nullptr) {
 		// visual nodes should set an FBO for GUI display!
 		// TODO this assert should be placed elsewhere (it shouldn't only fire when selected)
-		assert(selected_node->gui_display_fbo != nullptr);
-		selected_node->gui_display_fbo->draw(0, 0);
+		assert(lastSelectedVisualNode->gui_display_fbo != nullptr);
+		lastSelectedVisualNode->gui_display_fbo->draw(0, 0);
 	}
 }
 
@@ -208,6 +209,9 @@ void Editor::GuiDraw() {
 	if (nodes_count) {
 		// the last selected node is the one we'll show in the properties editor
 		selected_node = selected_nodes.back().AsPointer<INode>();
+		if (selected_node->IsVisual()) {
+			lastSelectedVisualNode = selected_node;
+		}
 	} else {
 		selected_node = nullptr;
 	}
@@ -339,6 +343,10 @@ void Editor::GuiDraw() {
 					// If this node is the selected node, unselect.
 					if (selected_node == node) {
 						selected_node = nullptr;
+					}
+
+					if (lastSelectedVisualNode == node) {
+						lastSelectedVisualNode = nullptr;
 					}
 				}
 			}
