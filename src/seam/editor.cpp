@@ -402,3 +402,7 @@ bool Editor::Disconnect(PinInput* pinIn, PinOutput* pinOut) {
 	links.erase(it);
 	return disconnected;
 }
+
+void Editor::OnWindowResized(int w, int h) {
+	graph->OnWindowResized(w, h);
+}

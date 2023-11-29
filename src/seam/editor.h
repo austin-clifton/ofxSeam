@@ -31,6 +31,8 @@ namespace seam {
 		/// to be called by ofApp::update()
 		void Update();
 
+		void OnWindowResized(int w, int h);
+
 		void ProcessAudio(ofSoundBuffer& buffer);
 
 		seam::EventNodeFactory* GetFactory() { return graph->GetFactory(); }

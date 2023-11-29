@@ -15,6 +15,8 @@ namespace seam::nodes {
 		Shader();
 		~Shader();
 
+		void Setup(SetupParams* params) override;
+
 		void Draw(DrawParams* params) override;
 
 		bool GuiDrawPropertiesList(UpdateParams* params) override;
@@ -34,8 +36,6 @@ namespace seam::nodes {
 		std::string shader_name = "simple-glass";
 		ofShader shader;
 		ofFbo fbo;
-
-		glm::ivec2 tex_size = glm::ivec2(1920, 1080);
 
 		PinOutput pinOutMaterial = pins::SetupOutputPin(this, pins::PinType::FBO, "material");
 	};

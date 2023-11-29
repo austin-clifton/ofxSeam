@@ -8,13 +8,12 @@ using namespace seam::nodes;
 Shader::Shader() : INode("Shader Material") {
 	flags = (NodeFlags)(flags | NodeFlags::IS_VISUAL);
 
-	tex_size = glm::ivec2(ofGetWindowWidth(), ofGetWindowHeight());
-
-	fbo.allocate(tex_size.x, tex_size.y);
-
-	AttemptShaderLoad(shader_name);
-
+	windowFbos.push_back(WindowRatioFbo(&fbo));
 	gui_display_fbo = &fbo;
+}
+
+void Shader::Setup(SetupParams* params) {
+	AttemptShaderLoad(shader_name);
 }
 
 Shader::~Shader() {

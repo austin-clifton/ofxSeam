@@ -222,3 +222,32 @@ pins::PinInput* INode::FindPinInput(PinId id) {
 pins::PinOutput* INode::FindPinOutput(PinId id) {
 	return IOutPinnable::FindPinOut(this, id);
 }
+
+void INode::OnWindowResized(glm::uvec2 resolution) {
+	for (auto& windowFbo : windowFbos) {
+		glm::ivec2 expected = resolution * windowFbo.ratio;
+		if (windowFbo.fbo->getWidth() != expected.x || windowFbo.fbo->getHeight() != expected.y) {
+			// Destroy and reallocate the FBO.
+			windowFbo.fbo->clear();
+			windowFbo.fboSettings.width = expected.x;
+			windowFbo.fboSettings.height = expected.y;
+			windowFbo.fbo->allocate(windowFbo.fboSettings);
+
+			UpdateResolutionPin(expected);
+			SetDirty();
+		}
+	}
+}
+
+void INode::UpdateResolutionPin(glm::uvec2 resolution) {
+	PinInput* resolutionPin = FindPinInByName(this, "resolution");
+	if (resolutionPin != nullptr) {
+		// Expect resolution to be an ivec2 or uvec2
+		assert(resolutionPin->type == PinType::UINT || resolutionPin->type == PinType::INT);
+		size_t size;
+		void* channels = resolutionPin->GetChannels(size);
+		assert(size == 2);
+
+		*((glm::uvec2*)channels) = resolution;
+	}
+}

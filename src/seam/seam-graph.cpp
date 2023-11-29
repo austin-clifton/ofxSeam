@@ -186,7 +186,8 @@ namespace {
 	}
 }
 
-SeamGraph::SeamGraph(const ofSoundStreamSettings& soundSettings) {
+SeamGraph::SeamGraph(const ofSoundStreamSettings& _soundSettings) {
+	soundSettings = _soundSettings;
     factory = new EventNodeFactory(soundSettings);
 
 	updateParams.push_patterns = &pushPatterns;
@@ -293,6 +294,11 @@ void SeamGraph::NewGraph() {
 INode* SeamGraph::CreateAndAdd(seam::nodes::NodeId node_id) {
 	INode* node = factory->Create(node_id);
 	if (node != nullptr) {
+		node->OnWindowResized(glm::ivec2(ofGetWidth(), ofGetHeight()));
+		SetupParams params;
+		params.soundSettings = &soundSettings;
+		node->Setup(&params);
+
 		nodes.push_back(node);
 
 		if (node->IsVisual()) {
@@ -455,6 +461,12 @@ bool SeamGraph::Disconnect(PinInput* pinIn, PinOutput* pinOut) {
 	}
 
 	return true;
+}
+
+void SeamGraph::OnWindowResized(int w, int h) {
+	for (auto n : nodes) {
+		n->OnWindowResized(glm::ivec2(w, h));
+	}
 }
 
 int16_t SeamGraph::RecalculateUpdateOrder(INode* node) {

@@ -67,10 +67,12 @@ namespace seam {
 
 		bool Disconnect(PinInput* pinIn, PinOutput* pinOut);
 
+		void OnWindowResized(int w, int h);
+
         inline EventNodeFactory* GetFactory() { return factory; }
 
         inline const std::vector<INode*>& GetNodes() { return nodes; }
-		
+
 		inline UpdateParams* GetUpdateParams() {
 			updateParams.time = ofGetElapsedTimef();
 			updateParams.delta_time = ofGetLastFrameTime();
@@ -108,6 +110,8 @@ namespace seam {
 		std::vector<INode*> nodesUpdateEveryFrame;
 
 		std::vector<IAudioNode*> audioNodes;
+
+		ofSoundStreamSettings soundSettings;
 
 		EventNodeFactory* factory = nullptr;
 		PushPatterns pushPatterns;
