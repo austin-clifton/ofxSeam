@@ -126,13 +126,22 @@ namespace seam::props {
 			ImGui::Indent();
 			ImGui::Text("%s", input->name.c_str());
 			for (size_t i = 0; i < childrenSize; i++) {
-				pinsChanged = DrawPinInput(&children[i]) || pinsChanged;
+				bool childChanged = DrawPinInput(&children[i]);
+				pinsChanged = pinsChanged || childChanged;
+				
+				if (childChanged) {
+					children[i].Callback();
+				}
 			}
 			ImGui::Unindent();
 			break;
 		}
 		default:
 			throw std::logic_error("DrawPinInputs(): Not implemented (please implement me)");
+		}
+
+		if (pinsChanged) {
+			input->Callback();
 		}
 
 		return pinsChanged || sizeChanged;
