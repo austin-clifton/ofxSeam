@@ -325,7 +325,21 @@ namespace seam::pins {
 		auto it = std::find_if(pins, pins + pinsSize, [name](const PinInput& pinIn) {
 			return StrCmpLower(name, pinIn.name);
 		});
-		return it != pins + pinsSize ? it : nullptr;
+
+		if (it != pins + pinsSize) {
+			// Found, return it
+			return it;
+		} else {
+			// If not found, try children.
+			PinInput* found = nullptr;
+			for (size_t i = 0; i < pinsSize && found == nullptr; i++) {
+				size_t childrenSize;
+				PinInput* children = pins[i].PinInputs(childrenSize);
+				found = FindPinInByName(children, childrenSize, name);
+			}
+
+			return found;
+		}
 	}
 
 	PinInput* FindPinInByName(IInPinnable* pinnable, std::string_view name) {
@@ -338,7 +352,21 @@ namespace seam::pins {
 		auto it = std::find_if(pins, pins + pinsSize, [name](const PinOutput& pin_out) { 
 			return StrCmpLower(name, pin_out.name); 
 		});
-		return it != pins + pinsSize ? it : nullptr;
+
+		if (it != pins + pinsSize) {
+			// Found, return it
+			return it;
+		} else {
+			// If not found, try children.
+			PinOutput* found = nullptr;
+			for (size_t i = 0; i < pinsSize && found == nullptr; i++) {
+				size_t childrenSize;
+				PinOutput* children = pins[i].PinOutputs(childrenSize);
+				found = FindPinOutByName(children, childrenSize, name);
+			}
+
+			return found;
+		}
 	}
 	
 	PinOutput* FindPinOutByName(IOutPinnable* pinnable, std::string_view name) {
