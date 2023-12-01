@@ -28,9 +28,9 @@ namespace seam::nodes {
 
         std::vector<props::NodeProperty> GetProperties() override;
 
-        pins::PinInput* AddPinIn(PinInArgs args) override;
+        //pins::PinInput* AddPinIn(PinInArgs args) override;
 		
-        pins::PinOutput* AddPinOut(pins::PinOutput&& pinOut, size_t size) override;
+        //pins::PinOutput* AddPinOut(pins::PinOutput&& pinOut, size_t size) override;
 
 	private:
         static const size_t maxChannels;

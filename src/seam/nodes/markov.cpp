@@ -48,13 +48,13 @@ void Markov::Update(UpdateParams* params) {
 
 bool Markov::GuiDrawPropertiesList(UpdateParams* params) {
 	bool nodesCountChanged = ImGui::DragInt("States Count", &nodesCount, 1.f, 2);
-	nodesCount = max(2, nodesCount);
+	nodesCount = std::max(2, nodesCount);
 	if (nodesCountChanged) {
 		Reconfigure();
 	}
 
 	ImGui::DragInt("Selected Node", &gui.selectedNode, 1.f, 0, nodesCount - 1);
-	gui.selectedNode = max(0, min(nodesCount - 1, gui.selectedNode));
+	gui.selectedNode = std::max(0, std::min(nodesCount - 1, gui.selectedNode));
 
 	auto& selectedNode = markovNodes[gui.selectedNode];
 
@@ -89,7 +89,7 @@ std::vector<props::NodeProperty> Markov::GetProperties() {
 			return &nodesCount;
 		}, [this](int32_t* newCount, size_t size) {
 			assert(size == 1);
-			nodesCount = max(2, *newCount);
+			nodesCount = std::max(2, *newCount);
 			Reconfigure();
 		})
 	);
