@@ -7,7 +7,6 @@
 #include "nodes/cos.h"
 #include "nodes/feedback.h"
 #include "nodes/gate.h"
-#include "nodes/gist-audio.h"
 #include "nodes/markov.h"
 #include "nodes/midi-in.h"
 #include "nodes/noise.h"
