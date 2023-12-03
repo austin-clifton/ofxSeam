@@ -33,7 +33,6 @@ EventNodeFactory::EventNodeFactory(const ofSoundStreamSettings& soundSettings) {
 	#endif
 	// Register(MakeCreate<nodes::ComputeParticles>());
 	Register(MakeCreate<nodes::Cos>());
-	Register(MakeCreate<nodes::GistAudio>());
 	Register(MakeCreate<nodes::Markov>());
 	Register(MakeCreate<nodes::MidiIn>());
 	Register(MakeCreate<nodes::Noise>());
