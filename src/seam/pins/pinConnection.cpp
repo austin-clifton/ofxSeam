@@ -8,23 +8,25 @@
 
 namespace {
     template <typename SrcT, typename DstT>
-    void Convert(void* src, void* dst) {
-        *(DstT*)dst = *(SrcT*)src;
+    void Convert(seam::pins::ConvertSingleArgs args) {
+        for (uint16_t i = 0; i < args.srcNumCoords && i < args.dstNumCoords; i++) {
+            *((DstT*)args.dst + i) = *((SrcT*)args.src + i);
+        }
     }
 }
 
 namespace seam::pins {
-    PinConnection::PinConnection(PinInput* _input, PinType outputType) {
-        input = _input;
-        inputPinId = input->id;
-        RecacheConverts(outputType);
+    PinConnection::PinConnection(PinInput* _pinIn, PinOutput* _pinOut) : inputPinId(_pinIn->id) {
+        pinIn = _pinIn;
+        pinOut = _pinOut;
+        RecacheConverts();
     }
 
-    void PinConnection::RecacheConverts(PinType outputType) {
+    void PinConnection::RecacheConverts() {
         bool canConvert;
-        convertSingle = GetConvertSingle(outputType, input->type, canConvert);
+        convertSingle = GetConvertSingle(pinOut->type, pinIn->type, canConvert);
         assert(canConvert);
-        convertMulti = GetConvertMulti(outputType, input, canConvert);
+        convertMulti = GetConvertMulti(pinIn, pinOut, canConvert);
         assert(canConvert);
     }
 
@@ -34,8 +36,10 @@ namespace seam::pins {
         // If types match, no conversion is needed and a simple memcpy can be used.
         if (dstType == srcType || dstIsAny) {
             size_t elementSize = PinTypeToElementSize(dstIsAny ? srcType : dstType);
-            return [elementSize](void* src, void* dst) { 
-                std::copy((char*)src, (char*)src + elementSize, (char*)dst); 
+            return [elementSize](ConvertSingleArgs args) {
+                uint16_t numCoords = std::min(args.srcNumCoords, args.dstNumCoords);
+                std::copy((char*)args.src, (char*)args.src + elementSize * numCoords, 
+                    (char*)args.dst); 
             };
         }
         
@@ -112,52 +116,78 @@ namespace seam::pins {
         return ConvertSingle();
     }
 
-    ConvertMulti GetConvertMulti(PinType srcType, PinInput* pinIn, bool& isConvertible) {
-        if (srcType == pinIn->type) {
+    ConvertMulti GetConvertMulti(PinInput* pinIn, PinOutput* pinOut, bool& isConvertible) {
+        if (pinOut->type == pinIn->type) {
             isConvertible = true;
-            size_t elementSize = PinTypeToElementSize(srcType);
+            size_t elementSize = PinTypeToElementSize(pinOut->type);
 
-            // If there's no stride, just copy away.
-            if (pinIn->Stride() == elementSize) {
-                return [elementSize](void* src, size_t srcSize, PinInput* pinIn) {
-                    size_t size;
-                    void* dst = pinIn->GetChannels(size);
-                    size_t bytesToCopy = std::min(srcSize, pinIn->BufferSize());
+            // If there's no stride, one big copy might be possible.
+            if (pinIn->Stride() == elementSize * pinIn->NumCoords()) {
+                if (pinIn->NumCoords() == pinOut->numCoords) {
+                    // Destination data has the same type and is formatted as a flat array,
+                    // and has the same number of coords as the source. A single copy is possible.
+                    return [elementSize](ConvertMultiArgs args) {
+                        size_t size;
+                        void* dst = args.pinIn->Buffer(size);
+                        size_t bytesToCopy = std::min(args.srcSize * args.srcNumCoords, 
+                            args.pinIn->BufferSize());
 
-                    std::copy((char*)src, (char*)src + bytesToCopy, (char*)dst);
-                };
+                        std::copy((char*)args.src, (char*)args.src + bytesToCopy, (char*)dst);
+                    };
+                } else {
+                    // Src and dst types are the same, and dst is a flat array,
+                    // but numCoords differ.
+                    return [elementSize](ConvertMultiArgs args) {
+                        size_t dstSize;
+                        void* dst = args.pinIn->Buffer(dstSize);
+                        const uint16_t coordsPerCopy = std::min(args.srcNumCoords, args.pinIn->NumCoords());
+                        const size_t bytesPerCopy = coordsPerCopy * elementSize;
+                        const size_t totalElements = std::min(args.srcSize, dstSize);
+
+                        // Copy as many coords as possible per element, and then skip to the next element.
+                        for (size_t i = 0; i < totalElements; i++) {
+                            std::copy((char*)args.src + elementSize * args.srcNumCoords * i,
+                                (char*)args.src + bytesPerCopy * (i + i),
+                                (char*)dst + elementSize * args.pinIn->NumCoords() * i);
+                        }
+                    };
+                }
             } else {
                 // Has to account for stride!
-                return [elementSize](void* _src, size_t srcSize, PinInput* pinIn) {
-                    size_t dstElements;
-                    char* dst = (char*)pinIn->GetChannels(dstElements);
+                return [elementSize](ConvertMultiArgs args) {
+                    size_t dstSize;
+                    char* dst = (char*)args.pinIn->Buffer(dstSize);
 
-                    char* src = (char*)_src;
-                    char* srcEnd = src + srcSize;
+                    const uint16_t numCoords = std::min(args.srcNumCoords, args.pinIn->NumCoords());
+                    char* src = (char*)args.src;
+                    char* srcEnd = src + args.srcSize;
+                    size_t i = 0;
 
-                    for (size_t i = 0; i < dstElements && src != srcEnd; src += elementSize, i++) {
-                        char* dsti = dst + i * pinIn->Stride() + pinIn->Offset();
-                        std::copy(src, src + elementSize, dsti);
+                    while (i < dstSize && src != srcEnd) {
+                        char* dsti = dst + i * args.pinIn->Stride();
+                        std::copy(src, src + elementSize * numCoords, dsti);
+
+                        i++;
+                        src = src + elementSize * args.srcNumCoords;
                     }
                 };
             }
 
         } else {
-            ConvertSingle Convert = GetConvertSingle(srcType, pinIn->type, isConvertible);
+            ConvertSingle Convert = GetConvertSingle(pinOut->type, pinIn->type, isConvertible);
             if (isConvertible) {
-                size_t srcElementSize = PinTypeToElementSize(srcType);
-                size_t dstElementSize = PinTypeToElementSize(pinIn->type);
-                return [Convert, srcElementSize, dstElementSize](void* _src, size_t srcSize, PinInput* pinIn) {
+                size_t srcStride = PinTypeToElementSize(pinOut->type) * pinOut->numCoords;
+                return [Convert, srcStride](ConvertMultiArgs args) {
                     size_t dstElements;
-                    char* dst = (char*)pinIn->GetChannels(dstElements);
-                    const size_t stride = pinIn->Stride();
+                    char* dst = (char*)args.pinIn->Buffer(dstElements);
+                    const size_t dstStride = args.pinIn->Stride();
                     
-                    char* src = (char*)_src;
-                    char* srcEnd = src + srcSize;
-                    // char* dstEnd = dst + dstSize;
+                    char* src = (char*)args.src;
+                    char* srcEnd = src + args.srcSize;
 
-                    for (size_t i = 0; i < dstElements && src != srcEnd; src += srcElementSize, dst += stride) {
-                        Convert(src, dst);
+                    for (size_t i = 0; i < dstElements && src != srcEnd; src += srcStride, dst += dstStride) {
+                        ConvertSingleArgs sArgs(src, args.srcNumCoords, dst, args.pinIn->NumCoords());
+                        Convert(sArgs);
                     }
                 };
             }
@@ -165,7 +195,6 @@ namespace seam::pins {
         return ConvertMulti();
     }
 }
-
 
 #if RUN_DOCTEST
 namespace seam::pins {
@@ -176,7 +205,8 @@ TEST_CASE("Test single int to float pin converter") {
 	CHECK(isConvertible);
 	float f = 4.2f;
 	int i = 29;
-	Convert(&i, &f);
+    ConvertSingleArgs args(&i, 1, &f, 1);
+	Convert(args);
 	CHECK(i == f);
 }
 
@@ -186,7 +216,8 @@ TEST_CASE("Test single uint to float pin converter") {
 	CHECK(isConvertible);
 	float f = -4.2f;
     uint32_t u = 10;
-	Convert(&u, &f);
+    ConvertSingleArgs args(&u, 1, &f, 1);
+	Convert(args);
 	CHECK(u == f);
 }
 
@@ -196,7 +227,8 @@ TEST_CASE("Test single bool to float pin converter") {
 	CHECK(isConvertible);
 	float f = 1092.234f;
     bool b = true;
-	Convert(&b, &f);
+    ConvertSingleArgs args(&b, 1, &f, 1);
+	Convert(args);
 	CHECK(b == f);
 }
 
@@ -206,7 +238,8 @@ TEST_CASE("Test single float to int32 pin converter") {
 	CHECK(isConvertible);
 	int i = 29;
 	float f = 4.2f;
-	Convert(&f, &i);
+    ConvertSingleArgs args(&f, 1, &i, 1);
+	Convert(args);
 	CHECK(i == (int)f);
 }
 
@@ -216,7 +249,8 @@ TEST_CASE("Test single uint to int32 pin converter") {
 	CHECK(isConvertible);
 	int i = -29;
     uint32_t u = 10;
-	Convert(&u, &i);
+    ConvertSingleArgs args(&u, 1, &i, 1);
+    Convert(args);
 	CHECK(u == (uint32_t)i);
 }
 
@@ -226,7 +260,8 @@ TEST_CASE("Test single bool to int32 pin converter") {
 	CHECK(isConvertible);
 	int i = -29;
     bool b = true;
-	Convert(&b, &i);
+    ConvertSingleArgs args(&b, 1, &i, 1);
+    Convert(args);
 	CHECK(b == i);
 }
 
@@ -236,7 +271,8 @@ TEST_CASE("Test single float to bool pin converter") {
 	CHECK(isConvertible);
 	bool b = false;
 	float f = 4.2f;
-	Convert(&f, &b);
+    ConvertSingleArgs args(&f, 1, &b, 1);
+    Convert(args);
 	CHECK(b == (bool)f);
 }
 
@@ -246,7 +282,8 @@ TEST_CASE("Test single int to bool pin converter") {
 	CHECK(isConvertible);
 	bool b = false;
     int32_t i = 10;
-	Convert(&i, &b);
+    ConvertSingleArgs args(&i, 1, &b, 1);
+	Convert(args);
 	CHECK(b == (bool)i);
 }
 
@@ -256,8 +293,34 @@ TEST_CASE("Test single uint to bool pin converter") {
 	CHECK(isConvertible);
 	bool b = false;
     uint32_t u = 10;
-	Convert(&u, &b);
+    ConvertSingleArgs args(&u, 1, &b, 1);
+    Convert(args);
 	CHECK(b == (bool)u);
+}
+
+TEST_CASE("Test single converter for 2-coord float to 3-coord float") {
+    bool isConvertible = false;
+	pins::ConvertSingle Convert = seam::pins::GetConvertSingle(PinType::FLOAT, PinType::FLOAT, isConvertible);
+	CHECK(isConvertible);
+	glm::vec2 src = glm::vec2(-1.f);
+    glm::vec3 dst = glm::vec3(1.f);
+    ConvertSingleArgs args(&src, 2, &dst, 3);
+    Convert(args);
+	CHECK(dst.x == -1.f);
+	CHECK(dst.y == -1.f);
+	CHECK(dst.z == 1.f);
+}
+
+TEST_CASE("Test single converter for 3-coord uint to 2-coord float") {
+    bool isConvertible = false;
+	pins::ConvertSingle Convert = seam::pins::GetConvertSingle(PinType::UINT, PinType::FLOAT, isConvertible);
+	CHECK(isConvertible);
+	glm::uvec3 src = glm::uvec3(10);
+    glm::vec2 dst = glm::vec2(1.f);
+    ConvertSingleArgs args(&src, 3, &dst, 2);
+    Convert(args);
+	CHECK(dst.x == 10.f);
+	CHECK(dst.y == 10.f);
 }
 
 TEST_CASE("Test multi float to int pin converter") {
@@ -265,11 +328,12 @@ TEST_CASE("Test multi float to int pin converter") {
     std::array<int32_t, 4> ints = { 5, 10, 14, 20 };
     bool isConvertible;
 
-    pins::PinInput pinIn = pins::SetupInputPin(PinType::INT, nullptr, &ints, ints.size(), "");
+    pins::PinInput pinIn = pins::SetupInputPin(PinType::INT, nullptr, &ints, ints.size(), "ints");
+    pins::PinOutput pinOut = pins::SetupOutputPin(nullptr, PinType::FLOAT, "floats");
 
-    pins::ConvertMulti Convert = seam::pins::GetConvertMulti(PinType::FLOAT, &pinIn, isConvertible);
+    pins::ConvertMulti Convert = seam::pins::GetConvertMulti(&pinIn, &pinOut, isConvertible);
     CHECK(isConvertible);
-    Convert(floats.data(), floats.size() * sizeof(float), &pinIn);
+    Convert(ConvertMultiArgs(floats.data(), 1, floats.size() * sizeof(float), &pinIn));
     for (size_t i = 0; i < floats.size(); i++) {
         CHECK((int32_t)floats[i] == ints[i]);
     }
@@ -281,27 +345,29 @@ TEST_CASE("Test multi float to bool pin converter") {
     bool isConvertible;
 
     pins::PinInput pinIn = pins::SetupInputPin(PinType::BOOL, nullptr, &bools, bools.size(), "");
+    pins::PinOutput pinOut = pins::SetupOutputPin(nullptr, PinType::FLOAT, "floats");
 
-    pins::ConvertMulti Convert = seam::pins::GetConvertMulti(PinType::FLOAT, &pinIn, isConvertible);
+    pins::ConvertMulti Convert = seam::pins::GetConvertMulti(&pinIn, &pinOut, isConvertible);
     CHECK(isConvertible);
-    Convert(floats.data(), floats.size() * sizeof(float), &pinIn);
+    Convert(ConvertMultiArgs(floats.data(), 1, floats.size() * sizeof(float), &pinIn));
     for (size_t i = 0; i < floats.size(); i++) {
         CHECK((bool)floats[i] == bools[i]);
     }
 }
 
-TEST_CASE("Test strided converter where source and destination are the same type") {
+TEST_CASE("Test strided multi converter where source and destination are the same type") {
     std::array<float, 5> dst = { 1.0, 1.0, 1.0, 1.0, 1.0 };
     std::array<float, 2> src = { -1.0, -1.0 };
     bool isConvertible;
 
-    pins::PinInput pinIn = pins::SetupInputPin(PinType::FLOAT, nullptr, &dst, dst.size(), "",
+    pins::PinInput pinIn = pins::SetupInputPin(PinType::FLOAT, nullptr, &dst, dst.size(), "dst",
         PinInOptions(sizeof(float) * 2));
+    pins::PinOutput pinOut = pins::SetupOutputPin(nullptr, PinType::FLOAT, "src");
 
-    pins::ConvertMulti Convert = seam::pins::GetConvertMulti(PinType::FLOAT, &pinIn, isConvertible);
+    pins::ConvertMulti Convert = seam::pins::GetConvertMulti(&pinIn, &pinOut, isConvertible);
     CHECK(isConvertible);
 
-    Convert(src.data(), src.size() * sizeof(float), &pinIn);
+    Convert(ConvertMultiArgs(src.data(), 1, src.size() * sizeof(float), &pinIn));
     CHECK(dst[0] == -1.0f);
     CHECK(dst[1] == 1.0f);
     CHECK(dst[2] == -1.0f);
@@ -309,9 +375,30 @@ TEST_CASE("Test strided converter where source and destination are the same type
     CHECK(dst[4] == 1.0f);
 }
 
-TEST_CASE("Test strided converter where source and destination are different types") {
-    // ...TODO
+TEST_CASE("Test strided multi converter where source and destination are different types and have different number of coordinates") {
+    std::array<glm::vec2, 4> dst = { glm::vec2(0.f), glm::vec2(1.f), glm::vec2(2.f), glm::vec2(3.f) };
+    std::array<glm::ivec3, 2> src = { glm::ivec3(-1), glm::ivec3(-2) };
+    bool isConvertible;
+
+    pins::PinInput pinIn = pins::SetupInputPin(PinType::FLOAT, nullptr, &dst, dst.size(), "dst",
+        PinInOptions(sizeof(glm::vec2) * 2, 2));
+    pins::PinOutput pinOut = pins::SetupOutputPin(nullptr, PinType::INT, "src", 3);
+
+    pins::ConvertMulti Convert = seam::pins::GetConvertMulti(&pinIn, &pinOut, isConvertible);
+    CHECK(isConvertible);
+
+    Convert(ConvertMultiArgs(src.data(), 3, src.size() * sizeof(glm::ivec3), &pinIn));
+
+    CHECK(dst[0].x == -1.f);
+    CHECK(dst[0].y == -1.f);
+    CHECK(dst[1].x == 1.f);
+    CHECK(dst[1].y == 1.f);
+    CHECK(dst[2].x == -2.f);
+    CHECK(dst[2].y == -2.f);
+    CHECK(dst[3].x == 3.f);
+    CHECK(dst[3].y == 3.f);
 }
 
-};
+}
+
 #endif // RUN_DOCTEST

@@ -1,11 +1,156 @@
 #include "nodeProperty.h"
+#include "seam/pins/pin.h"
 
 #include <stdexcept>
 
+using namespace seam::pins;
+
 namespace seam::props  {
     
-void Serialize(capnp::List<seam::schema::PinValue, capnp::Kind::STRUCT>::Builder& builder,
-    NodePropertyType type, void* srcBuff, size_t srcElementsCount)
+void Serialize(ValuesBuilder& builder, NodePropertyType type, PinInput* pinIn)
+{
+    size_t srcSize;
+    void* buff = pinIn->Buffer(srcSize);
+
+    // If there's no data to serialize, bail out early.
+    if (srcSize == 0) {
+        return;
+    }
+
+    const size_t stride = pinIn->Stride();
+    const uint16_t numCoords = pinIn->NumCoords();
+
+    switch (type) {
+    case NodePropertyType::PROP_BOOL: {
+        for (size_t i = 0; i < srcSize; i++) {
+            bool* boolVals = (bool*)((char*)buff + i * stride);
+            for (size_t j = 0; j < numCoords; j++) {
+                builder[i * numCoords + j].setBoolValue(boolVals[j]);
+            }
+        }
+        break;
+    }
+    case NodePropertyType::PROP_INT: {
+        for (size_t i = 0; i < srcSize; i++) {
+            int32_t* intVals = (int32_t*)((char*)buff + i * stride);
+            for (size_t j = 0; j < numCoords; j++) {
+                builder[i * numCoords + j].setIntValue(intVals[j]);
+            }
+        }
+        break;
+    }
+    case NodePropertyType::PROP_UINT: {
+        for (size_t i = 0; i < srcSize; i++) {
+            uint32_t* uintVals = (uint32_t*)((char*)buff + i * stride);
+            for (size_t j = 0; j < numCoords; j++) {
+                builder[i * numCoords + j].setUintValue(uintVals[j]);
+            }
+        }
+        break;
+    }
+    case NodePropertyType::PROP_FLOAT: {
+        for (size_t i = 0; i < srcSize; i++) {
+            float* floatVals = (float*)((char*)buff + i * stride);
+            for (size_t j = 0; j < numCoords; j++) {
+                builder[i * numCoords + j].setFloatValue(floatVals[j]);
+            }
+        }
+        break;
+    }
+    case NodePropertyType::PROP_CHAR:
+    case NodePropertyType::PROP_STRING:
+    default:
+        throw std::logic_error("not implemented yet!");
+    }
+}
+
+void Deserialize(const seam::schema::PinIn::Reader& serializedPin, PinInput* pinIn) {
+    pinIn->id = serializedPin.getId();
+    const auto serializedValues = serializedPin.getValues();
+
+    if (serializedValues.size() == 0) {
+        return;
+    }
+
+    NodePropertyType type = seam::pins::PinTypeToPropType(pinIn->type);
+
+    size_t dstSize;
+    void* dstBuff = pinIn->Buffer(dstSize);
+    
+    const size_t dstStride = pinIn->Stride();
+    const uint16_t dstNumCoords = pinIn->NumCoords();
+    const uint16_t srcNumCoords = serializedPin.getNumCoords();
+    const uint16_t minNumCoords = std::min(srcNumCoords, dstNumCoords);
+
+    if (srcNumCoords != dstNumCoords) {
+        printf("Deserialize(): PinInput %s expected %u coords but there are %u serialized coords\n",
+            pinIn->name.c_str(), dstNumCoords, srcNumCoords);
+    }
+
+    switch (type) {
+    case NodePropertyType::PROP_BOOL: {
+        if (serializedValues[0].isBoolValue()) {
+            // Make sure each loop around won't go out of bounds in the src array.
+            for (size_t i = 0; i < dstSize && i * srcNumCoords + minNumCoords - 1 < serializedValues.size(); i++) {
+                size_t srci = i * srcNumCoords;
+                bool* dsti = (bool*)((char*)dstBuff + i * dstStride);
+                for (uint16_t j = 0; j < minNumCoords; j++) {
+                    dsti[j] = serializedValues[srci + j].getBoolValue();
+                }
+            }
+        }
+        break;
+    }
+    case NodePropertyType::PROP_FLOAT: {
+        if (serializedValues[0].isFloatValue()) {
+            // Make sure each loop around won't go out of bounds in the src array.
+            for (size_t i = 0; i < dstSize && i * srcNumCoords + minNumCoords - 1 < serializedValues.size(); i++) {
+                size_t srci = i * srcNumCoords;
+                float* dsti = (float*)((char*)dstBuff + i * dstStride);
+                for (uint16_t j = 0; j < minNumCoords; j++) {
+                    dsti[j] = serializedValues[srci + j].getFloatValue();
+                }
+            }
+        }
+        break;
+    }
+    case NodePropertyType::PROP_INT: {
+        if (serializedValues[0].isIntValue()) {
+            // Make sure each loop around won't go out of bounds in the src array.
+            for (size_t i = 0; i < dstSize && i * srcNumCoords + minNumCoords - 1 < serializedValues.size(); i++) {
+                size_t srci = i * srcNumCoords;
+                int32_t* dsti = (int32_t*)((char*)dstBuff + i * dstStride);
+                for (uint16_t j = 0; j < minNumCoords; j++) {
+                    dsti[j] = serializedValues[srci + j].getIntValue();
+                }
+            }
+        }
+        break;
+    }
+    case NodePropertyType::PROP_UINT: {
+        if (serializedValues[0].isUintValue()) {
+            // Make sure each loop around won't go out of bounds in the src array.
+            for (size_t i = 0; i < dstSize && i * srcNumCoords + minNumCoords - 1 < serializedValues.size(); i++) {
+                size_t srci = i * srcNumCoords;
+                uint32_t* dsti = (uint32_t*)((char*)dstBuff + i * dstStride);
+                for (uint16_t j = 0; j < minNumCoords; j++) {
+                    dsti[j] = serializedValues[srci + j].getUintValue();
+                }
+            }
+        }
+        break;
+    }
+    case NodePropertyType::PROP_STRING: {
+        // TODO... should this be allowed?
+        break;
+    }
+
+    default:
+        throw std::logic_error("not implemented!");
+    }
+}
+
+void SerializeProperty(ValuesBuilder& builder, NodePropertyType type, void* srcBuff, size_t srcElementsCount)
 {
     if (srcElementsCount == 0) {
         return;
@@ -47,7 +192,7 @@ void Serialize(capnp::List<seam::schema::PinValue, capnp::Kind::STRUCT>::Builder
     }
 }
 
-void Deserialize(const capnp::List<seam::schema::PinValue, capnp::Kind::STRUCT>::Reader& serializedValues, NodePropertyType type, void* dstBuff, size_t dstElementsCount) {
+void DeserializeProperty(const ValuesReader& serializedValues, NodePropertyType type, void* dstBuff, size_t dstElementsCount) {
     if (serializedValues.size() == 0) {
         return;
     }
@@ -103,6 +248,7 @@ void Deserialize(const capnp::List<seam::schema::PinValue, capnp::Kind::STRUCT>:
         throw std::logic_error("not implemented!");
     }
 }
+
 
 NodeProperty SetupFloatProperty(std::string&& name, 
     std::function<float*(size_t&)> getter, std::function<void(float*, size_t)> setter)

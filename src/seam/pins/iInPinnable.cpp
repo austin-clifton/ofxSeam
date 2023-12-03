@@ -35,7 +35,7 @@ void IInPinnable::RecacheInputConnections(PinInput* pins, size_t size) {
 			std::vector<pins::PinConnection>& connections = pins[i].connection->connections;
 			for (size_t j = 0; j < connections.size(); j++) {
 				if (connections[j].inputPinId == pins[i].id) {
-					connections[j].input = &pins[i];
+					connections[j].pinIn = &pins[i];
 					break;
 				}
 			}

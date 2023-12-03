@@ -39,7 +39,7 @@ pins::PinOutput* Gate::PinOutputs(size_t& size) {
 
 pins::PinInput* Gate::AddPinIn(PinInArgs args) {
 	// Expect gate value input pins.
-	assert(args.type == PinType::FLOAT && args.channelsSize == 1);
+	assert(args.type == PinType::FLOAT && args.totalElements == 1);
 	return AddGatePin(args.name);
 }
 

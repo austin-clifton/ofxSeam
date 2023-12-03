@@ -21,12 +21,14 @@ namespace seam::pins {
             callback = std::move(_callback);
         }
 
-        PinInOptions(size_t _stride, 
+        PinInOptions(size_t _stride,
+            uint16_t _numCoords = 1,
             size_t _offset = 0,
             std::function<void(void)>&& _callback = std::function<void(void)>()
         ) {
             stride = _stride;
             offset = _offset;
+            numCoords = _numCoords;
             callback = std::move(_callback);
         }
 
@@ -42,11 +44,18 @@ namespace seam::pins {
             callback = std::move(_callback);
         }
 
+        static PinInOptions WithCoords(uint16_t numCoords) {
+            PinInOptions options;
+            options.numCoords = numCoords;
+            return options;
+        }
+
         void* pinMetadata = nullptr;
         std::string_view description;
         size_t elementSize = 0;
         size_t stride = 0;
         size_t offset = 0;
+        uint16_t numCoords = 1;
         std::function<void(void)> callback;
     };
 
@@ -62,11 +71,12 @@ namespace seam::pins {
             const std::string_view _name, 
             const std::string_view _description, 
             nodes::INode* _node,
-            void* _channelsData,
-            size_t _channelsSize,
+            void* _buffer,
+            size_t _totalElements,
             size_t _elementSizeInBytes,
             size_t _stride,
             size_t _offset,
+            uint16_t _numCoords,
             std::function<void(void)>&& _callback,
             void* _pinMetadata
             )
@@ -77,11 +87,12 @@ namespace seam::pins {
             node = _node;
             isQueue = false;
             flags = (PinFlags)(flags | PinFlags::INPUT);
-            buffer = _channelsData;
-            totalElements = _channelsSize;
+            buffer = _buffer;
+            totalElements = _totalElements;
             sizeInBytes = _elementSizeInBytes;
             stride = _stride;
             offset = _offset;
+            numCoords = _numCoords;
             callback = std::move(_callback);
             pinMetadata = _pinMetadata;
 
@@ -126,14 +137,12 @@ namespace seam::pins {
 
         ~PinInput();
 
-        /// <summary>
-        /// Get a pointer to the input pin's raw channels data.
-        /// </summary>
-        /// <param name="size">will be set to the size of the returned array</param>
-        /// <returns>An opaque pointer to the array of channels the input Pin owns.</returns>
-        void* GetChannels(size_t& size) {
+        /// @brief Get a pointer to the input pin's raw buffer data.
+        /// @param size will be set to the size of the returned array
+        /// @return An opaque pointer to the beginning of the buffer the input Pin points to.
+        inline void* Buffer(size_t& size) {
             size = totalElements;
-            return buffer;
+            return ((char*)buffer) + offset;
         }
 
         void* PinMetadata() {
@@ -165,7 +174,7 @@ namespace seam::pins {
 
         /// @brief Bytes needed to contain the input's buffer
         inline size_t BufferSize() {
-            return sizeInBytes * totalElements;
+            return sizeInBytes * numCoords * totalElements;
         }
 
         inline void SetBuffer(void* buff, size_t elements) {
@@ -200,6 +209,10 @@ namespace seam::pins {
             return offset;
         }
 
+        inline uint16_t NumCoords() {
+            return numCoords;
+        }
+
         /// push pattern id
         PushId push_id;
 
@@ -214,14 +227,23 @@ namespace seam::pins {
 
         bool isQueue = false;
 
-        // Size of each element pointed to by void* members.
+        void* buffer = nullptr;
+        /// @brief The buffer points to this many elements starting at offset and separated by the stride.
+        size_t totalElements = 0;
+
+        /// @brief Size of each value pointed to in the buffer.
+        /// The actual number of bytes copied per element is this number * numCoords.
         size_t sizeInBytes = 0;
 
+        /// @brief The number of bytes to skip between each element.
+        /// By default this is equal to sizeInBytes * numCoords.
         size_t stride = 0;
+
+        /// @brief The number of bytes to skip to reach the first element pointed to by the buffer.
         size_t offset = 0;
 
-        void* buffer = nullptr;
-        size_t totalElements = 0;
+        /// @brief The number of values each element contains. For instance, vec2 should have 2, ivec4 should have 4.
+        uint16_t numCoords = 1;
 
         std::vector<PinInput> childPins;
 

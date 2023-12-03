@@ -6,6 +6,6 @@ using namespace seam::pins;
 
 void PinOutput::DirtyConnections() {
     for (PinConnection& conn : connections) {
-        conn.input->node->SetDirty();
+        conn.pinIn->node->SetDirty();
     }
 }

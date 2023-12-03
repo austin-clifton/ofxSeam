@@ -30,7 +30,6 @@ namespace seam::props {
 		}
 		return false;
 	}
-	
 
 	bool DrawShaderPath(std::string_view label, std::string& path) {
 		// refresh button needs a logo
@@ -49,58 +48,47 @@ namespace seam::props {
 
 		bool pinsChanged = false;
 
-		size_t num_channels = 0;
-		void* channels = input->GetChannels(num_channels);
+		size_t totalElements = 0;
+		void* buffer = input->Buffer(totalElements);
+		ImGuiDataType imguiType = -1;
+		void* guiMin = nullptr;
+		void* guiMax = nullptr;
+		const char* format = nullptr;
 		switch (input->type) {
 		case PinType::INT: {
+			imguiType = ImGuiDataType_S32;
 			PinIntMeta* meta = (PinIntMeta*)input->PinMetadata();
-			pinsChanged = ImGui::DragScalarN(
-				input->name.c_str(),
-				ImGuiDataType_S32,
-				channels,
-				num_channels,
-				0.01f,
-				meta ? &meta->min : nullptr,
-				meta ? &meta->max : nullptr,
-				"%d",
-				0
-			);
+			if (meta != nullptr) {
+				guiMin = &meta->min;
+				guiMax = &meta->max;
+			}
+			format = "%d";
 			break;
 		}
 		case PinType::UINT: {
+			imguiType = ImGuiDataType_U32;
 			PinUintMeta* meta = (PinUintMeta*)input->PinMetadata();
-			pinsChanged = ImGui::DragScalarN(
-				input->name.c_str(),
-				ImGuiDataType_U32,
-				channels,
-				num_channels,
-				0.05f,
-				meta ? &meta->min : nullptr,
-				meta ? &meta->max : nullptr,
-				"%u",
-				0
-			);
+			if (meta != nullptr) {
+				guiMin = &meta->min;
+				guiMax = &meta->max;
+			}
+			format = "%u";
 			break;
 		}
 		case PinType::FLOAT: {
+			imguiType = ImGuiDataType_Float;
 			PinFloatMeta* meta = (PinFloatMeta*)input->PinMetadata();
-			pinsChanged = ImGui::DragScalarN(
-				input->name.c_str(),
-				ImGuiDataType_Float,
-				channels,
-				num_channels,
-				0.001f,
-				meta ? &meta->min : nullptr,
-				meta ? &meta->max : nullptr,
-				"%.3f",
-				0
-			);
+			if (meta != nullptr) {
+				guiMin = &meta->min;
+				guiMax = &meta->max;
+			}
+			format = "%.3f";
 			break;
 		}
 		case PinType::BOOL: {
 			// TODO how to draw more than one bool?
-			assert(num_channels == 1);
-			pinsChanged = ImGui::Checkbox(input->name.c_str(), (bool*)channels);
+			assert(totalElements == 1);
+			pinsChanged = ImGui::Checkbox(input->name.c_str(), (bool*)buffer);
 			break;
 		}
 		case PinType::FLOW: {
@@ -138,6 +126,26 @@ namespace seam::props {
 		}
 		default:
 			throw std::logic_error("DrawPinInputs(): Not implemented (please implement me)");
+		}
+
+		// If this input type is drawable, draw it.
+		if (imguiType != -1) {
+			const uint16_t numCoords = input->NumCoords();
+			// This loop accounts for stride, total elements, and coordinates per element.
+			for (size_t i = 0; i < totalElements; i++) {
+				std::string name = input->name + "[" + std::to_string(i) + "]";
+				pinsChanged = ImGui::DragScalarN(
+					name.c_str(),
+					imguiType,
+					(char*)buffer + i * input->Stride(),
+					numCoords,
+					0.01f,
+					guiMin,
+					guiMax,
+					format,
+					0
+				);
+			}
 		}
 
 		if (pinsChanged) {

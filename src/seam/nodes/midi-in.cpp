@@ -80,6 +80,7 @@ bool MidiIn::AddNotePin(uint32_t midi_note) {
 			this,
 			pins::PinType::NOTE_EVENT,
 			pin_name,
+			1,
 			PinFlags::EVENT_QUEUE,
 			// wheehoo
 			// cast midi_note to a size_t, and then mask it as a void* ;

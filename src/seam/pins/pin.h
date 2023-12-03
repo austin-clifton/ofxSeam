@@ -67,8 +67,8 @@ namespace seam {
 		PinInput SetupInputPin(
 			PinType pinType,
 			nodes::INode* node,
-			void* channels,
-			const size_t numChannels,
+			void* buffer,
+			const size_t totalElements,
 			const std::string_view name,
 			PinInOptions&& options = PinInOptions()
 		);
@@ -93,7 +93,8 @@ namespace seam {
 		PinOutput SetupOutputPin(
 			nodes::INode* node, 
 			PinType type, 
-			std::string_view name, 
+			std::string_view name,
+			uint16_t numCoords = 1,
 			PinFlags flags = PinFlags::FLAGS_NONE,
 			void* userp = nullptr
 		);

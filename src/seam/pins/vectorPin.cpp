@@ -100,17 +100,6 @@ void VectorPinInput::UpdateSize(size_t newSize) {
         childPin.node = vectorPin->node;
         childPin.SetCallback(std::move(changedCb));
         vectorPin->childPins.push_back(std::move(childPin));
-
-        /*
-        childPins.push_back(SetupInputPin(pinIn->type, pinIn->node,
-            &v[childPins.size()], 1, std::to_string(childPins.size()), 
-            PinInOptions(std::move(changedCb)))
-        );
-
-        if (options.onPinAdded) {
-            options.onPinAdded(this, childPins.size() - 1);
-        }
-        */
     }
 
     // Cut off any pins that don't need to exist anymore.
@@ -130,15 +119,6 @@ void VectorPinInput::UpdateSize(size_t newSize) {
     // Assume the pointer to buff moved, and re-set each child pin's buffer.
     for (size_t i = 0, j = 0; i < vectorPin->childPins.size() && j < buff.size(); i++, j+= elementSize) {
         fixPointersCb((void*)&buff[j], &vectorPin->childPins[i]);
-
-        // childPins[i].SetBuffer(&buff[j], 1);
-        
-        /*
-        size_t size;
-        void* buff = childPins[i].GetChannels(size);
-
-        printf("%llu v = %p, buff = %p\n", i, (void*)&v[i], buff);
-        */
     }
 
     vectorPin->RecacheInputConnections();

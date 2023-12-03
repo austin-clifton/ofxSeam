@@ -32,7 +32,6 @@ EventNodeFactory::EventNodeFactory(const ofSoundStreamSettings& soundSettings) {
 		return new nodes::AudioAnalyzer(soundSettings);
 	});
 	#endif
-	Register(MakeCreate<nodes::ChannelMap>());
 	// Register(MakeCreate<nodes::ComputeParticles>());
 	Register(MakeCreate<nodes::Cos>());
 	Register(MakeCreate<nodes::GistAudio>());

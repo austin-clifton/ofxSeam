@@ -50,9 +50,9 @@ namespace seam::nodes {
 		// there is always at least one, an EVENT_QUEUE Pin which pushes ALL note events,
 		// plus 0 to many Pins which only send one MIDI note value
 		std::vector<PinOutput> pin_outputs = {
-			pins::SetupOutputPin(this, pins::PinType::NOTE_EVENT, "all notes stream", pins::PinFlags::EVENT_QUEUE),
-			pins::SetupOutputPin(this, pins::PinType::NOTE_EVENT, "notes on stream", pins::PinFlags::EVENT_QUEUE),
-			pins::SetupOutputPin(this, pins::PinType::NOTE_EVENT, "notes off stream", pins::PinFlags::EVENT_QUEUE),
+			pins::SetupOutputPin(this, pins::PinType::NOTE_EVENT, "all notes stream", 1, pins::PinFlags::EVENT_QUEUE),
+			pins::SetupOutputPin(this, pins::PinType::NOTE_EVENT, "notes on stream", 1, pins::PinFlags::EVENT_QUEUE),
+			pins::SetupOutputPin(this, pins::PinType::NOTE_EVENT, "notes off stream", 1, pins::PinFlags::EVENT_QUEUE),
 		};
 		// tracks where user-defined (per-note) Pins begin
 		size_t custom_pins_index;

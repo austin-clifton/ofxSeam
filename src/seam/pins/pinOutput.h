@@ -8,6 +8,7 @@
 
 namespace seam::pins {
     struct PinOutput final : public Pin, public IOutPinnable {
+        uint16_t numCoords = 1;
         std::vector<seam::pins::PinConnection> connections;
         std::vector<PinOutput> childPins;
 

@@ -28,17 +28,17 @@ namespace {
 			std::stringstream ss;
 			for (const auto& pin_in : node.getInputPins()) {
 				ss << "\t\t" << pin_in.getId() << "\t" << pin_in.getName().cStr() << " [";
-				for (const auto& chan : pin_in.getChannels()) {
-					if (chan.isBoolValue()) {
-						ss << chan.getBoolValue() << " ";
-					} else if (chan.isFloatValue()) {
-						ss << chan.getFloatValue() << " ";
-					} else if (chan.isIntValue()) {
-						ss << chan.getIntValue() << " ";
-					} else if (chan.getUintValue()) {
-						ss << chan.getUintValue() << " ";
-					} else if (chan.isStringValue()) {
-						ss << chan.getStringValue().cStr() << " ";
+				for (const auto& v : pin_in.getValues()) {
+					if (v.isBoolValue()) {
+						ss << v.getBoolValue() << " ";
+					} else if (v.isFloatValue()) {
+						ss << v.getFloatValue() << " ";
+					} else if (v.isIntValue()) {
+						ss << v.getIntValue() << " ";
+					} else if (v.getUintValue()) {
+						ss << v.getUintValue() << " ";
+					} else if (v.isStringValue()) {
+						ss << v.getStringValue().cStr() << " ";
 					}
 				}
 				ss << "]\n";
@@ -71,6 +71,7 @@ namespace {
 			auto builder = inputsBuilder[i];
 			builder.setName(pinIn.name);
 			builder.setId(pinIn.id);
+			builder.setNumCoords(pinIn.NumCoords());
 
 			size_t childrenSize;
 			PinInput* children = pinIn.PinInputs(childrenSize);
@@ -84,15 +85,16 @@ namespace {
 			if (pinIn.type == PinType::FLOW
 				|| pinIn.type == PinType::FBO
 				|| pinIn.type == PinType::NOTE_EVENT
+				|| pinIn.type == PinType::STRUCT
 			) {
 				continue;
 			}
 
-			size_t channelsSize;
-			void* channels = pinIn.GetChannels(channelsSize);
-			auto channelsBuilder = builder.initChannels(channelsSize);
+			size_t totalElements;
+			pinIn.Buffer(totalElements);
+			auto valuesBuilder = builder.initValues(totalElements * pinIn.NumCoords());
 
-			seam::props::Serialize(channelsBuilder, PinTypeToPropType(pinIn.type), channels, channelsSize);
+			seam::props::Serialize(valuesBuilder, PinTypeToPropType(pinIn.type), &pinIn);
 		}
 	}
 
@@ -109,7 +111,7 @@ namespace {
 			// Remember what connections this output has so we can serialize all the connections after this loop.
 			for (size_t conn_index = 0; conn_index < pinOut.connections.size(); conn_index++) {
 				auto& conn = pinOut.connections[conn_index];
-				connections.push_back(std::make_pair(pinOut.id, conn.input->id));
+				connections.push_back(std::make_pair(pinOut.id, conn.pinIn->id));
 			}
 						
 			size_t childrenSize;
@@ -122,15 +124,7 @@ namespace {
 	}
 
 	void DeserializePinInput(const seam::schema::PinIn::Reader& serializedPin, PinInput* pinIn) {
-		pinIn->id = serializedPin.getId();
-		const auto serializedChannels = serializedPin.getChannels();
-
-		if (serializedChannels.size()) {
-			size_t channels_size;
-			void* channels = pinIn->GetChannels(channels_size);
-
-			seam::props::Deserialize(serializedChannels, PinTypeToPropType(pinIn->type), channels, channels_size);
-		}
+		seam::props::Deserialize(serializedPin, pinIn);
 
 		size_t childrenSize;
 		PinInput* children = pinIn->PinInputs(childrenSize);
@@ -344,7 +338,7 @@ void SeamGraph::DeleteNode(INode* node) {
     for (size_t i = 0; i < size; i++) {
         // Loop in reverse since connections will be removed as we go.
         for (size_t j = pinOutputs[i].connections.size(); j > 0; j--) {
-            Disconnect(pinOutputs[i].connections[j - 1].input, &pinOutputs[i]);
+            Disconnect(pinOutputs[i].connections[j - 1].pinIn, &pinOutputs[i]);
         }
     }
 
@@ -376,7 +370,7 @@ bool SeamGraph::Connect(PinInput* pinIn, PinOutput* pinOut) {
 	assert(parent->FindPinOutput(pinOut->id) != nullptr);
 
 	// create the connection
-	pinOut->connections.push_back(PinConnection(pinIn, pinOut->type));
+	pinOut->connections.push_back(PinConnection(pinIn, pinOut));
 	pinIn->connection = pinOut;
 
 	PinConnectedArgs connectedArgs;
@@ -419,7 +413,7 @@ bool SeamGraph::Disconnect(PinInput* pinIn, PinOutput* pinOut) {
 	// remove from pinOut's connections list
 	size_t i = 0;
 	for (; i < pinOut->connections.size(); i++) {
-		if (pinOut->connections[i].input == pinIn) {
+		if (pinOut->connections[i].pinIn == pinIn) {
 			break;
 		}
 	}
@@ -615,7 +609,7 @@ bool SeamGraph::SaveGraph(const std::string_view filename, const std::vector<INo
             propBuilder.setName(prop.name);
             auto valuesBuilder = propBuilder.initValues(valuesSize);
 
-            Serialize(valuesBuilder, prop.type, propValues, valuesSize);
+            SerializeProperty(valuesBuilder, prop.type, propValues, valuesSize);
         }
     }
 
@@ -721,7 +715,7 @@ bool SeamGraph::LoadGraph(const std::string_view filename, std::vector<SeamGraph
 						case props::NodePropertyType::PROP_BOOL: {
 							// Can't use std::vector<bool> since it packs data tighter than is desirable here.
 							bool* buff = new bool[propValues.size()];
-							props::Deserialize(propValues, prop.type, buff, propValues.size());
+							props::DeserializeProperty(propValues, prop.type, buff, propValues.size());
 							prop.setValues(buff, propValues.size());
 							delete[] buff;
 							break;
@@ -749,7 +743,7 @@ bool SeamGraph::LoadGraph(const std::string_view filename, std::vector<SeamGraph
 			// Try to find an input pin on the node with a matching name.
 			auto matchPos = FindPinInByName(input_pins, inputs_size, serialized_pin_name);
 
-			const auto serialized_channels = serialized_pin_in.getChannels();
+			const auto serialized_values = serialized_pin_in.getValues();
 
 			if (matchPos != (input_pins + inputs_size)) {
 				PinInput* match = matchPos;
@@ -765,7 +759,7 @@ bool SeamGraph::LoadGraph(const std::string_view filename, std::vector<SeamGraph
 			} else if (dynamicPinsNode != nullptr) {
 				PinType pinType = (PinType)serialized_pin_in.getType();
 				IDynamicPinsNode::PinInArgs pinArgs(pinType, serialized_pin_name, 
-					serialized_channels.size(), inputIndex);
+					serialized_values.size(), inputIndex);
 
 				PinInput* added = dynamicPinsNode->AddPinIn(pinArgs);
 

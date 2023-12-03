@@ -44,8 +44,8 @@ namespace seam::nodes {
 			pins::SetupInputPin(PinType::FBO, this, &inTexture, 1, "Input FBO", 
 				PinInOptions(std::bind(&Feedback::RebindTexture, this))),
 			pins::SetupInputPin(PinType::FLOAT, this, &decay, 1, "Decay", PinInOptions("", &decayMeta)),
-			pins::SetupInputPin(PinType::FLOAT, this, &filterColor, 4, "Filter Color"),
-			pins::SetupInputPin(PinType::FLOAT, this, &feedbackOffset, 2, "Feedback Offset"),
+			pins::SetupInputPin(PinType::FLOAT, this, &filterColor, 1, "Filter Color", PinInOptions::WithCoords(4)),
+			pins::SetupInputPin(PinType::FLOAT, this, &feedbackOffset, 1, "Feedback Offset", PinInOptions::WithCoords(2)),
 		};
 
 		PinOutput pin_out_texture = pins::SetupOutputPin(this, pins::PinType::FBO, "output");

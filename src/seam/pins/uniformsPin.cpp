@@ -36,7 +36,7 @@ void UniformsPin::SetShaderUniforms(PinInput* uniformsPin, ofShader& shader) {
 	for (size_t i = 0; i < uniformsSize; i++) {
 		PinInput& pin = uniforms[i];
 		size_t size;
-		void* channels = pin.GetChannels(size);
+		void* buffer = pin.Buffer(size);
 		
 		// TODO put this somewhere more accessible,
 		// and add more type conversions as you add more to UniformsToPinInputs()
@@ -44,27 +44,27 @@ void UniformsPin::SetShaderUniforms(PinInput* uniformsPin, ofShader& shader) {
 		case pins::PinType::FLOAT: {
             switch (size) {
                 case 1:
-    				shader.setUniform1f(pin.name, *(float*)channels);
+    				shader.setUniform1f(pin.name, *(float*)buffer);
                     break;
                 case 2:
-                    shader.setUniform2f(pin.name, *(glm::vec2*)channels);
+                    shader.setUniform2f(pin.name, *(glm::vec2*)buffer);
                     break;
                 case 3:
-                    shader.setUniform3f(pin.name, *(glm::vec3*)channels);
+                    shader.setUniform3f(pin.name, *(glm::vec3*)buffer);
                     break;
             }
 			break;
 		}
 		case pins::PinType::INT: {
 			if (size == 1) {
-				shader.setUniform1i(pin.name, *(int*)channels);
+				shader.setUniform1i(pin.name, *(int*)buffer);
 			} else {
-				shader.setUniform2i(pin.name, ((int*)(channels))[0], ((int*)(channels))[1]);
+				shader.setUniform2i(pin.name, ((int*)(buffer))[0], ((int*)(buffer))[1]);
 			}
 			break;
 		}
 		case pins::PinType::UINT: {
-			uint32_t* uchans = (uint32_t*)channels;
+			uint32_t* uchans = (uint32_t*)buffer;
 			if (size == 1) {
 				glUniform1ui(shader.getUniformLocation(pin.name), *uchans);
 			} else {
@@ -73,7 +73,7 @@ void UniformsPin::SetShaderUniforms(PinInput* uniformsPin, ofShader& shader) {
 			break;
 		}
 		case pins::PinType::FBO: {
-			ofFbo** fbos = (ofFbo**)channels;
+			ofFbo** fbos = (ofFbo**)buffer;
 			// TODO do sizes > 1 need to be handled?
 			assert(size == 1);
 			if (fbos[0] != nullptr) {

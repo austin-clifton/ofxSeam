@@ -245,9 +245,9 @@ void INode::UpdateResolutionPin(glm::uvec2 resolution) {
 		// Expect resolution to be an ivec2 or uvec2
 		assert(resolutionPin->type == PinType::UINT || resolutionPin->type == PinType::INT);
 		size_t size;
-		void* channels = resolutionPin->GetChannels(size);
+		void* buffer = resolutionPin->Buffer(size);
 		assert(size == 2);
 
-		*((glm::uvec2*)channels) = resolution;
+		*((glm::uvec2*)buffer) = resolution;
 	}
 }

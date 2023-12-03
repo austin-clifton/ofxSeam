@@ -13,6 +13,7 @@ struct PinOut {
     id          @1 :UInt64;
     type        @2 :UInt16;
     children    @3 :List(PinOut);
+    numCoords   @4 :UInt16;
 }
 
 struct PinValue {
@@ -28,9 +29,10 @@ struct PinValue {
 struct PinIn {
     name        @0 :Text;
     id          @1 :UInt64;
-    channels    @2 :List(PinValue);
+    values      @2 :List(PinValue);
     type        @3 :UInt16;
     children    @4 :List(PinIn);
+    numCoords   @5 :UInt16;
 }
 
 struct Property {

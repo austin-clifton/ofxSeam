@@ -1,9 +1,10 @@
 #pragma once
 
-#include "pinTypes.h"
-#include "seam/properties/nodeProperty.h"
-#include "seam/idsDistributor.h"
 #include <string>
+
+#include "pinTypes.h"
+#include "seam/idsDistributor.h"
+#include "seam/properties/nodePropertyType.h"
 
 namespace seam::nodes {
     class INode;

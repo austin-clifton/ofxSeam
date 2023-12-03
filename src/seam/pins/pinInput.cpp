@@ -10,7 +10,7 @@ PinInput::~PinInput() {
         PinInput* pinIn = this;
         auto& conns = connection->connections;
         auto it = std::find_if(conns.begin(), conns.end(), [pinIn](const PinConnection& conn) {
-            return conn.input == pinIn;
+            return conn.pinIn == pinIn;
         });
         if (it != connection->connections.end()) {
             connection->connections.erase(it);

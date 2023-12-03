@@ -6,7 +6,8 @@
 #include <atomic>
 #include <string>
 
-#include "seam/pins/pin.h"
+#include "seam/pins/push.h"
+#include "seam/properties/nodeProperty.h"
 #include "seam/frame-pool.h"
 
 #include "blueprints/builders.h"
@@ -284,16 +285,16 @@ namespace seam::nodes {
 	class IDynamicPinsNode : public INode {
 	public:
 		struct PinInArgs {
-			PinInArgs(pins::PinType _type, const std::string_view _name, size_t _channelsSize, size_t _index) {
+			PinInArgs(pins::PinType _type, const std::string_view _name, size_t _totalElements, size_t _index) {
 				type = _type;
 				name = _name;
-				channelsSize = _channelsSize;
+				totalElements = _totalElements;
 				index = _index;
 			}
 
 			pins::PinType type;
 			std::string_view name;
-			size_t channelsSize;
+			size_t totalElements;
 			size_t index;
 		};
 

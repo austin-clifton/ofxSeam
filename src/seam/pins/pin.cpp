@@ -57,15 +57,19 @@ namespace seam::pins {
 	PinOutput SetupOutputPin(
 		nodes::INode* node, 
 		PinType type, 
-		std::string_view name, 
+		std::string_view name,
+		uint16_t numCoords,
 		PinFlags flags,
 		void* userp
 	) {
+#if !defined(RUN_DOCTEST)
 		assert(node != nullptr);
+#endif
 		PinOutput pin_out;
 		pin_out.node = node;
 		pin_out.type = type;
 		pin_out.name = name;
+		pin_out.numCoords = numCoords;
 		pin_out.flags = (PinFlags)(flags | PinFlags::OUTPUT);
 		pin_out.userp = userp;
 		return pin_out;
@@ -127,7 +131,7 @@ namespace seam::pins {
 
 			bool failed = false;
 			PinType pinType = PinType::TYPE_NONE;
-			size_t channelsSize = 0;
+			uint16_t numCoords = 0;
 
 			// Now make a PinInput for the uniform.
 			// First need to figure out what kind of Pin is needed.
@@ -135,35 +139,35 @@ namespace seam::pins {
 			switch (uniform_type) {
 			case GL_FLOAT:
 				pinType = PinType::FLOAT;
-				channelsSize = 1;
+				numCoords = 1;
 				break;
 			case GL_INT:
 				pinType = PinType::INT;
-				channelsSize = 1;
+				numCoords = 1;
 				break;
 			case GL_UNSIGNED_INT:
 				pinType = PinType::UINT;
-				channelsSize = 1;
+				numCoords = 1;
 				break;
 			case GL_FLOAT_VEC2:
 				pinType = PinType::FLOAT;
-				channelsSize = 2;
+				numCoords = 2;
 				break;
 			case GL_FLOAT_VEC3:
 				pinType = PinType::FLOAT;
-				channelsSize = 3;
+				numCoords = 3;
 				break;
 			case GL_INT_VEC2:
 				pinType = PinType::INT;
-				channelsSize = 2;
+				numCoords = 2;
 				break;
 			case GL_UNSIGNED_INT_VEC2:
 				pinType = PinType::UINT;
-				channelsSize = 2;
+				numCoords = 2;
 				break;
 			case GL_SAMPLER_2D_ARB:
 				pinType = PinType::FBO;
-				channelsSize = 1;
+				numCoords = 1;
 				break;
 			default:
 				printf("uniform to PinInput for %s with enum type %d not implemented yet\n", snippedName.data(), uniform_type);
@@ -177,10 +181,9 @@ namespace seam::pins {
 			}
 
 			const size_t bytesPerChannel = PinTypeToElementSize(pinType);
-			totalBytesNeeded += bytesPerChannel * channelsSize;
+			totalBytesNeeded += bytesPerChannel * numCoords;
 
-			pin_inputs.push_back(SetupInputPin(pinType, node, nullptr, channelsSize, snippedName));
-
+			pin_inputs.push_back(SetupInputPin(pinType, node, nullptr, numCoords, snippedName));
 		}
 
 		// Resize the pin buffer now and point each Pin's channel buffer at it.
@@ -190,13 +193,13 @@ namespace seam::pins {
 		for (auto& pinIn : pin_inputs) {
 			pinIn.node = node;
 
-			// Now that memory has been alloc'd for the uniform channels buffer,
-			// set each Pin's channels buffer to point to the right place.
-			size_t channelsSize;
-			void* channels = pinIn.GetChannels(channelsSize);
-			channels = &pinBuffer[currentByte];
-			pinIn.SetBuffer(channels, channelsSize);
-			currentByte += PinTypeToElementSize(pinIn.type) * channelsSize;
+			// Now that memory has been alloc'd for the uniforms buffer,
+			// set each Pin's buffer to point to the right place.
+			size_t totalElements;
+			void* buffer = pinIn.Buffer(totalElements);
+			buffer = &pinBuffer[currentByte];
+			pinIn.SetBuffer(buffer, totalElements);
+			currentByte += PinTypeToElementSize(pinIn.type) * totalElements;
 
 			// grab the location of the uniform so we can set initial values for the Pin
 			GLint uniform_location = glGetUniformLocation(program, pinIn.name.c_str());
@@ -206,18 +209,18 @@ namespace seam::pins {
 			switch (pinIn.type) {
 			case PinType::FLOAT:
 				glGetnUniformfv(program, uniform_location, 
-					channelsSize * sizeof(float), (float*)channels);
+					totalElements * sizeof(float), (float*)buffer);
 				break;
 			case PinType::INT:
 				glGetnUniformiv(program, uniform_location, 
-					channelsSize * sizeof(int32_t), (int32_t*)channels);
+					totalElements * sizeof(int32_t), (int32_t*)buffer);
 				break;
 			case PinType::UINT:
 				glGetnUniformuiv(program, uniform_location, 
-					channelsSize * sizeof(uint32_t), (uint32_t*)channels);
+					totalElements * sizeof(uint32_t), (uint32_t*)buffer);
 				break;
 			case PinType::FBO:
-				ofFbo** fbo = (ofFbo**)channels;
+				ofFbo** fbo = (ofFbo**)buffer;
 				*fbo = nullptr;
 				break;
 			}
@@ -231,8 +234,8 @@ namespace seam::pins {
 	PinInput SetupInputPin(
 		PinType pinType,
 		nodes::INode* node,
-		void* channels,
-		const size_t numChannels,
+		void* buffer,
+		const size_t totalElements,
 		const std::string_view name,
 		PinInOptions&& options
 	) {
@@ -244,11 +247,12 @@ namespace seam::pins {
 			name,
 			options.description,
 			node,
-			channels, 
-			numChannels,
+			buffer, 
+			totalElements,
 			elementSize,
-			options.stride > 0 ? options.stride : elementSize,
+			options.stride > 0 ? options.stride : elementSize * options.numCoords,
 			options.offset,
+			options.numCoords,
 			std::move(options.callback),
 			options.pinMetadata
 		);

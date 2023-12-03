@@ -1,9 +1,13 @@
 #pragma once
 
-#include "pin.h"
+#include "seam/pins/pin.h"
 #include "seam/pins/pinConnection.h"
-#include "../hash.h"
-#include "../flags-helper.h"
+#include "seam/hash.h"
+#include "seam/flags-helper.h"
+
+namespace seam::nodes {
+	class INode;
+}
 
 namespace seam::pins {
 	using PushFunc = std::function<void(
@@ -49,14 +53,12 @@ namespace seam::pins {
 		/// Register a Pusher. If another Pusher with the same name already exists, it will be overridden.
 		/// \return true if another Pusher was overridden
 		bool Register(Pusher&& pusher);
-
-		/// <summary>
-		/// Push data from output pins to their attached input pins.
-		/// </summary>
-		/// <typeparam name="T"></typeparam>
-		/// <param name="pinOut">The output pin to push data from.</param>
-		/// <param name="data">The data to be pushed.</param>
-		/// <param name="numElements">The number of elements in the data pointer.</param>
+		
+		/// @brief Push data from output pins to their attached input pins. 
+		/// Use this Push() function for event queue pins.
+		/// @param pinOut The output pin to push data from.
+		/// @param data Pointer to the first element to be pushed.
+		/// @param numElements The number of elements pointed to by the data pointer.
 		template <typename T>
 		void Push(PinOutput& pinOut, T* data, size_t numElements) {
 			const bool isEventQueuePin = flags::AreRaised(pinOut.flags, pins::PinFlags::EVENT_QUEUE);
@@ -64,20 +66,21 @@ namespace seam::pins {
 			if (isEventQueuePin) {
 				for (auto& conn : pinOut.connections) {
 					// Dirty the input node.
-					conn.input->node->SetDirty();
+					conn.pinIn->node->SetDirty();
 					// Event queue input pins should always be event queue pins themselves
-					assert((conn.input->flags & pins::PinFlags::EVENT_QUEUE) == pins::PinFlags::EVENT_QUEUE);
+					assert((conn.pinIn->flags & pins::PinFlags::EVENT_QUEUE) == pins::PinFlags::EVENT_QUEUE);
 					// Push the output pin's data to the back of the input pin's vector
-					conn.input->PushEvents(data, numElements);
+					conn.pinIn->PushEvents(data, numElements);
 				}
 			} else {
 				for (auto& conn : pinOut.connections) {
 					// Dirty the input node
-					conn.input->node->SetDirty();
-					conn.convertMulti(data, numElements * sizeof(T), conn.input);
+					conn.pinIn->node->SetDirty();
+					ConvertMultiArgs args(data, pinOut.numCoords, numElements, conn.pinIn);
+					conn.convertMulti(args);
 				
 					// Fire whatever user callback was provided, if any.
-					conn.input->Callback();
+					conn.pinIn->Callback();
 				}
 			}
 		}
@@ -85,7 +88,7 @@ namespace seam::pins {
 		void PushFlow(const PinOutput& pinOut) {
 			assert(pinOut.type == PinType::FLOW);
 			for (auto& conn : pinOut.connections) {
-				conn.input->Callback();
+				conn.pinIn->Callback();
 			}
 		}
 

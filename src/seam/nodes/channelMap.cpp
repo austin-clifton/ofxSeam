@@ -200,16 +200,6 @@ std::vector<props::NodeProperty> ChannelMap::GetProperties() {
 
 }
 
-pins::PinInput* ChannelMap::AddPinIn(IDynamicPinsNode::PinInArgs args) 
-{
-
-
-}
-
-pins::PinOutput* ChannelMap::AddPinOut(pins::PinOutput&& pinOut, size_t index) {
-
-}
-
 void ChannelMap::SetInputType(PinType type) {
     currentInputType = pinInputs[0].type = type;
     if (!pinOutputs.size()) {
@@ -219,7 +209,7 @@ void ChannelMap::SetInputType(PinType type) {
 
     if (currentInputType != PinType::ANY) {
         for (auto& conn : pinOutputs[0].connections) {
-            conn.RecacheConverts(currentInputType);
+            conn.RecacheConverts();
         }
         pinElementSize = pins::PinTypeToElementSize(currentInputType);
     }
