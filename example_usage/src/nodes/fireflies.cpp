@@ -1,5 +1,7 @@
 #include "fireflies.h"
 
+#include "seam/pins/push.h"
+
 using namespace seam;
 using namespace seam::nodes;
 
@@ -19,7 +21,10 @@ Fireflies::Fireflies() : INode("Fireflies"),
 	flags = (NodeFlags)(flags | NodeFlags::UPDATES_OVER_TIME);
 
 	gui_display_fbo = &fbo;
+	windowFbos.push_back(WindowRatioFbo(&fbo));
+}
 
+void Fireflies::Setup(SetupParams* params) {
 	// Set up initial directions for fireflies and their moms.
 	// Declare these inline and not as members since the CPU writes directions to mapped buffers later;
 	// these are only needed for initialization.
@@ -145,9 +150,6 @@ Fireflies::Fireflies() : INode("Fireflies"),
 
 	mom_vbo.setVertexBuffer(mom_vertex_buffer, 4, 0);
 
-	// TODO texture size as an input
-	fbo.allocate(1920, 1080);
-
 	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, ff_positions_ssbo);
 	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, ff_directions_ssbo);
 	ff_vertex_buffer.bindBase(GL_SHADER_STORAGE_BUFFER, 2);
@@ -234,9 +236,7 @@ void Fireflies::Update(UpdateParams* params) {
 		glFlushMappedNamedBufferRange(mom_directions_ssbo, 0, sizeof(glm::vec4) * moms_count);
 	}
 
-	// TODO this is inefficient and should be unnecessary...
-	ofFbo* fbos = { &fbo };
-	params->push_patterns->Push<ofFbo*>(pin_out_texture, &fbos, 1);
+	pin_out_texture.DirtyConnections();
 }
 
 void Fireflies::Draw(DrawParams* params) {
@@ -247,9 +247,6 @@ void Fireflies::Draw(DrawParams* params) {
 	camera.begin();
 	ff_geo_shader.begin();
 
-	float farplane = camera.getFarClip();
-	float nearplane = camera.getNearClip();
-
 	float pulse_distance = camera.getNearClip() 
 		+ pulseCameraDistance * (camera.getFarClip() - camera.getNearClip());
 
@@ -258,7 +255,6 @@ void Fireflies::Draw(DrawParams* params) {
 	ff_geo_shader.setUniform1f("pulseDistance", pulse_distance);
 	ff_geo_shader.setUniform1f("pulseRange", pulseRange);
 
-	// Point size doesn't matter(?) since a geo shader is being used.
 	ff_vbo.draw(GL_POINTS, 0, fireflies_count);
 
 	ff_geo_shader.end();
@@ -270,6 +266,14 @@ void Fireflies::Draw(DrawParams* params) {
 
 	camera.end();
 	fbo.end();
+}
+
+void Fireflies::OnPinConnected(PinConnectedArgs args) {
+	// The output FBO doesn't change; only push it on pin connected.
+	if (args.pinOut->id == pin_out_texture.id) {
+		ofFbo* fbos = { &fbo };
+		args.pushPatterns->Push(pin_out_texture, &fbos, 1);
+	}
 }
 
 bool Fireflies::LoadShaders() {

@@ -1,8 +1,8 @@
 #include <cstdio>
 #include <filesystem>
 #include "force-grid.h"
-#include "../imgui-utils/properties.h"
-#include "../shader-utils.h"
+#include "seam/imgui-utils/properties.h"
+#include "seam/shader-utils.h"
 
 using namespace seam::pins;
 using namespace seam::nodes;

@@ -1,9 +1,9 @@
 #pragma once
 
-#include "iNode.h"
+#include "seam/nodes/iNode.h"
 
-#include "../pins/pin.h"
-#include "../containers/octree.h"
+#include "seam/pins/pin.h"
+#include "seam/containers/octree.h"
 
 using namespace seam::pins;
 
@@ -16,6 +16,8 @@ namespace seam::nodes {
 		Fireflies();
 		~Fireflies();
 
+		void Setup(SetupParams* params) override;
+
 		void Update(UpdateParams* params) override;
 
 		void Draw(DrawParams* params) override;
@@ -23,6 +25,8 @@ namespace seam::nodes {
 		PinInput* PinInputs(size_t& size) override;
 
 		PinOutput* PinOutputs(size_t& size) override;
+
+        void OnPinConnected(PinConnectedArgs args) override;
 
 		bool GuiDrawPropertiesList(UpdateParams* params) override;
 
@@ -131,8 +135,9 @@ namespace seam::nodes {
 		float pulseCameraDistance = -10.f;
 		float pulseRange = 10.f;
 		float useAxisAlignedCompute = 0.f;
+		glm::uvec2 resolution = glm::uvec2(1920, 1080);
 
-		std::array<PinInput, 7> pin_inputs = {
+		std::array<PinInput, 8> pin_inputs = {
 			pins::SetupInputPin(PinType::FLOAT, this, &avoidanceRadius, 1, "Avoidance Radius"),
 			pins::SetupInputPin(PinType::FLOAT, this, &momAvoidanceRadius, 1, "Mom Avoidance Radius"),
 			pins::SetupInputPin(PinType::FLOAT, this, &avoidanceForce, 1, "Avoidance Force"),
@@ -140,6 +145,7 @@ namespace seam::nodes {
 			pins::SetupInputPin(PinType::FLOAT, this, &pulseCameraDistance, 1, "Pulse Distance"),
 			pins::SetupInputPin(PinType::FLOAT, this, &pulseRange, 1, "Pulse Range"),
 			pins::SetupInputPin(PinType::FLOAT, this, &useAxisAlignedCompute, 1, "Axis Aligned"),
+			pins::SetupInputPin(PinType::UINT, this, &resolution, 1, "Resolution", PinInOptions::WithCoords(2)),
 		};
 		
 		PinOutput pin_out_texture = pins::SetupOutputPin(this, pins::PinType::FBO, "texture");

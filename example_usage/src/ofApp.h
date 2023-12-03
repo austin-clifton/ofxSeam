@@ -32,5 +32,6 @@ private:
 		ofxImGui::Gui gui;
 		seam::Editor seamEditor;
 
+		ofSoundStreamSettings soundSettings;
 		ofSoundStream soundStream;
 };

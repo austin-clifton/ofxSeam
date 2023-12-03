@@ -1,6 +1,6 @@
 #pragma once
 
-#include "iNode.h"
+#include "seam/nodes/iNode.h"
 
 using namespace seam::pins;
 
@@ -98,29 +98,6 @@ namespace seam::nodes {
 		const std::string SHADER_NAME = "force-grid";
 		ofShader shader;
 		ofFbo fbo;
-
-		/*
-		PinFloat<1> pin_time = PinFloat<1>("time");
-
-		PinNoteEvent<0> pin_notes_on_stream = PinNoteEvent<0>(
-			"notes on stream",
-			"incoming stream of note ON events",
-			notes::EventTypes::ON
-		);
-
-		PinNoteEvent<0> pin_notes_off_stream = PinNoteEvent<0>(
-			"notes off stream",
-			"incoming stream of note OFF events",
-			notes::EventTypes::OFF
-		);
-
-
-		PinNoteEvent<1> pin_kick_drum_on = PinNoteEvent<1>(
-			"kick drum on",
-			"hook the MIDI note for the kick drum to this pin",
-			notes::EventTypes::ON
-		);
-		*/
 
 		float time = 0.f;
 		notes::NoteEvent* kickDrumOn = nullptr;

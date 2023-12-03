@@ -10,38 +10,33 @@ void ofApp::setup(){
 	ofDisableArbTex();
 	gui.setup(nullptr, false);
 
-	ofSoundStreamSettings settings;
+	soundStream.printDeviceList();
 
-	// if you want to set the device id to be different than the default
-	auto devices = soundStream.getDeviceList();
-	// settings.device = devices[4];
-
-	// you can also get devices for an specific api
-	// auto devices = soundStream.getDevicesByApi(ofSoundDevice::Api::PULSE);
-	// settings.device = devices[0];
-
-	// or get the default device for an specific api:
-	// settings.api = ofSoundDevice::Api::PULSE;
-
-	// or by name
-	/*
-	auto devices = soundStream.getMatchingDevices("default");
-	if (!devices.empty()) {
-		settings.setInDevice(devices[0]);
+	// If you want to analyze audio, choose your audio drivers here.
+	auto devices = soundStream.getMatchingDevices("Solid State", 2, 2, ofSoundDevice::Api::MS_ASIO);
+	
+	if (devices.size()) {
+		auto& dv = devices[0];
+		soundSettings.setInDevice(dv);
+		soundSettings.setOutDevice(dv);
+		soundSettings.setApi(dv.api);
+		soundSettings.numOutputChannels = dv.outputChannels;
+		soundSettings.numInputChannels = dv.inputChannels;
+		soundSettings.sampleRate = 44100;
+	} else {
+		ofLogError("Requested audio device not found");
+		// assert(0);
 	}
-	*/
 
-	settings.setInListener(this);
-	settings.sampleRate = 44100;
-	settings.numOutputChannels = 0;
-	settings.numInputChannels = 1;
-	settings.bufferSize = 512;
-	settings.setApi(ofSoundDevice::Api::MS_DS);
-	soundStream.setup(settings);
+	soundSettings.setInListener(this);
+	soundSettings.bufferSize = 512;
 
-	seamEditor.Setup();
+	seamEditor.Setup(soundSettings);
 
-	// Add custom Seam nodes.
+	// Uncomment this line to enable audio analysis.
+	// soundStream.setup(soundSettings);
+
+	// Add your custom Seam nodes here.
 	seam::EventNodeFactory* factory = seamEditor.GetFactory();
 	factory->Register(factory->MakeCreate<seam::nodes::Fireflies>());
 	factory->Register(factory->MakeCreate<seam::nodes::ForceGrid>());
@@ -123,7 +118,7 @@ void ofApp::mouseExited(int x, int y){
 
 //--------------------------------------------------------------
 void ofApp::windowResized(int w, int h){
-
+	seamEditor.OnWindowResized(w, h);
 }
 
 //--------------------------------------------------------------
