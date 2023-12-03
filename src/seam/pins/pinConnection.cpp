@@ -129,7 +129,7 @@ namespace seam::pins {
                     return [elementSize](ConvertMultiArgs args) {
                         size_t size;
                         void* dst = args.pinIn->Buffer(size);
-                        size_t bytesToCopy = std::min(args.srcSize * args.srcNumCoords, 
+                        size_t bytesToCopy = std::min(args.srcSize * args.srcNumCoords * elementSize, 
                             args.pinIn->BufferSize());
 
                         std::copy((char*)args.src, (char*)args.src + bytesToCopy, (char*)dst);
@@ -160,7 +160,7 @@ namespace seam::pins {
 
                     const uint16_t numCoords = std::min(args.srcNumCoords, args.pinIn->NumCoords());
                     char* src = (char*)args.src;
-                    char* srcEnd = src + args.srcSize;
+                    char* srcEnd = src + args.srcSize * args.srcNumCoords * elementSize;
                     size_t i = 0;
 
                     while (i < dstSize && src != srcEnd) {
@@ -183,7 +183,7 @@ namespace seam::pins {
                     const size_t dstStride = args.pinIn->Stride();
                     
                     char* src = (char*)args.src;
-                    char* srcEnd = src + args.srcSize;
+                    char* srcEnd = src + args.srcSize * srcStride;
 
                     for (size_t i = 0; i < dstElements && src != srcEnd; src += srcStride, dst += dstStride) {
                         ConvertSingleArgs sArgs(src, args.srcNumCoords, dst, args.pinIn->NumCoords());
@@ -333,7 +333,7 @@ TEST_CASE("Test multi float to int pin converter") {
 
     pins::ConvertMulti Convert = seam::pins::GetConvertMulti(&pinIn, &pinOut, isConvertible);
     CHECK(isConvertible);
-    Convert(ConvertMultiArgs(floats.data(), 1, floats.size() * sizeof(float), &pinIn));
+    Convert(ConvertMultiArgs(floats.data(), 1, floats.size(), &pinIn));
     for (size_t i = 0; i < floats.size(); i++) {
         CHECK((int32_t)floats[i] == ints[i]);
     }
@@ -349,7 +349,7 @@ TEST_CASE("Test multi float to bool pin converter") {
 
     pins::ConvertMulti Convert = seam::pins::GetConvertMulti(&pinIn, &pinOut, isConvertible);
     CHECK(isConvertible);
-    Convert(ConvertMultiArgs(floats.data(), 1, floats.size() * sizeof(float), &pinIn));
+    Convert(ConvertMultiArgs(floats.data(), 1, floats.size(), &pinIn));
     for (size_t i = 0; i < floats.size(); i++) {
         CHECK((bool)floats[i] == bools[i]);
     }
@@ -367,7 +367,7 @@ TEST_CASE("Test strided multi converter where source and destination are the sam
     pins::ConvertMulti Convert = seam::pins::GetConvertMulti(&pinIn, &pinOut, isConvertible);
     CHECK(isConvertible);
 
-    Convert(ConvertMultiArgs(src.data(), 1, src.size() * sizeof(float), &pinIn));
+    Convert(ConvertMultiArgs(src.data(), 1, src.size(), &pinIn));
     CHECK(dst[0] == -1.0f);
     CHECK(dst[1] == 1.0f);
     CHECK(dst[2] == -1.0f);
@@ -387,7 +387,7 @@ TEST_CASE("Test strided multi converter where source and destination are differe
     pins::ConvertMulti Convert = seam::pins::GetConvertMulti(&pinIn, &pinOut, isConvertible);
     CHECK(isConvertible);
 
-    Convert(ConvertMultiArgs(src.data(), 3, src.size() * sizeof(glm::ivec3), &pinIn));
+    Convert(ConvertMultiArgs(src.data(), 3, src.size(), &pinIn));
 
     CHECK(dst[0].x == -1.f);
     CHECK(dst[0].y == -1.f);
