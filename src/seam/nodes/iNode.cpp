@@ -208,7 +208,7 @@ void INode::GuiDraw(ed::Utilities::BlueprintNodeBuilder& builder) {
 void INode::GuiDrawNodeCenter() {
 	// TODO how does spring really work...?
 	// im::Spring(1, 0);
-	if (gui_display_fbo != nullptr) {
+	if (gui_display_fbo != nullptr && gui_display_fbo->isAllocated()) {
 		props::DrawFbo(*gui_display_fbo);
 	}
 
@@ -246,7 +246,7 @@ void INode::UpdateResolutionPin(glm::uvec2 resolution) {
 		assert(resolutionPin->type == PinType::UINT || resolutionPin->type == PinType::INT);
 		size_t size;
 		void* buffer = resolutionPin->Buffer(size);
-		assert(size == 2);
+		assert(size * resolutionPin->NumCoords() == 2);
 
 		*((glm::uvec2*)buffer) = resolution;
 	}

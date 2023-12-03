@@ -7,18 +7,10 @@ using namespace seam::nodes;
 Feedback::Feedback() : INode("Feedback") {
 	flags = (NodeFlags)(flags | NodeFlags::IS_VISUAL);
 	gui_display_fbo = &fbo1;
+}
 
-	// TODO texture size as a control of the input texture
-	fbo1.allocate(1920, 1080, GL_RGBA);
-	fbo2.allocate(1920, 1080, GL_RGBA);
+void Feedback::Setup(SetupParams* params) {
 
-	fbo1.begin();
-	ofClear(0.f);
-	fbo1.end();
-
-	fbo2.begin();
-	ofClear(0.f);
-	fbo2.end();
 
 	ReloadShader();
 }
@@ -29,7 +21,7 @@ Feedback::~Feedback() {
 
 void Feedback::Update(UpdateParams* params) {
 	ofFbo* fbos = { gui_display_fbo };
-	params->push_patterns->Push(pin_out_texture, &fbos, 1);
+	params->push_patterns->Push(pinOutFbo, &fbos, 1);
 }
 
 void Feedback::Draw(DrawParams* params) {
@@ -60,6 +52,33 @@ void Feedback::Draw(DrawParams* params) {
 	write_to_fbo1 = !write_to_fbo1;
 }
 
+void Feedback::OnPinConnected(PinConnectedArgs args) {
+	if (args.pinIn->name == "Input FBO") {
+		const float width = inTexture->getWidth();
+		const float height = inTexture->getHeight();
+
+		// Resize FBOs according to the input FBO
+		if (width != fbo1.getWidth() || height != fbo1.getHeight()) {
+			fbo1.clear();
+			fbo2.clear();
+			fbo1.allocate(width, height);
+			fbo2.allocate(width, height);
+
+			fbo1.begin();
+			ofClear(0.f);
+			fbo1.end();
+
+			fbo2.begin();
+			ofClear(0.f);
+			fbo2.end();
+
+			feedback_shader.begin();
+			feedback_shader.setUniform2i("resolution", width, height);
+			feedback_shader.end();
+		}
+	}
+}
+
 PinInput* Feedback::PinInputs(size_t& size) {
 	size = pin_inputs.size();
 	return pin_inputs.data();
@@ -67,7 +86,7 @@ PinInput* Feedback::PinInputs(size_t& size) {
 
 PinOutput* Feedback::PinOutputs(size_t& size) {
 	size = 1;
-	return &pin_out_texture;
+	return &pinOutFbo;
 }
 
 bool Feedback::GuiDrawPropertiesList(UpdateParams* params) {

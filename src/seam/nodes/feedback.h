@@ -12,9 +12,13 @@ namespace seam::nodes {
 		Feedback();
 		~Feedback();
 
+		void Setup(SetupParams* params) override;
+
 		void Draw(DrawParams* params) override;
 
 		void Update(UpdateParams* params) override;
+
+		void OnPinConnected(PinConnectedArgs args) override;
 
 		PinInput* PinInputs(size_t& size) override;
 
@@ -48,6 +52,6 @@ namespace seam::nodes {
 			pins::SetupInputPin(PinType::FLOAT, this, &feedbackOffset, 1, "Feedback Offset", PinInOptions::WithCoords(2)),
 		};
 
-		PinOutput pin_out_texture = pins::SetupOutputPin(this, pins::PinType::FBO, "output");
+		PinOutput pinOutFbo = pins::SetupOutputPin(this, pins::PinType::FBO, "output");
 	};
 }
