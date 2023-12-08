@@ -145,7 +145,7 @@ namespace seam::props {
 					guiMax,
 					format,
 					0
-				);
+				) || pinsChanged;
 			}
 		}
 
