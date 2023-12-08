@@ -37,6 +37,6 @@ namespace seam::nodes {
 		ofShader shader;
 		ofFbo fbo;
 
-		PinOutput pinOutMaterial = pins::SetupOutputPin(this, pins::PinType::FBO, "material");
+		PinOutput pinOutMaterial = pins::SetupOutputPin(this, pins::PinType::FBO_RGBA, "material");
 	};
 }

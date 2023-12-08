@@ -23,13 +23,14 @@ namespace {
 		switch (type) {
 		default:
 		case PinType::TYPE_NONE:
-		case PinType::FLOW:     return ImColor(255, 255, 255);
-		case PinType::BOOL:     return ImColor(220, 48, 48);
-		case PinType::INT:      return ImColor(68, 201, 156);
-		case PinType::FLOAT:    return ImColor(147, 226, 74);
-		case PinType::STRING:   return ImColor(124, 21, 153);
-		case PinType::FBO:  	return ImColor(51, 150, 215);
-		case PinType::STRUCT: 	return ImColor(128);
+		case PinType::FLOW:     	return ImColor(255, 255, 255);
+		case PinType::BOOL:     	return ImColor(220, 48, 48);
+		case PinType::INT:      	return ImColor(68, 201, 156);
+		case PinType::FLOAT:    	return ImColor(147, 226, 74);
+		case PinType::STRING:   	return ImColor(124, 21, 153);
+		case PinType::FBO_RGBA:  	return ImColor(51, 150, 215);
+		case PinType::FBO_RGBA16F:  return ImColor(215, 150, 51);
+		case PinType::STRUCT: 		return ImColor(128);
 		// case PinType::Function: return ImColor(218, 0, 183);
 		// case PinType::Delegate: return ImColor(255, 48, 48);
 		}
@@ -49,7 +50,8 @@ namespace {
 		case PinType::UINT:			icon_type = IconType::Circle; break;
 		case PinType::FLOAT:		icon_type = IconType::Circle; break;
 		case PinType::STRING:		icon_type = IconType::Circle; break;
-		case PinType::FBO:			icon_type = IconType::Square; break;
+		case PinType::FBO_RGBA:		icon_type = IconType::Square; break;
+		case PinType::FBO_RGBA16F:	icon_type = IconType::Square; break;
 		case PinType::NOTE_EVENT:	icon_type = IconType::Grid; break;
 		case PinType::ANY:			icon_type = IconType::Diamond; break;
 		case PinType::STRUCT:		icon_type = IconType::Square; break;

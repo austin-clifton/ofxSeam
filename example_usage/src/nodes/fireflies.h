@@ -148,6 +148,6 @@ namespace seam::nodes {
 			pins::SetupInputPin(PinType::UINT, this, &resolution, 1, "Resolution", PinInOptions::WithCoords(2)),
 		};
 		
-		PinOutput pin_out_texture = pins::SetupOutputPin(this, pins::PinType::FBO, "texture");
+		PinOutput pin_out_texture = pins::SetupOutputPin(this, pins::PinType::FBO_RGBA, "texture");
 	};
 }

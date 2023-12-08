@@ -72,7 +72,7 @@ void UniformsPin::SetShaderUniforms(PinInput* uniformsPin, ofShader& shader) {
 			}
 			break;
 		}
-		case pins::PinType::FBO: {
+		case pins::PinType::FBO_RGBA: {
 			ofFbo** fbos = (ofFbo**)buffer;
 			// TODO do sizes > 1 need to be handled?
 			assert(size == 1);

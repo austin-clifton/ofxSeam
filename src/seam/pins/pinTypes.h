@@ -11,7 +11,7 @@ namespace seam::pins {
         /// @brief Only valid for input pins
         ANY,
 
-        // flow pins are stateless triggers which just dirty any nodes that use them as inputs
+        /// @brief Flow pins are stateless triggers which just dirty any nodes that use them as inputs
         FLOW,
 
         // basic types
@@ -23,14 +23,18 @@ namespace seam::pins {
         FLOAT,
         STRING,
         
-        // FBO + resolution
-        FBO,
-
-        // note events send a pointer to a struct from notes.h, 
+        /// @brief Note events send a pointer to a struct from notes.h, 
         // or a struct that inherits one of those structs
         NOTE_EVENT,
 
         // Not assignable, for pins which are really just containers for child pins
         STRUCT,
+
+        // Start counting FBOs at an offset so there's room for expansion, 
+        // since there are different FBO formats,
+        // and not all of them should be assignable to each other.
+        FBO_RGBA = 1000,
+        /// @brief 16 bit floating point buffer FBO, good for HDR!
+        FBO_RGBA16F = FBO_RGBA + 1,
     };
 }

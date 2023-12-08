@@ -45,13 +45,13 @@ namespace seam::nodes {
 		PinFloatMeta decayMeta = PinFloatMeta(0.f, 1.f);
 			
 		std::array<PinInput, 4> pin_inputs = {
-			pins::SetupInputPin(PinType::FBO, this, &inTexture, 1, "Input FBO", 
+			pins::SetupInputPin(PinType::FBO_RGBA, this, &inTexture, 1, "Input FBO", 
 				PinInOptions(std::bind(&Feedback::RebindTexture, this))),
 			pins::SetupInputPin(PinType::FLOAT, this, &decay, 1, "Decay", PinInOptions("", &decayMeta)),
 			pins::SetupInputPin(PinType::FLOAT, this, &filterColor, 1, "Filter Color", PinInOptions::WithCoords(4)),
 			pins::SetupInputPin(PinType::FLOAT, this, &feedbackOffset, 1, "Feedback Offset", PinInOptions::WithCoords(2)),
 		};
 
-		PinOutput pinOutFbo = pins::SetupOutputPin(this, pins::PinType::FBO, "output");
+		PinOutput pinOutFbo = pins::SetupOutputPin(this, pins::PinType::FBO_RGBA, "output");
 	};
 }

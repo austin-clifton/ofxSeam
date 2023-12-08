@@ -83,7 +83,7 @@ namespace {
 
 			// Don't serialize channels if this input type doesn't have serializable state
 			if (pinIn.type == PinType::FLOW
-				|| pinIn.type == PinType::FBO
+				|| pinIn.type == PinType::FBO_RGBA
 				|| pinIn.type == PinType::NOTE_EVENT
 				|| pinIn.type == PinType::STRUCT
 			) {

@@ -43,7 +43,7 @@ namespace seam::nodes {
 				PinInOptions("each octave's amplitude is multiplied by this number", &floatMeta)),
 		};
 
-		PinOutput pin_out_tex = pins::SetupOutputPin(this, pins::PinType::FBO, "texture");
+		PinOutput pin_out_tex = pins::SetupOutputPin(this, pins::PinType::FBO_RGBA, "texture");
 
 		// TODO this should be an editable property, but not a pin (resolution shouldn't be changing)
 		glm::ivec2 tex_size = glm::ivec2(512, 512);

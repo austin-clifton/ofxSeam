@@ -166,7 +166,7 @@ namespace seam::pins {
 				numCoords = 2;
 				break;
 			case GL_SAMPLER_2D_ARB:
-				pinType = PinType::FBO;
+				pinType = PinType::FBO_RGBA;
 				numCoords = 1;
 				break;
 			default:
@@ -219,7 +219,8 @@ namespace seam::pins {
 				glGetnUniformuiv(program, uniform_location, 
 					totalElements * sizeof(uint32_t), (uint32_t*)buffer);
 				break;
-			case PinType::FBO:
+			case PinType::FBO_RGBA:
+			case PinType::FBO_RGBA16F:
 				ofFbo** fbo = (ofFbo**)buffer;
 				*fbo = nullptr;
 				break;
@@ -318,7 +319,8 @@ namespace seam::pins {
 			return sizeof(uint32_t);
 		case PinType::NOTE_EVENT:
 			return sizeof(notes::NoteEvent*);
-		case PinType::FBO:
+		case PinType::FBO_RGBA:
+		case PinType::FBO_RGBA16F:
 			return sizeof(ofFbo*);
 		default:
 			throw std::runtime_error("Unknown pin type! You need to provide the element size in bytes yourself.");
