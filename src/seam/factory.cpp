@@ -4,22 +4,23 @@
 #include "nodes/add-store.h"
 #include "nodes/audioAnalyzer.h"
 #include "nodes/channelMap.h"
+#include "nodes/compute-particles.h"
 #include "nodes/cos.h"
 #include "nodes/feedback.h"
 #include "nodes/gate.h"
+#include "nodes/hdrTonemapper.h"
 #include "nodes/markov.h"
 #include "nodes/midi-in.h"
 #include "nodes/noise.h"
 #include "nodes/notes-printer.h"
+#include "nodes/percussive-trigger.h"
+#include "nodes/range.h"
 #include "nodes/saw.h"
 #include "nodes/shader.h"
 #include "nodes/step.h"
 #include "nodes/texgen-perlin.h"
 #include "nodes/threshold.h"
 #include "nodes/timer.h"
-#include "nodes/compute-particles.h"
-#include "nodes/percussive-trigger.h"
-#include "nodes/range.h"
 
 using namespace seam;
 
@@ -33,20 +34,21 @@ EventNodeFactory::EventNodeFactory(const ofSoundStreamSettings& soundSettings) {
 	#endif
 	// Register(MakeCreate<nodes::ComputeParticles>());
 	Register(MakeCreate<nodes::Cos>());
+	Register(MakeCreate<nodes::Feedback>());
+	Register(MakeCreate<nodes::Gate>());
+	Register(MakeCreate<nodes::HdrTonemapper>());
 	Register(MakeCreate<nodes::Markov>());
 	Register(MakeCreate<nodes::MidiIn>());
 	Register(MakeCreate<nodes::Noise>());
 	Register(MakeCreate<nodes::NotesPrinter>());
 	Register(MakeCreate<nodes::PercussiveTrigger>());
 	Register(MakeCreate<nodes::Range>());
-	Register(MakeCreate<nodes::Shader>());
-	Register(MakeCreate<nodes::TexgenPerlin>());
-	Register(MakeCreate<nodes::Timer>());
-	Register(MakeCreate<nodes::Feedback>());
 	Register(MakeCreate<nodes::Saw>());
-	Register(MakeCreate<nodes::Gate>());
+	Register(MakeCreate<nodes::Shader>());
 	Register(MakeCreate<nodes::Step>());
+	Register(MakeCreate<nodes::TexgenPerlin>());
 	Register(MakeCreate<nodes::Threshold>());
+	Register(MakeCreate<nodes::Timer>());
 
 	// TODO register more seam internal generators here
 }
