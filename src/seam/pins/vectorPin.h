@@ -38,7 +38,7 @@ namespace seam::pins {
         }
 
         template <typename T>
-        T* Get(size_t &size) {
+        inline T* Get(size_t &size) {
             assert(sizeof(T) == elementSize);
             size = Size();
             return (T*)buff.data();

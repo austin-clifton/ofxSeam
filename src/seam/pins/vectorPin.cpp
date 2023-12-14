@@ -12,7 +12,7 @@ VectorPinInput::VectorPinInput(PinType childPinType) {
         vectorPin->PinInputs(size);
 
         return SetupInputPin(childPinType, nullptr,
-            nullptr, 0, std::to_string(size));
+            nullptr, 1, std::to_string(size));
     };
 
     fixPointersCb = [this](void* buff, PinInput* pinIn) {
@@ -84,7 +84,7 @@ void VectorPinInput::UpdateSize(size_t newSize) {
     }
 
     buff.resize(newSize * elementSize);
-    vectorPin->SetBuffer(buff.data(), buff.size());
+    vectorPin->SetBuffer(buff.data(), buff.size() / elementSize);
 
     // Set up any new additional child pins.
     while (vectorPin->childPins.size() < newSize) {
