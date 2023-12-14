@@ -1,6 +1,6 @@
-#if BUILD_AUDIO_ANALYSIS
-
 #include "audioAnalyzer.h"
+
+#if BUILD_AUDIO_ANALYSIS
 
 using namespace seam;
 using namespace seam::nodes;
@@ -70,7 +70,7 @@ void AudioAnalyzer::ProcessAudio(ofSoundBuffer& input) {
 		// auto& vals1 = audioAnalyzer.getValues(algo.algorithm, 1);
 
 		for (size_t i = 0; i < vals0.size() && i < algo.values0.size(); i++) {
-			algo.values0[i] = std::max(vals0[i], algo.values0[i]);
+			algo.values0[i] = std::max(vals0[i] * lastRms, algo.values0[i]);
 		}
 	} 
 
@@ -162,12 +162,17 @@ bool AudioAnalyzer::GuiDrawPropertiesList(UpdateParams* params) {
 			ImPlot::SetupAxisLimits(ImAxis_Y1, algo.limits.x, algo.limits.y, ImPlotCond_Always);
 			ImPlot::SetupAxisScale(ImAxis_X1, algo.scale);
 
-			ImPlot::PlotLine("left", algo.values0.data(), algo.values0.size(), xScale);
-			ImPlot::PlotLine("right", algo.values1.data(), algo.values1.size(), xScale);
-			
+			auto& valuesL = audioAnalyzer.getValues(algo.algorithm, 0, 0.0);
+			auto& valuesR = audioAnalyzer.getValues(algo.algorithm, 1, 0.0);
+
+			ImPlot::PlotLine("left", valuesL.data(), valuesL.size(), xScale);
+			ImPlot::PlotLine("right", valuesR.data(), valuesR.size(), xScale);
+
+			// ImPlot::SetupAxes(nullptr, nullptr, ImPlotAxisFlags_AutoFit, ImPlotAxisFlags_AutoFit);
 			/*
-			ImPlot::SetupAxes(nullptr, nullptr, ImPlotAxisFlags_AutoFit, ImPlotAxisFlags_AutoFit);
-			ImPlot::PlotHistogram(algo.name, values.data(), values.size(), 
+			ImPlot::PlotHistogram(algo.name, valuesL.data(), valuesL.size(), 
+				ImPlotBin_Sturges, 1.0, ImPlotRange(), ImPlotHistogramFlags_Density);
+			ImPlot::PlotHistogram(algo.name, valuesR.data(), valuesR.size(), 
 				ImPlotBin_Sturges, 1.0, ImPlotRange(), ImPlotHistogramFlags_Density);
 			*/
 
