@@ -16,20 +16,22 @@ namespace seam::nodes {
 
 		PinOutput* PinOutputs(size_t& size) override;
 
-        // bool GuiDrawPropertiesList(UpdateParams* params) override;
+        bool GuiDrawPropertiesList(UpdateParams* params) override;
+
+        void GuiDrawNodeCenter() override;
 
     private:
         struct ThresholdConfig {
             /// @brief When the value crosses this threshold for longer than sustainTime,
             /// an event is fired and the threshold enters a triggered state.
-            float triggerValue = 0.8;
+            float triggerValue = 0.67;
 
             /// @brief An event won't be fired unless the triggerValue is crossed for this long.
-            float sustainTime = 0.1;
+            float sustainTime = 0.05;
 
-            /// @brief After an event is fired, another threshold event won't be fired 
+            /// @brief After an event is fired and state is raised, state remains raised
             /// until the value crosses back to the untriggered side of the triggerValue for this long.
-            float silenceTime = 0.5;
+            float silenceTime = 0.05;
 
             // These two are internal to the Node, and aren't pin-mapped.
             float timePastThreshold = 0.f;            
@@ -48,8 +50,7 @@ namespace seam::nodes {
             sizeof(ThresholdConfig)
         );
 
-        // TODO use the GUI to set up the default threshold config since it's fucking annoying to edit.
-        // ThresholdConfig defaultConfig;
+        ThresholdConfig defaultConfig;
 
         VectorPinInput values = VectorPinInput(PinType::FLOAT);
         

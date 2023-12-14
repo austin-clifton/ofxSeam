@@ -91,6 +91,8 @@ PinInput Threshold::CreateThresholdPin(VectorPinInput* vectorPin, size_t i) {
 
 void Threshold::SetThresholdPinBuffers(void* ptr, PinInput* thresholdPin) {
     ThresholdConfig* config = (ThresholdConfig*)ptr;
+    // Reset to initial struct values.
+    *config = ThresholdConfig();
     size_t size;
     PinInput* children = thresholdPin->PinInputs(size);
     assert(size == 3);
@@ -119,4 +121,54 @@ void Threshold::OnSizeChanged(VectorPinInput* changed) {
 
         pinOutEvents[i].SetChildren(std::move(children));
     }
+}
+
+void Threshold::GuiDrawNodeCenter() {
+    size_t size;
+    ThresholdConfig* configs = thresholds.Get<ThresholdConfig>(size);
+
+    for (size_t i = 0; i < size; i++) {
+        if (i > 0 && i % 4 == 0) {
+            ImGui::NewLine();
+        } else {
+            ImGui::SameLine();
+        }
+
+        ImVec4 col = configs[i].triggered ? ImVec4(1.0, 0.0, 1.0, 1.0) : ImVec4(0.1f, 0.1f, 0.1f, 1.f);
+        ImGui::TextColored(col, "o");
+    }
+}
+
+bool Threshold::GuiDrawPropertiesList(UpdateParams* params) {
+    ImGui::Text("Edit All Thresholds:");
+    bool triggerChanged = ImGui::DragFloat("Trigger Value", &defaultConfig.triggerValue);
+    bool sustainChanged = ImGui::DragFloat("Sustain Time", &defaultConfig.sustainTime);
+    bool silenceChanged = ImGui::DragFloat("Silence Time", &defaultConfig.silenceTime);
+    bool changed = triggerChanged || sustainChanged || silenceChanged;
+
+    if (changed) {
+        size_t thresholdsSize;
+        ThresholdConfig* configs = thresholds.Get<ThresholdConfig>(thresholdsSize);
+
+        if (triggerChanged) {
+            for (size_t i = 0; i < thresholdsSize; i++) {
+                configs[i].triggerValue = defaultConfig.triggerValue;
+            }
+        }
+
+        if (sustainChanged) {
+            for (size_t i = 0; i < thresholdsSize; i++) {
+                configs[i].sustainTime = defaultConfig.sustainTime;
+            }
+        }
+
+        if (silenceChanged) {
+            for (size_t i = 0; i < thresholdsSize; i++) {
+                configs[i].silenceTime = defaultConfig.silenceTime;
+            }
+        }
+    }
+
+    ImGui::NewLine();
+    return changed;
 }
