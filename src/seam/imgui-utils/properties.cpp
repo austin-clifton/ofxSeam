@@ -41,6 +41,8 @@ namespace seam::props {
 	bool DrawPinInput(PinInput* input) {
 		bool sizeChanged = false;
 
+		ImGui::PushID(input);
+
 		// If this is a vector pin, draw the vector resize GUI.
 		if ((input->flags & PinFlags::VECTOR) > 0) {
 			sizeChanged = DrawVectorResize(input);
@@ -152,6 +154,8 @@ namespace seam::props {
 		if (pinsChanged) {
 			input->Callback();
 		}
+
+		ImGui::PopID();
 
 		return pinsChanged || sizeChanged;
 	}
