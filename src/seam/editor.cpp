@@ -338,6 +338,15 @@ void Editor::GuiDraw() {
 			while (ed::QueryDeletedNode(&node_id)) {
 				if (ed::AcceptDeletedItem()) {
 					INode* node = node_id.AsPointer<INode>();
+
+					// Delete any related links.
+					for (size_t i = links.size(); i > 0; i--) {
+						auto& l = links[i - 1];
+						if (l.inNode == node || l.outNode == node) {
+							links.erase(links.begin() + (i - 1));
+						}
+					}
+
 					graph->DeleteNode(node);
 					
 					// If this node is the selected node, unselect.
