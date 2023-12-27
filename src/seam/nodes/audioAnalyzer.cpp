@@ -5,19 +5,23 @@
 using namespace seam;
 using namespace seam::nodes;
 
-AudioAnalyzer::AudioAnalyzer(const ofSoundStreamSettings& settings) : INode("Audio Analyzer") {
+AudioAnalyzer::AudioAnalyzer() : INode("Audio Analyzer") {
 	flags = (NodeFlags)(flags | NodeFlags::UPDATES_OVER_TIME);
+}
 
-    audioAnalyzer.setup(settings.sampleRate, settings.bufferSize, settings.numInputChannels);
+void AudioAnalyzer::Setup(SetupParams* params) {
+	ofSoundStreamSettings* soundSettings = params->settings;
+	
+    audioAnalyzer.setup(soundSettings->sampleRate, soundSettings->bufferSize, soundSettings->numInputChannels);
 	// Disable all the audio analyzer algorithms by default, enable _some_ back when audio is actually playing.
-	for (size_t i = 0; i < settings.numInputChannels; i++) {
+	for (size_t i = 0; i < soundSettings->numInputChannels; i++) {
 		for (size_t j = 0; j <= ofxAAAlgorithm::ONSETS; j++) {
 			audioAnalyzer.setActive(i, (ofxAAAlgorithm)j, false);
 		}
 	}
 
 	// ...Except RMS, we want RMS enabled at all times so we know when to re-enable other stuff.
-	for (size_t i = 0; i < settings.numInputChannels; i++) {
+	for (size_t i = 0; i < soundSettings->numInputChannels; i++) {
 		audioAnalyzer.setActive(i, ofxAAAlgorithm::RMS, true);
 	}
 

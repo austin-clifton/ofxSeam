@@ -12,8 +12,10 @@ using namespace seam::pins;
 namespace seam::nodes {
 	class AudioAnalyzer : public INode, public IAudioNode {
 	public:
-		AudioAnalyzer(const ofSoundStreamSettings& soundSettings);
+		AudioAnalyzer();
 		~AudioAnalyzer();
+
+		void Setup(SetupParams* params) override;
 
 		void Update(UpdateParams* params) override;
 
