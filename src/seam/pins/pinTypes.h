@@ -36,5 +36,6 @@ namespace seam::pins {
         FBO_RGBA = 1000,
         /// @brief 16 bit floating point buffer FBO, good for HDR!
         FBO_RGBA16F = FBO_RGBA + 1,
+        FBO_RED = FBO_RGBA + 2,
     };
 }

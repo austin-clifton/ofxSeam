@@ -104,6 +104,7 @@ namespace seam::props {
 		case PinType::NOTE_EVENT:
 		case PinType::FBO_RGBA:
 		case PinType::FBO_RGBA16F:
+		case PinType::FBO_RED:
 		{
 			// TODO maybe allow note events to be "mocked" here;
 			// there isn't really anything else to draw for these otherwise.

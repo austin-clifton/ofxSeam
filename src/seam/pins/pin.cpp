@@ -221,6 +221,7 @@ namespace seam::pins {
 				break;
 			case PinType::FBO_RGBA:
 			case PinType::FBO_RGBA16F:
+			case PinType::FBO_RED:
 				ofFbo** fbo = (ofFbo**)buffer;
 				*fbo = nullptr;
 				break;
@@ -321,6 +322,7 @@ namespace seam::pins {
 			return sizeof(notes::NoteEvent*);
 		case PinType::FBO_RGBA:
 		case PinType::FBO_RGBA16F:
+		case PinType::FBO_RED:
 			return sizeof(ofFbo*);
 		default:
 			throw std::runtime_error("Unknown pin type! You need to provide the element size in bytes yourself.");
