@@ -84,6 +84,8 @@ namespace {
 			// Don't serialize channels if this input type doesn't have serializable state
 			if (pinIn.type == PinType::FLOW
 				|| pinIn.type == PinType::FBO_RGBA
+				|| pinIn.type == PinType::FBO_RGBA16F
+				|| pinIn.type == PinType::FBO_RED
 				|| pinIn.type == PinType::NOTE_EVENT
 				|| pinIn.type == PinType::STRUCT
 			) {
@@ -180,21 +182,13 @@ namespace {
 	}
 }
 
-SeamGraph::SeamGraph(const ofSoundStreamSettings& _soundSettings) {
-	soundSettings = _soundSettings;
-    factory = new EventNodeFactory(soundSettings);
-
+SeamGraph::SeamGraph() {
 	updateParams.push_patterns = &pushPatterns;
     updateParams.alloc_pool = &allocPool;
 }
 
 SeamGraph::~SeamGraph() {
     NewGraph();
-
-    if (factory != nullptr) {
-        delete factory;
-        factory = nullptr;
-    }
 }
 
 void SeamGraph::Draw() {
@@ -286,12 +280,10 @@ void SeamGraph::NewGraph() {
 }
 
 INode* SeamGraph::CreateAndAdd(seam::nodes::NodeId node_id) {
-	INode* node = factory->Create(node_id);
+	INode* node = factory.Create(node_id);
 	if (node != nullptr) {
 		node->OnWindowResized(glm::ivec2(ofGetWidth(), ofGetHeight()));
-		SetupParams params;
-		params.soundSettings = &soundSettings;
-		node->Setup(&params);
+		node->Setup(&setupParams);
 
 		nodes.push_back(node);
 

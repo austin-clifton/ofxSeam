@@ -32,8 +32,12 @@ namespace seam {
 			}
 		};
 
-        SeamGraph(const ofSoundStreamSettings& soundSettings);
+        SeamGraph();
         ~SeamGraph();
+
+		void SetSetupParams(SetupParams params) {
+			setupParams = params;
+		}
 
         /// @brief To be called during OpenFrameworks' draw() call.
         void Draw();
@@ -69,7 +73,7 @@ namespace seam {
 
 		void OnWindowResized(int w, int h);
 
-        inline EventNodeFactory* GetFactory() { return factory; }
+        inline EventNodeFactory* GetFactory() { return &factory; }
 
         inline const std::vector<INode*>& GetNodes() { return nodes; }
 
@@ -111,9 +115,9 @@ namespace seam {
 
 		std::vector<IAudioNode*> audioNodes;
 
-		ofSoundStreamSettings soundSettings;
+		SetupParams setupParams;
 
-		EventNodeFactory* factory = nullptr;
+		EventNodeFactory factory;
 		PushPatterns pushPatterns;
 		FramePool allocPool = FramePool(8192);
 
