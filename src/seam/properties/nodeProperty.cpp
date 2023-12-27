@@ -57,8 +57,17 @@ void Serialize(ValuesBuilder& builder, NodePropertyType type, PinInput* pinIn)
         }
         break;
     }
-    case NodePropertyType::PROP_CHAR:
     case NodePropertyType::PROP_STRING:
+        for (size_t i = 0; i < srcSize; i++) {
+            std::string* stringVals = (std::string*)((char*)buff + i * stride);
+            for (size_t j = 0; j < numCoords; j++) {
+                builder[i * numCoords + j].setStringValue(stringVals[i].c_str());
+            }
+        }
+        break;
+    case NodePropertyType::PROP_CHAR:
+
+
     default:
         throw std::logic_error("not implemented yet!");
     }
@@ -141,7 +150,16 @@ void Deserialize(const seam::schema::PinIn::Reader& serializedPin, PinInput* pin
         break;
     }
     case NodePropertyType::PROP_STRING: {
-        // TODO... should this be allowed?
+        if (serializedValues[0].isStringValue()) {
+            // Make sure each loop around won't go out of bounds in the src array.
+            for (size_t i = 0; i < dstSize && i * srcNumCoords + minNumCoords - 1 < serializedValues.size(); i++) {
+                size_t srci = i * srcNumCoords;
+                std::string* dsti = (std::string*)((char*)dstBuff + i * dstStride);
+                for (uint16_t j = 0; j < minNumCoords; j++) {
+                    dsti[j] = std::string(serializedValues[srci + j].getStringValue().cStr());
+                }
+            }
+        }
         break;
     }
 
@@ -185,8 +203,15 @@ void SerializeProperty(ValuesBuilder& builder, NodePropertyType type, void* srcB
         }
         break;
     }
+    case NodePropertyType::PROP_STRING: {
+        std::string* string_values = (std::string*)srcBuff;
+        for (size_t i = 0; i < srcElementsCount; i++) {
+            builder[i].setStringValue(string_values[i]);
+        }
+        break;
+    }
+
     case NodePropertyType::PROP_CHAR:
-    case NodePropertyType::PROP_STRING:
     default:
         throw std::logic_error("not implemented yet!");
     }
@@ -279,6 +304,16 @@ NodeProperty SetupUintProperty(std::string&& name,
         return getter(size);
     }, [setter](void* data, size_t size) {
         setter((uint32_t*)data, size);
+    });
+}
+
+NodeProperty SetupStringProperty(std::string&& name,
+    std::function<std::string*(size_t& size)> getter, std::function<void(std::string*, size_t)> setter)
+{
+    return NodeProperty(std::move(name), NodePropertyType::PROP_STRING, [getter](size_t& size) -> void* {
+        return getter(size);
+    }, [setter](void* data, size_t size) {
+        setter((std::string*)data, size);
     });
 }
 

@@ -44,7 +44,7 @@ namespace seam::nodes {
 		float gamma = 2.2f;
 
 		/// @brief Input FBO
-		ofFbo* hdrFbo;
+		ofFbo* hdrFbo = nullptr;
 
 		/// @brief Post-processed input FBOs with only bright areas.
 		/// These are downscaled and then ping-pong'd for bloom.

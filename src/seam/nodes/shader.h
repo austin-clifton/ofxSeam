@@ -21,6 +21,8 @@ namespace seam::nodes {
 
 		bool GuiDrawPropertiesList(UpdateParams* params) override;
 
+		std::vector<props::NodeProperty> GetProperties() override;
+
 		PinInput* PinInputs(size_t& size) override;
 
 		PinOutput* PinOutputs(size_t& size) override;

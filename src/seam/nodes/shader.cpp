@@ -56,11 +56,34 @@ bool Shader::AttemptShaderLoad(const std::string& shader_name) {
 		return true;
 	}
 	return false;
+
+	if (std::filesystem::exists(std::filesystem::current_path() / "data/shaders/" / shader_name)
+		&& ShaderUtils::LoadShader(shader, "screen-rect.vert", shader_name + ".frag")) {
+		uniformsPin.UpdateUniforms(&shaderPin, shader);
+		return true;
+	}
+	return false;
 }
 
 bool Shader::GuiDrawPropertiesList(UpdateParams* params) {
-	// first ask the GUI to draw an input for the shader path.
-	// if the shader paths changes, then also attempt re-loading the shader.
-	return props::DrawShaderPath("shader name", shader_name)
-		&& AttemptShaderLoad(shader_name);
+	// Ask the GUI to draw an input for the shader path.
+	if (props::DrawShaderPath("shader name", shader_name)) {
+		return AttemptShaderLoad(shader_name);
+	}
+	return false;
+}
+
+std::vector<props::NodeProperty> Shader::GetProperties() {
+	std::vector<props::NodeProperty> properties;
+	
+	properties.push_back(props::SetupStringProperty("Frag Shader Name", [this](size_t& size) {
+		size = 1;
+		return &shader_name;
+	}, [this](std::string* newName, size_t size) {
+		assert(size == 1);
+		shader_name = *newName;
+		AttemptShaderLoad(shader_name);
+	}));
+
+	return properties;
 }

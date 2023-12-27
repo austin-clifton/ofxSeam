@@ -41,6 +41,9 @@ namespace seam::props {
 	NodeProperty SetupUintProperty(std::string&& name, 
 		std::function<uint32_t*(size_t&)> getter, std::function<void(uint32_t*, size_t)> setter);
 
+	NodeProperty SetupStringProperty(std::string&& name,
+		std::function<std::string*(size_t& size)> getter, std::function<void(std::string*, size_t)> setter);
+
 	void Deserialize(const seam::schema::PinIn::Reader& serializedPin, seam::pins::PinInput* pinIn);
 
 	void Serialize(ValuesBuilder& serializedValues, 
