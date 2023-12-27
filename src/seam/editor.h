@@ -8,6 +8,8 @@
 #include "seam/factory.h"
 #include "frame-pool.h"
 
+#include "INIReader.h"
+
 namespace seam {
 
 	using namespace nodes;
@@ -16,8 +18,10 @@ namespace seam {
 	/// node graph editor manages the event nodes and connections that make up a seam scene
 	class Editor {
 	public:
+		const static char* CONFIG_FILE_NAME;
+
 		/// to be called by ofApp::setup()
-		void Setup(const ofSoundStreamSettings& soundSettings);
+		void Setup(ofSoundStreamSettings* soundSettings);
 
 		~Editor();
 
@@ -35,10 +39,9 @@ namespace seam {
 
 		void ProcessAudio(ofSoundBuffer& buffer);
 
-		seam::EventNodeFactory* GetFactory() { return graph->GetFactory(); }
+		seam::EventNodeFactory* GetFactory() { return graph.GetFactory(); }
 	
 	private:
-
 		void NewGraph();
 		void SaveGraph(const std::string_view filename, const std::vector<INode*>& nodesToSave);
 		void LoadGraph(const std::string_view filename);
@@ -61,8 +64,10 @@ namespace seam {
 
 		bool show_create_dialog = false;
 
-		std::string loaded_file;
+		std::string loadedFile;
 
-		SeamGraph* graph = nullptr;
+		INIReader iniReader = INIReader(CONFIG_FILE_NAME);
+
+		SeamGraph graph;
 	};
 }

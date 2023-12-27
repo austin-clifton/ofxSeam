@@ -42,6 +42,7 @@
                 "${workspaceRoot}/../../addons/ofxImGuiNodeEditor/libs/imgui/src/",
                 "${workspaceRoot}/../../addons/ofxAudioAnalyzer/src/",
                 "${workspaceRoot}/../../addons/ofxAudioAnalyzer/libs/**",
+                "${workspaceRoot}/../../addons/ofxSeam/libs/inih/includes/cpp/",
                 "${workspaceFolder}/libs/nfd/includes"
             ]
         }

@@ -18,27 +18,42 @@ using namespace seam;
 namespace im = ImGui;
 namespace ed = ax::NodeEditor;
 
+const char* Editor::CONFIG_FILE_NAME = "seamConfig.ini";
+
 namespace {
 	const char* POPUP_NAME_NEW_NODE = "Create New Node";
 	const char* WINDOW_NAME_NODE_MENU = "Node Properties Menu";
 }
 
 Editor::~Editor() {
-	if (graph != nullptr) {
-		delete graph;
-		graph = nullptr;
+	if (!loadedFile.empty()) {
+		std::ofstream fout(CONFIG_FILE_NAME, std::ios::trunc);
+		assert(!fout == false);
+		fout << "lastLoadedFile = " << loadedFile << std::endl;
+		fout.close();
 	}
 
 	ed::DestroyEditor(nodeEditorContext);
 }
 
-void Editor::Setup(const ofSoundStreamSettings& soundSettings) {
-	graph = new SeamGraph(soundSettings);
+void Editor::Setup(ofSoundStreamSettings* soundSettings) {
+	SetupParams setupParams;
+	setupParams.soundSettings = soundSettings;
+	graph.SetSetupParams(setupParams);
+
 	nodeEditorContext = ed::CreateEditor();
+
+	std::string filename = iniReader.Get("", "lastLoadedFile", "");
+	if (std::filesystem::exists(filename)) {
+		// Make sure our node editor context is current while pre-loading
+		ed::SetCurrentEditor(nodeEditorContext);
+		LoadGraph(filename); 
+		ed::SetCurrentEditor(nullptr);
+	}
 }
 
 void Editor::Draw() {
-	graph->Draw();
+	graph.Draw();
 
 	// draw the selected node's display FBO if it's a visual node
 	if (lastSelectedVisualNode != nullptr) {
@@ -50,11 +65,11 @@ void Editor::Draw() {
 }
 
 void Editor::Update() {
-	graph->Update();
+	graph.Update();
 }
 
 void Editor::ProcessAudio(ofSoundBuffer& buffer) {
-	graph->ProcessAudio(buffer);
+	graph.ProcessAudio(buffer);
 }
 
 void Editor::GuiDrawPopups() {
@@ -73,12 +88,11 @@ void Editor::GuiDrawPopups() {
 
 	if (ImGui::BeginPopup(POPUP_NAME_NEW_NODE)) {
 		// TODO specify an input or output type here if new_link_pin != nullptr
-		NodeId new_node_id = graph->GetFactory()->DrawCreatePopup();
+		NodeId new_node_id = graph.GetFactory()->DrawCreatePopup();
 		if (new_node_id != 0) {
 			show_create_dialog = false;
-			INode* node = graph->CreateAndAdd(new_node_id);
+			INode* node = graph.CreateAndAdd(new_node_id);
 			ed::SetNodePosition((ed::NodeId)node, open_popup_position);
-
 
 			// TODO handle new_link_pin
 			new_link_pin = nullptr;
@@ -93,10 +107,10 @@ void Editor::GuiDrawPopups() {
 }
 
 void Editor::NewGraph() {
-	graph->NewGraph();
+	graph.NewGraph();
 
 	links.clear();
-	loaded_file.clear();
+	loadedFile.clear();
 
 	selected_node = nullptr;
 	lastSelectedVisualNode = nullptr;
@@ -107,15 +121,15 @@ void Editor::NewGraph() {
 }
 
 void Editor::SaveGraph(const std::string_view filename, const std::vector<INode*>& nodes_to_save) {
-	if (graph->SaveGraph(filename, nodes_to_save)) {
-		loaded_file = filename;
+	if (graph.SaveGraph(filename, nodes_to_save)) {
+		loadedFile = filename;
 	}
 }
 
 void Editor::LoadGraph(const std::string_view filename) {
 	NewGraph();
-	if (graph->LoadGraph(filename, links)) {
-		loaded_file = filename;
+	if (graph.LoadGraph(filename, links)) {
+		loadedFile = filename;
 	}	
 }
 
@@ -134,6 +148,8 @@ void Editor::GuiDraw() {
 
 	im::Begin("Seam Editor", nullptr, ImGuiWindowFlags_MenuBar | ImGuiWindowFlags_NoCollapse);
 
+	ed::SetCurrentEditor(nodeEditorContext);
+
 	if (ImGui::BeginMenuBar()) {
 
 		if (ImGui::BeginMenu("File")) {
@@ -149,16 +165,16 @@ void Editor::GuiDraw() {
 				}
 			}
 			if (ImGui::MenuItem("Save", "Ctrl+S")) {
-				if (loaded_file.empty()) {
+				if (loadedFile.empty()) {
 					nfdchar_t* out_path = NULL;
 					nfdresult_t result = NFD_SaveDialog(NULL, NULL, &out_path);
 					if (result == NFD_OKAY) {
-						SaveGraph(out_path, graph->GetNodes());
+						SaveGraph(out_path, graph.GetNodes());
 					} else if (result != NFD_CANCEL) {
 						printf("NFD Error: %s\n", NFD_GetError());
 					}
 				} else {
-					SaveGraph(loaded_file, graph->GetNodes());
+					SaveGraph(loadedFile, graph.GetNodes());
 				}
 
 
@@ -178,13 +194,10 @@ void Editor::GuiDraw() {
 		ImGui::EndMenuBar();
 	}
 
-
-	ed::SetCurrentEditor(nodeEditorContext);
-
 	ed::Begin("Event Flow");
 
 	ed::Utilities::BlueprintNodeBuilder builder;
-	for (auto n : graph->GetNodes()) {
+	for (auto n : graph.GetNodes()) {
 		n->GuiDraw(builder);
 	}
 
@@ -347,7 +360,7 @@ void Editor::GuiDraw() {
 						}
 					}
 
-					graph->DeleteNode(node);
+					graph.DeleteNode(node);
 					
 					// If this node is the selected node, unselect.
 					if (selected_node == node) {
@@ -367,6 +380,8 @@ void Editor::GuiDraw() {
 
 	ed::End();
 
+	ed::SetCurrentEditor(nullptr);
+
 	im::End();
 
 	if (selected_node) {
@@ -380,7 +395,7 @@ void Editor::GuiDraw() {
 		bool dirty = props::DrawPinInputs(selected_node);
 		ImGui::Text("Properties:");
 
-		dirty = selected_node->GuiDrawPropertiesList(graph->GetUpdateParams()) || dirty;
+		dirty = selected_node->GuiDrawPropertiesList(graph.GetUpdateParams()) || dirty;
 		if (dirty) {
 			selected_node->SetDirty();
 		}
@@ -394,14 +409,14 @@ void Editor::GuiDraw() {
 }
 
 bool Editor::Connect(PinInput* pinIn, PinOutput* pinOut) {
-	bool connected = graph->Connect(pinIn, pinOut);
+	bool connected = graph.Connect(pinIn, pinOut);
 	assert(connected);
 	links.push_back(SeamGraph::Link(pinOut->node, pinOut->id, pinIn->node, pinIn->id));
 	return connected;
 }
 
 bool Editor::Disconnect(PinInput* pinIn, PinOutput* pinOut) {
-	bool disconnected = graph->Disconnect(pinIn, pinOut);
+	bool disconnected = graph.Disconnect(pinIn, pinOut);
 	assert(disconnected);
 
 	// Remove from links list
@@ -413,5 +428,5 @@ bool Editor::Disconnect(PinInput* pinIn, PinOutput* pinOut) {
 }
 
 void Editor::OnWindowResized(int w, int h) {
-	graph->OnWindowResized(w, h);
+	graph.OnWindowResized(w, h);
 }

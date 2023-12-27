@@ -44,7 +44,7 @@ namespace seam {
 			};
 		}
 
-		EventNodeFactory(const ofSoundStreamSettings& soundSettings);
+		EventNodeFactory();
 
 		~EventNodeFactory();
 

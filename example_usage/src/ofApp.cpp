@@ -28,18 +28,18 @@ void ofApp::setup(){
 		// assert(0);
 	}
 
+#if BUILD_AUDIO_ANALYSIS
 	soundSettings.setInListener(this);
 	soundSettings.bufferSize = 512;
-
-	seamEditor.Setup(soundSettings);
-
-	// Uncomment this line to enable audio analysis.
-	// soundStream.setup(soundSettings);
+	soundStream.setup(soundSettings);
+#endif
 
 	// Add your custom Seam nodes here.
 	seam::EventNodeFactory* factory = seamEditor.GetFactory();
 	factory->Register(factory->MakeCreate<seam::nodes::Fireflies>());
 	factory->Register(factory->MakeCreate<seam::nodes::ForceGrid>());
+
+	seamEditor.Setup(&soundSettings);
 }
 
 void ofApp::exit() {

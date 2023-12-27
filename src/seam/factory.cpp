@@ -1,39 +1,39 @@
 #include "factory.h"
 #include "hash.h"
 
-#include "nodes/add-store.h"
-#include "nodes/audioAnalyzer.h"
-#include "nodes/channelMap.h"
-#include "nodes/compute-particles.h"
-#include "nodes/cos.h"
-#include "nodes/feedback.h"
-#include "nodes/gate.h"
-#include "nodes/hdrTonemapper.h"
-#include "nodes/markov.h"
-#include "nodes/midi-in.h"
-#include "nodes/noise.h"
-#include "nodes/notes-printer.h"
-#include "nodes/percussive-trigger.h"
-#include "nodes/range.h"
-#include "nodes/saw.h"
-#include "nodes/shader.h"
-#include "nodes/step.h"
-#include "nodes/texgen-perlin.h"
-#include "nodes/threshold.h"
-#include "nodes/timer.h"
+#include "seam/nodes/add-store.h"
+#include "seam/nodes/audioAnalyzer.h"
+#include "seam/nodes/channelMap.h"
+#include "seam/nodes/compute-particles.h"
+#include "seam/nodes/cos.h"
+#include "seam/nodes/fastNoise.h"
+#include "seam/nodes/feedback.h"
+#include "seam/nodes/gate.h"
+#include "seam/nodes/hdrTonemapper.h"
+#include "seam/nodes/markov.h"
+#include "seam/nodes/midi-in.h"
+#include "seam/nodes/noise.h"
+#include "seam/nodes/notes-printer.h"
+#include "seam/nodes/percussive-trigger.h"
+#include "seam/nodes/range.h"
+#include "seam/nodes/saw.h"
+#include "seam/nodes/shader.h"
+#include "seam/nodes/step.h"
+#include "seam/nodes/texgen-perlin.h"
+#include "seam/nodes/threshold.h"
+#include "seam/nodes/timer.h"
 
 using namespace seam;
 
-EventNodeFactory::EventNodeFactory(const ofSoundStreamSettings& soundSettings) {
+EventNodeFactory::EventNodeFactory() {
 	// register seam-internal nodes here
 	Register(MakeCreate<nodes::AddStore>());
 	#if BUILD_AUDIO_ANALYSIS
-	Register([&soundSettings] {
-		return new nodes::AudioAnalyzer(soundSettings);
-	});
+	Register(MakeCreate<nodes::AudioAnalyzer>());
 	#endif
 	// Register(MakeCreate<nodes::ComputeParticles>());
 	Register(MakeCreate<nodes::Cos>());
+	Register(MakeCreate<nodes::FastNoise>());
 	Register(MakeCreate<nodes::Feedback>());
 	Register(MakeCreate<nodes::Gate>());
 	Register(MakeCreate<nodes::HdrTonemapper>());
@@ -125,11 +125,12 @@ bool EventNodeFactory::Register(EventNodeFactory::CreateFunc&& Create) {
 
 	gen.Create = std::move(Create);
 	generators.push_back(std::move(gen));
+	generators_sorted = false;
 	return true;
 }
 
 seam::nodes::NodeId EventNodeFactory::DrawCreatePopup(PinType input_type, PinType output_type) {
-	if (!generators_sorted) {
+	if (!generators_sorted || guiGenerators.size() != generators.size()) {
 		std::sort(generators.begin(), generators.end());
 
 		guiGenerators.clear();
@@ -140,6 +141,8 @@ seam::nodes::NodeId EventNodeFactory::DrawCreatePopup(PinType input_type, PinTyp
 		std::sort(guiGenerators.begin(), guiGenerators.end(), [](const Generator* a, const Generator* b) -> bool {
 			return a->node_name < b->node_name;
 		});
+
+		generators_sorted = true;
 	}
 
 	// loop through each Generator that's been registered with the EventNodeFactory,
