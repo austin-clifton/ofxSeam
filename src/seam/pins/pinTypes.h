@@ -38,4 +38,6 @@ namespace seam::pins {
         FBO_RGBA16F = FBO_RGBA + 1,
         FBO_RED = FBO_RGBA + 2,
     };
+
+    bool IsFboPin(PinType pinType);
 }

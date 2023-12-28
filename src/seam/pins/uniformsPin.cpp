@@ -11,6 +11,10 @@ PinInput UniformsPin::SetupUniformsPin(nodes::INode* node, const std::string_vie
 }
 
 void UniformsPin::UpdateUniforms(PinInput* uniformsPin, ofShader& shader) {
+	// Move the old uniforms buffer to a temp buffer,
+	// so uniform values can be preserved and re-set after re-loading.
+	std::vector<char> oldUniformsBuffer = std::move(uniformsBuffer);
+
     std::vector<PinInput> newPins = UniformsToPinInputs(shader, uniformsPin->node, uniformsBuffer);
     
     // Loop over each new pin, and make sure ids and connections are preserved.
@@ -20,6 +24,13 @@ void UniformsPin::UpdateUniforms(PinInput* uniformsPin, ofShader& shader) {
             pinIn.id = match->id;
             pinIn.connection = match->connection;
             match->connection = nullptr;
+
+			// Also copy the previously set shader uniform values.
+			size_t pinSize, matchSize;
+			char* matchBuff = (char*)match->Buffer(matchSize);
+			char* pinBuff = (char*)pinIn.Buffer(pinSize);
+			size_t bytesToCopy = std::min(match->BufferSize(), pinIn.BufferSize());
+			std::copy(matchBuff, matchBuff + bytesToCopy, pinBuff);
         }
     }
 
@@ -72,7 +83,10 @@ void UniformsPin::SetShaderUniforms(PinInput* uniformsPin, ofShader& shader) {
 			}
 			break;
 		}
-		case pins::PinType::FBO_RGBA: {
+		case pins::PinType::FBO_RGBA: 
+		case pins::PinType::FBO_RGBA16F:
+		case pins::PinType::FBO_RED:
+		{
 			ofFbo** fbos = (ofFbo**)buffer;
 			// TODO do sizes > 1 need to be handled?
 			assert(size == 1);

@@ -56,18 +56,11 @@ bool Shader::AttemptShaderLoad(const std::string& shader_name) {
 		return true;
 	}
 	return false;
-
-	if (std::filesystem::exists(std::filesystem::current_path() / "data/shaders/" / shader_name)
-		&& ShaderUtils::LoadShader(shader, "screen-rect.vert", shader_name + ".frag")) {
-		uniformsPin.UpdateUniforms(&shaderPin, shader);
-		return true;
-	}
-	return false;
 }
 
 bool Shader::GuiDrawPropertiesList(UpdateParams* params) {
 	// Ask the GUI to draw an input for the shader path.
-	if (props::DrawShaderPath("shader name", shader_name)) {
+	if (props::DrawShaderPath("Shader Name", shader_name)) {
 		return AttemptShaderLoad(shader_name);
 	}
 	return false;
