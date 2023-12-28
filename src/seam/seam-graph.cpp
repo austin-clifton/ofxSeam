@@ -415,6 +415,14 @@ bool SeamGraph::Disconnect(PinInput* pinIn, PinOutput* pinOut) {
 	parent->OnPinDisconnected(pinIn, pinOut);
 	child->OnPinDisconnected(pinIn, pinOut);
 
+	// Null out disconnected FBO pin pointers; this will need to be done for other pointer types!
+	// This is probably a temporary solution.
+	if (pins::IsFboPin(pinIn->type)) {
+		size_t fbosSize;
+		void* pinBuff = pinIn->Buffer(fbosSize);
+		std::memset(pinBuff, 0, fbosSize * sizeof(ofFbo*));
+	}
+
 	// track if we need to update traversal order
 	bool rearranged = false;
 
