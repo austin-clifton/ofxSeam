@@ -109,6 +109,8 @@ namespace {
 
 			builder.setId(pinOut.id);
 			builder.setName(pinOut.name);
+			builder.setType(pinOut.type);
+			builder.setNumCoords(pinOut.numCoords);
 
 			// Remember what connections this output has so we can serialize all the connections after this loop.
 			for (size_t conn_index = 0; conn_index < pinOut.connections.size(); conn_index++) {
@@ -764,7 +766,7 @@ bool SeamGraph::LoadGraph(const std::string_view filename, std::vector<SeamGraph
 				PinInput* added = dynamicPinsNode->AddPinIn(pinArgs);
 
 				if (added == nullptr) {
-					printf("Dynamic Pins Node %s refused to add a pin named %s\n",
+					printf("Dynamic Pins Node %s refused to add an input pin named %s\n",
 						node->NodeName().data(), serialized_pin_name.c_str());
 				} else {
 					maxPinId = std::max(maxPinId, UpdatePinMap(added, input_pin_map));
@@ -795,7 +797,22 @@ bool SeamGraph::LoadGraph(const std::string_view filename, std::vector<SeamGraph
 				maxPinId = std::max(maxPinId, UpdatePinMap(match, output_pin_map));
 
 			} else if (dynamicPinsNode != nullptr) {
-				assert(false);//shit shit dooo me ples
+				PinType pinType = (PinType)serialized_pin_out.getType();
+				PinOutput pinOut = SetupOutputPin(dynamicPinsNode, pinType, 
+					serialized_pin_out.getName().cStr(), serialized_pin_out.getNumCoords());
+
+				DeserializePinOutput(serialized_pin_out, &pinOut);
+
+				PinOutput* added = dynamicPinsNode->AddPinOut(std::move(pinOut), 0);
+				if (added == nullptr) {
+					printf("Dynamic Pins Node %s refused to add an output pin named %s\n",
+						node->NodeName().data(), serialized_pin_out.getName().cStr());
+				} else {
+					maxPinId = std::max(maxPinId, UpdatePinMap(added, output_pin_map));
+
+					// Refresh the output pins list
+					output_pins = node->PinOutputs(outputs_size);
+				}
 			} else {
 				printf("Could not match serialized output pin with name %s on node %s\n",
 					pin_name.data(), serialized_node.getDisplayName().cStr());

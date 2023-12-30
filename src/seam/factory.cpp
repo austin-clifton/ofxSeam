@@ -14,7 +14,7 @@
 #include "seam/nodes/midi-in.h"
 #include "seam/nodes/noise.h"
 #include "seam/nodes/notes-printer.h"
-#include "seam/nodes/percussive-trigger.h"
+#include "seam/nodes/percussiveTrigger.h"
 #include "seam/nodes/range.h"
 #include "seam/nodes/saw.h"
 #include "seam/nodes/shader.h"

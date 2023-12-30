@@ -1,5 +1,5 @@
-#include "feedback.h"
-#include "../shader-utils.h"
+#include "seam/nodes/feedback.h"
+#include "seam/shader-utils.h"
 
 using namespace seam;
 using namespace seam::nodes;
