@@ -14,7 +14,7 @@ namespace {
 	}
 }
 
-MidiIn::MidiIn() : INode("MIDI In") {
+MidiIn::MidiIn() : IDynamicPinsNode("MIDI In") {
 	// external input requires updating every frame
 	flags = (NodeFlags)(flags | NodeFlags::UPDATES_EVERY_FRAME);
 	custom_pins_index = pin_outputs.size();
@@ -58,7 +58,7 @@ bool MidiIn::CompareNotePin(const PinOutput& pin_out, const uint32_t note) {
 	return pin_note < note;
 }
 
-bool MidiIn::AddNotePin(uint32_t midi_note) {
+PinOutput* MidiIn::AddNotePin(uint32_t midi_note) {
 
 	auto it = std::lower_bound(
 		pin_outputs.begin() + custom_pins_index,
@@ -67,10 +67,12 @@ bool MidiIn::AddNotePin(uint32_t midi_note) {
 		&MidiIn::CompareNotePin
 	);
 
+	size_t index = it - pin_outputs.begin();
+
 	// make sure the note pin doesn't already exist
 	// userp will contain the midi note if it already exists
 	if (it != pin_outputs.end() && (size_t)it->userp == (size_t)midi_note) {
-		return false;
+		return nullptr;
 	} else {
 		// TODO this will get rekt if Pin::name goes back to being backed by string_view instead of string
 		// really need some way to allow both statically alloc'd and dynamically alloc'd names
@@ -90,7 +92,7 @@ bool MidiIn::AddNotePin(uint32_t midi_note) {
 
 		pin_outputs.insert(it, std::move(pin_out));
 
-		return true;
+		return &pin_outputs[index];
 	}
 }
 
@@ -195,4 +197,16 @@ void MidiIn::Update(UpdateParams* params) {
 			AttemptPushToNotePin(params, ev, msg.pitch);
 		}
 	}
+}
+
+PinInput* MidiIn::AddPinIn(PinInArgs args) {
+	// MidiIn has no expected dynamic input pins!
+	assert(false);
+}
+
+PinOutput* MidiIn::AddPinOut(PinOutput&& pinOut, size_t index) {
+	int noteNumber = std::atoi(pinOut.name.substr(5, pinOut.name.length() - 5).c_str());
+	PinOutput* added = AddNotePin(noteNumber);
+	added->id = pinOut.id;
+	return added;
 }

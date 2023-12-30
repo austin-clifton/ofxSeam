@@ -10,7 +10,7 @@
 using namespace seam::pins;
 
 namespace seam::nodes {
-	class MidiIn : public INode, public ofxMidiListener {
+	class MidiIn : public IDynamicPinsNode, public ofxMidiListener {
 	public:
 		MidiIn();
 		~MidiIn();
@@ -26,16 +26,19 @@ namespace seam::nodes {
 		/// callback for ofxMidiIn and required method implementation from ofxMidiListener
 		void newMidiMessage(ofxMidiMessage& msg) override;
 
+		pins::PinInput* AddPinIn(PinInArgs args) override;
+		pins::PinOutput* AddPinOut(pins::PinOutput&& pinOut, size_t index) override;
+
+		// TODO remove and/or clear individual note pins added by AddNotePin()
+	private:
 		/// Add a Pin that listens to a specific note.
 		/// Useful if you want to isolate the kick drum MIDI note, for instance.
 		/// For MIDI 1.0, only 0..127 really matter.
 		/// \return true if the note was added;
 		/// if a note pin for the given midi_note already exists,
 		/// the pin will not be added, and false will be returned.
-		bool AddNotePin(uint32_t midi_note);
+		PinOutput* AddNotePin(uint32_t midi_note);
 
-		// TODO remove and/or clear individual note pins added by AddNotePin()
-	private:
 		/// Listen to the given MIDI port.
 		/// return true if the port was successfully opened
 		bool ListenOnPort(unsigned int port);
