@@ -1,4 +1,4 @@
-#include "percussive-trigger.h"
+#include "percussiveTrigger.h"
 
 using namespace seam;
 using namespace seam::nodes;
@@ -29,7 +29,8 @@ namespace {
 
 PercussiveTrigger::PercussiveTrigger() : INode("Percussive Trigger") {
 	flags = (NodeFlags)(flags | NodeFlags::UPDATES_OVER_TIME);
-	pinNotesOnStream = &pin_inputs[0];
+	pinNotesOnStream = FindPinInByName(this, notesOnStreamPinName);
+	assert(pinNotesOnStream != nullptr);
 }
 
 PercussiveTrigger::~PercussiveTrigger() {
@@ -38,18 +39,18 @@ PercussiveTrigger::~PercussiveTrigger() {
 
 void PercussiveTrigger::Retrigger(float velocity, PushPatterns* push) {
 		// reset trigger time
-		trigger_time = totalTriggerTime;
+		triggerTime = totalTriggerTime;
 
 		// TODO: should this be aware of the last max velocity, in cases where the last trigger hasn't finished?
-		trigger_max_vel = velocity;
+		triggerMaxVel = velocity;
 
 		// Push to the triggered pin.
 		push->PushFlow(pinOutTriggered);
 }
 
 void PercussiveTrigger::Update(UpdateParams* params) {
-	float max_vel = 0.f;
-	bool retrigger = false;
+	bool retrigger = eventTriggered;
+	float maxVel = retrigger ? 0.8f : 0.f;
 	// drain the notes stream;
 	// if multiple triggers occurred since the last frame, grab the velocity of the loudest note
 	size_t size;
@@ -59,7 +60,7 @@ void PercussiveTrigger::Update(UpdateParams* params) {
 		notes::NoteEvent* ev = onEvents[i];
 		if (ev->type == notes::EventTypes::ON) {
 			notes::NoteOnEvent* on_ev = (notes::NoteOnEvent*)ev;
-			max_vel = std::max(max_vel, on_ev->velocity);
+			maxVel = std::max(maxVel, on_ev->velocity);
 			retrigger = true;
 		}
 	}
@@ -67,21 +68,23 @@ void PercussiveTrigger::Update(UpdateParams* params) {
 	pinNotesOnStream->ClearEvents(size);
 
 	if (retrigger) {
-		Retrigger(max_vel, params->push_patterns);
+		Retrigger(maxVel, params->push_patterns);
 	}
 
-	if (trigger_time > 0.f) {
-		float delta_time = params->delta_time;
-		output = CalcTriggerCurve(trigger_time, totalTriggerTime, curveModifier);
-		trigger_time = std::max(0.f, trigger_time - delta_time);
+	if (triggerTime > 0.f) {
+		float deltaTime = params->delta_time;
+		output = CalcTriggerCurve(triggerTime, totalTriggerTime, curveModifier);
+		triggerTime = std::max(0.f, triggerTime - deltaTime);
 		
 		params->push_patterns->Push(pinOutCurve, &output, 1);
-	} else if (trigger_time == 0.f) {
+	} else if (triggerTime == 0.f) {
 		// one last guaranteed trigger to reset to min value
-		output = CalcTriggerCurve(trigger_time, totalTriggerTime, curveModifier);
+		output = CalcTriggerCurve(triggerTime, totalTriggerTime, curveModifier);
 		params->push_patterns->Push(pinOutCurve, &output, 1);
-		trigger_time = -1.0f;
+		triggerTime = -1.0f;
 	}
+
+	eventTriggered = false;
 }
 
 PinInput* PercussiveTrigger::PinInputs(size_t& size) {
@@ -92,12 +95,4 @@ PinInput* PercussiveTrigger::PinInputs(size_t& size) {
 PinOutput* PercussiveTrigger::PinOutputs(size_t& size) {
 	size = 2;
 	return &pinOutCurve;
-}
-
-bool PercussiveTrigger::GuiDrawPropertiesList(UpdateParams* params) {
-	if (ImGui::Button("Trigger")) {
-		Retrigger(0.9f, params->push_patterns);
-		return true;
-	}
-	return false;
 }

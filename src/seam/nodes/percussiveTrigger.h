@@ -18,21 +18,24 @@ namespace seam::nodes {
 
 		PinOutput* PinOutputs(size_t& size) override;
 
-		bool GuiDrawPropertiesList(UpdateParams* params) override;
-
 	private:
+		const char* notesOnStreamPinName = "Notes On Stream";
+
 		void Retrigger(float velocity, PushPatterns* push);
 
-		float trigger_time = 0.f;
-		float trigger_max_vel = 0.f;
+		bool eventTriggered = false;
+
+		float triggerTime = 0.f;
+		float triggerMaxVel = 0.f;
 		float output = 0.f;
 
-		float curveModifier = 4.0f;
+		float curveModifier = -4.0f;
 		float totalTriggerTime = 0.4f;
 		PinInput* pinNotesOnStream;
 
-		std::array<PinInput, 3> pin_inputs = { 
-			pins::SetupInputQueuePin(PinType::NOTE_EVENT, this, "Notes On Stream"),
+		std::array<PinInput, 4> pin_inputs = {
+			pins::SetupInputFlowPin(this, [this] { eventTriggered = true; }, "Trigger"),
+			pins::SetupInputQueuePin(PinType::NOTE_EVENT, this, notesOnStreamPinName),
 			pins::SetupInputPin(PinType::FLOAT, this, &curveModifier, 1, "Curve Modifier", 
 				PinInOptions("0 for linear, positive for an x^N curve, negative for x^(1 / -N) curve")),
 			pins::SetupInputPin(PinType::FLOAT, this, &totalTriggerTime, 1, "Total Trigger Time", 
