@@ -67,10 +67,15 @@ namespace seam::pins {
 				for (auto& conn : pinOut.connections) {
 					// Dirty the input node.
 					conn.pinIn->node->SetDirty();
-					// Event queue input pins should always be event queue pins themselves
-					assert((conn.pinIn->flags & pins::PinFlags::EVENT_QUEUE) == pins::PinFlags::EVENT_QUEUE);
-					// Push the output pin's data to the back of the input pin's vector
-					conn.pinIn->PushEvents(data, numElements);
+
+					// Input pins should either be event queue input pins, or flow pins.
+					if (flags::AreRaised(conn.pinIn->flags, pins::PinFlags::EVENT_QUEUE)) {
+						// Push the output pin's data to the back of the input pin's vector
+						conn.pinIn->PushEvents(data, numElements);
+					} else {
+						assert(conn.pinIn->type == PinType::FLOW);
+						conn.pinIn->Callback();
+					}
 				}
 			} else {
 				for (auto& conn : pinOut.connections) {
@@ -83,6 +88,41 @@ namespace seam::pins {
 					conn.pinIn->Callback();
 				}
 			}
+		}
+
+		/// @brief Push a single data point. Useful if data is not stored linearly,
+		/// or if there's only one data point to push.
+		/// @param pinOut The output pin to push data from.
+		/// @param data Pointer to the data to be pushed.
+		/// @param index The channel index to push to in input pins.
+		/// @return True if data was pushed at this index. Depending on what your Node does,
+		/// you might want to bail out of pushing once no data is sent.
+		template <typename T>
+		bool PushSingle(PinOutput& pinOut, T* data, size_t index = 0) {
+			bool pushed = false;
+
+			// Use Push() instead of PushSingle() for event queue pins!
+			assert(!flags::AreRaised(pinOut.flags, pins::PinFlags::EVENT_QUEUE));
+			for (auto& conn : pinOut.connections) {
+				conn.pinIn->node->SetDirty();
+
+				// Calculate the input destination offset.
+				size_t dstSize;
+				char* dst = (char*)conn.pinIn->Buffer(dstSize);
+
+				if (index < dstSize) {
+					dst = dst + index * conn.pinIn->Stride();
+					ConvertSingleArgs args(data, pinOut.numCoords, 
+						dst, conn.pinIn->NumCoords(), conn.pinIn);
+
+					conn.convertSingle(args);
+					conn.pinIn->Callback();
+					
+					pushed = true;
+				}
+			}
+
+			return pushed;
 		}
 
 		void PushFlow(const PinOutput& pinOut) {
