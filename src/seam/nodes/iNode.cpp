@@ -255,3 +255,86 @@ void INode::UpdateResolutionPin(glm::uvec2 resolution) {
 		*((glm::uvec2*)buffer) = resolution;
 	}
 }
+
+bool INode::GuiDrawPropertiesList(UpdateParams* params) {
+	using namespace seam::props;
+
+	bool changed = false;
+
+	// Changes from ImGui are written to this buffer and then passed to prop.setValues(),
+	// instead of directly setting the data returned from prop.getValues().
+	// This way when setValues() is called, the Node still has the "old" value for any cleanup logic etc.
+	std::vector<char> tmpBuf;
+
+	auto props = GetProperties();
+	for (auto& prop : props) {
+		// Figure out how much space this property requires.
+		size_t bytesPerElement = PropTypeToByteSize(prop.type);
+		size_t totalElements;
+		void* vbuf = prop.getValues(totalElements);
+
+		// Allocate enough space and copy current values to the tmpBuf.
+		tmpBuf.resize(bytesPerElement * totalElements);
+		std::copy((char*)vbuf, (char*)vbuf + bytesPerElement * totalElements, tmpBuf.data());
+
+		ImGuiDataType imguiType = -1;
+		switch (prop.type) {
+			case NodePropertyType::PROP_BOOL: {
+				for (size_t i = 0; i < totalElements; i++) {
+					std::string name = prop.name + " " + std::to_string(i);
+					changed = ImGui::Checkbox(name.c_str(), (bool*)&tmpBuf[i]) || changed;
+				}
+
+				if (changed) {
+					prop.setValues(tmpBuf.data(), totalElements);
+				}
+				break;
+			}
+			case NodePropertyType::PROP_FLOAT: {
+				imguiType = ImGuiDataType_Float;
+				break;
+			}
+			case NodePropertyType::PROP_INT: {
+				imguiType = ImGuiDataType_S32;
+				break;
+			}
+			case NodePropertyType::PROP_UINT: {
+				imguiType = ImGuiDataType_U32;
+				break;
+			}
+			case NodePropertyType::PROP_STRING: {
+				// TODO
+				assert(false);
+			}
+			case NodePropertyType::PROP_STRUCT: {
+				// TODO
+				assert(false);
+			}
+			case NodePropertyType::PROP_NONE: {
+				// Why do you have a property with type none??
+				assert(false);
+			}
+			default: {
+				throw std::logic_error("Unimplemented property type! Please fix!");
+			}
+		}
+
+		// Draw a drag input for the prop if possible.
+		if (imguiType != -1) {
+			// Note that tmpBuf is modified here...
+			changed = ImGui::DragScalarN(
+				prop.name.c_str(), 
+				imguiType,
+				tmpBuf.data(),
+				totalElements
+			);
+
+			// ...and then sent to setValues() if anything changed.
+			if (changed) {
+				prop.setValues(tmpBuf.data(), totalElements);
+			}
+		}
+	}
+	
+	return changed;
+}

@@ -354,4 +354,28 @@ seam::schema::PinValue::Which PropTypeToSerializedPinType(NodePropertyType propT
     }
 }
 
+size_t PropTypeToByteSize(NodePropertyType propType) {
+    switch (propType) {
+        case NodePropertyType::PROP_BOOL:
+            return sizeof(bool);
+        case NodePropertyType::PROP_CHAR:
+            return sizeof(char);
+        case NodePropertyType::PROP_FLOAT:
+            return sizeof(float);
+        case NodePropertyType::PROP_INT:
+            return sizeof(int32_t);
+        case NodePropertyType::PROP_STRING:
+            return sizeof(std::string);
+        case NodePropertyType::PROP_UINT:
+            return sizeof(uint32_t);
+        case NodePropertyType::PROP_STRUCT:
+            return 0; // I think this is right for structs? They don't inherently contain data.
+        case NodePropertyType::PROP_NONE:
+            throw std::logic_error("None is not a valid property type, is this a real Property?");
+        default:
+            throw std::logic_error("Unimplemented?");
+    }
+}
+
+
 } // namespace

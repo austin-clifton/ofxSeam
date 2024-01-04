@@ -144,8 +144,9 @@ namespace seam::nodes {
 		virtual void UpdateResolutionPin(glm::uvec2 resolution);
 
 		/// @brief Override to draw a custom GUI in the Node Inspector window using Dear ImGui.
+		/// By default, this function will call GetProperties() and draw a property editor for each returned property.
 		/// @return True if a value in the Node was updated and the Node needs to now be updated or re-drawn.
-		virtual bool GuiDrawPropertiesList(UpdateParams* params) { return false; }
+		virtual bool GuiDrawPropertiesList(UpdateParams* params);
 
 		virtual void GuiDrawNodeCenter();
 

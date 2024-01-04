@@ -30,7 +30,10 @@ namespace seam::props {
 	};
 
     NodePropertyType SerializedPinTypeToPropType(seam::schema::PinValue::Which pinType);
+
     seam::schema::PinValue::Which PropTypeToSerializedPinType(NodePropertyType propType);
+
+	size_t PropTypeToByteSize(NodePropertyType type);
 
 	NodeProperty SetupFloatProperty(std::string&& name, 
 		std::function<float*(size_t&)> getter, std::function<void(float*, size_t)> setter);
