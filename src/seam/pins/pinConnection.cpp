@@ -106,7 +106,14 @@ namespace seam::pins {
                         return Convert<bool, char>;
                     case PinType::UINT:
                         return Convert<uint32_t, char>;
+                    default:
+                        break;
                 }
+            case PinType::FLOW: {
+                return [](ConvertSingleArgs args) {
+                    args.pinIn->Callback();
+                };
+            }
             default:
                 break;
         }
@@ -186,7 +193,8 @@ namespace seam::pins {
                     char* srcEnd = src + args.srcSize * srcStride;
 
                     for (size_t i = 0; i < dstElements && src != srcEnd; src += srcStride, dst += dstStride) {
-                        ConvertSingleArgs sArgs(src, args.srcNumCoords, dst, args.pinIn->NumCoords());
+                        ConvertSingleArgs sArgs(src, args.srcNumCoords, 
+                            dst, args.pinIn->NumCoords(), args.pinIn);
                         Convert(sArgs);
                     }
                 };

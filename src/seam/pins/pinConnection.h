@@ -8,17 +8,21 @@ namespace seam::pins {
     class PinOutput;
 
     struct ConvertSingleArgs {
-        ConvertSingleArgs(void* _src, uint16_t _srcNumCoords, void* _dst, uint16_t _dstNumCoords) {
+        ConvertSingleArgs(void* _src, uint16_t _srcNumCoords, 
+            void* _dst, uint16_t _dstNumCoords,
+            PinInput* _pinIn) {
             src = _src;
             srcNumCoords = _srcNumCoords;
             dst = _dst;
             dstNumCoords = _dstNumCoords;
+            pinIn = _pinIn;
         }
 
         void* src;
         uint16_t srcNumCoords;
         void* dst;
         uint16_t dstNumCoords;
+        PinInput* pinIn;
     };
 
     struct ConvertMultiArgs {
