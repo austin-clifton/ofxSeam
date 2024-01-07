@@ -5,7 +5,7 @@
 using namespace seam::pins;
 
 namespace seam::nodes {
-	class Gate : public IDynamicPinsNode {
+	class Gate : public INode {
 	public:
 		Gate();
 		~Gate();
@@ -16,17 +16,19 @@ namespace seam::nodes {
 
 		PinOutput* PinOutputs(size_t& size) override;
 
-		PinInput* AddPinIn(PinInArgs args) override;
-		
-		PinOutput* AddPinOut(PinOutput&& pinOut, size_t index) override;
-
 		bool GuiDrawPropertiesList(UpdateParams* params) override;
+
+		std::vector<props::NodeProperty> GetProperties() override;
 
 	private:
 		PinInput* AddGatePin(const std::string_view name);
+		void UpdateGatesCount(uint32_t newCount);
+		void UpdateNumCoords(uint16_t newNumCoords);
+		void ResizeGatedValues();
 		
 		uint32_t gatesCount = 0;
-		int selectedGate = 0;
+		uint32_t selectedGate = 0;
+		uint32_t numCoords = 1;
 
 		std::vector<PinInput> pinInputs;
 		std::vector<float> gatedValues;
