@@ -12,6 +12,7 @@
 #include "seam/nodes/hdrTonemapper.h"
 #include "seam/nodes/markov.h"
 #include "seam/nodes/midi-in.h"
+#include "seam/nodes/multiTrigger.h"
 #include "seam/nodes/noise.h"
 #include "seam/nodes/notes-printer.h"
 #include "seam/nodes/percussiveTrigger.h"
@@ -22,6 +23,7 @@
 #include "seam/nodes/texgen-perlin.h"
 #include "seam/nodes/threshold.h"
 #include "seam/nodes/timer.h"
+#include "seam/nodes/toggle.h"
 
 using namespace seam;
 
@@ -39,6 +41,7 @@ EventNodeFactory::EventNodeFactory() {
 	Register(MakeCreate<nodes::HdrTonemapper>());
 	Register(MakeCreate<nodes::Markov>());
 	Register(MakeCreate<nodes::MidiIn>());
+	Register(MakeCreate<nodes::MultiTrigger>());
 	Register(MakeCreate<nodes::Noise>());
 	Register(MakeCreate<nodes::NotesPrinter>());
 	Register(MakeCreate<nodes::PercussiveTrigger>());
@@ -49,6 +52,7 @@ EventNodeFactory::EventNodeFactory() {
 	Register(MakeCreate<nodes::TexgenPerlin>());
 	Register(MakeCreate<nodes::Threshold>());
 	Register(MakeCreate<nodes::Timer>());
+	Register(MakeCreate<nodes::Toggle>());
 
 	// TODO register more seam internal generators here
 }
