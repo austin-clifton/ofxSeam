@@ -10,7 +10,7 @@ AudioAnalyzer::AudioAnalyzer() : INode("Audio Analyzer") {
 }
 
 void AudioAnalyzer::Setup(SetupParams* params) {
-	ofSoundStreamSettings* soundSettings = params->settings;
+	ofSoundStreamSettings* soundSettings = params->soundSettings;
 	
     audioAnalyzer.setup(soundSettings->sampleRate, soundSettings->bufferSize, soundSettings->numInputChannels);
 	// Disable all the audio analyzer algorithms by default, enable _some_ back when audio is actually playing.
