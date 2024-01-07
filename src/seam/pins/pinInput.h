@@ -44,9 +44,13 @@ namespace seam::pins {
             callback = std::move(_callback);
         }
 
-        static PinInOptions WithCoords(uint16_t numCoords) {
+            
+        static PinInOptions WithCoords(uint16_t numCoords, 
+            std::function<void(void)>&& _callback = std::function<void(void)>()) 
+        {
             PinInOptions options;
             options.numCoords = numCoords;
+            options.callback = std::move(_callback);
             return options;
         }
 
@@ -212,6 +216,8 @@ namespace seam::pins {
         inline uint16_t NumCoords() {
             return numCoords;
         }
+
+        void SetNumCoords(uint16_t _numCoords);
 
         /// push pattern id
         PushId push_id;

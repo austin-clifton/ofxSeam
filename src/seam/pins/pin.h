@@ -54,6 +54,11 @@ namespace seam {
 		};
 
 		struct PinUintMeta {
+			PinUintMeta(uint32_t _min = 0, uint32_t _max = UINT_MAX) {
+				min = _min;
+				max = _max;
+			}
+
 			uint32_t min = 0;
 			uint32_t max = UINT_MAX;
 			RangeType range_type = RangeType::LINEAR;

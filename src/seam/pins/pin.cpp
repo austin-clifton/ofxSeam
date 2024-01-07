@@ -69,7 +69,7 @@ namespace seam::pins {
 		pin_out.node = node;
 		pin_out.type = type;
 		pin_out.name = name;
-		pin_out.numCoords = numCoords;
+		pin_out.SetNumCoords(numCoords);
 		pin_out.flags = (PinFlags)(flags | PinFlags::OUTPUT);
 		pin_out.userp = userp;
 		return pin_out;

@@ -130,7 +130,7 @@ namespace seam::pins {
 
             // If there's no stride, one big copy might be possible.
             if (pinIn->Stride() == elementSize * pinIn->NumCoords()) {
-                if (pinIn->NumCoords() == pinOut->numCoords) {
+                if (pinIn->NumCoords() == pinOut->NumCoords()) {
                     // Destination data has the same type and is formatted as a flat array,
                     // and has the same number of coords as the source. A single copy is possible.
                     return [elementSize](ConvertMultiArgs args) {
@@ -183,7 +183,7 @@ namespace seam::pins {
         } else {
             ConvertSingle Convert = GetConvertSingle(pinOut->type, pinIn->type, isConvertible);
             if (isConvertible) {
-                size_t srcStride = PinTypeToElementSize(pinOut->type) * pinOut->numCoords;
+                size_t srcStride = PinTypeToElementSize(pinOut->type) * pinOut->NumCoords();
                 return [Convert, srcStride](ConvertMultiArgs args) {
                     size_t dstElements;
                     char* dst = (char*)args.pinIn->Buffer(dstElements);

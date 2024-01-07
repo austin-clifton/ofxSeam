@@ -3,18 +3,33 @@
 
 using namespace seam::pins;
 
+namespace {
+    std::vector<PinConnection>::iterator FindConnection(
+        std::vector<PinConnection>& conns, PinInput* pinIn
+    ) {
+        return std::find_if(conns.begin(), conns.end(), [pinIn](const PinConnection& conn) {
+            return pinIn == conn.pinIn;
+        });
+    }
+}
+
 PinInput::~PinInput() {
     // PinInputs are nice and clean up pointer refs to themselves.
-    // Make sure the connection to this input is severed.
+    // Make sure any existing connection to this input is severed.
     if (connection != nullptr) {
-        PinInput* pinIn = this;
-        auto& conns = connection->connections;
-        auto it = std::find_if(conns.begin(), conns.end(), [pinIn](const PinConnection& conn) {
-            return conn.pinIn == pinIn;
-        });
-        if (it != connection->connections.end()) {
-            connection->connections.erase(it);
+        auto& outputConns = connection->connections;
+        auto it = FindConnection(outputConns, this);
+        if (it != outputConns.end()) {
+            outputConns.erase(it);
         }
-        connection = nullptr;
+    }
+}
+
+void PinInput::SetNumCoords(uint16_t _numCoords) {
+    numCoords = _numCoords;
+    if (connection != nullptr) {
+        auto it = FindConnection(connection->connections, this);
+        assert(it != connection->connections.end());
+        it->RecacheConverts();
     }
 }

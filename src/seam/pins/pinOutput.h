@@ -8,9 +8,7 @@
 
 namespace seam::pins {
     struct PinOutput final : public Pin, public IOutPinnable {
-        uint16_t numCoords = 1;
-        std::vector<seam::pins::PinConnection> connections;
-        std::vector<PinOutput> childPins;
+        ~PinOutput();
 
         PinOutput* PinOutputs(size_t& size) {
             size = childPins.size();
@@ -24,5 +22,14 @@ namespace seam::pins {
         /// @brief If internals of Pin Output data changes but a push isn't needed 
         /// (for instance, an FBO's contents updated), you can skip push patterns and just dirty connections.
         void DirtyConnections();
+
+        inline uint16_t NumCoords() { return numCoords; }
+        void SetNumCoords(uint16_t newNumCoords);
+
+        std::vector<seam::pins::PinConnection> connections;
+        std::vector<PinOutput> childPins;
+
+    private:
+        uint16_t numCoords = 1;
     };
 }

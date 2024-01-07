@@ -81,7 +81,7 @@ namespace seam::pins {
 				for (auto& conn : pinOut.connections) {
 					// Dirty the input node
 					conn.pinIn->node->SetDirty();
-					ConvertMultiArgs args(data, pinOut.numCoords, numElements, conn.pinIn);
+					ConvertMultiArgs args(data, pinOut.NumCoords(), numElements, conn.pinIn);
 					conn.convertMulti(args);
 				
 					// Fire whatever user callback was provided, if any.
@@ -112,7 +112,7 @@ namespace seam::pins {
 
 				if (index < dstSize) {
 					dst = dst + index * conn.pinIn->Stride();
-					ConvertSingleArgs args(data, pinOut.numCoords, 
+					ConvertSingleArgs args(data, pinOut.NumCoords(), 
 						dst, conn.pinIn->NumCoords(), conn.pinIn);
 
 					conn.convertSingle(args);
