@@ -17,6 +17,7 @@
 #include "seam/pins/iOutPinnable.h"
 #include "seam/pins/pinConnection.h"
 #include "seam/pins/push.h"
+#include "seam/pins/transformPinMap.h"
 #include "seam/pins/uniformsPin.h"
 #include "seam/pins/vectorPin.h"
 
