@@ -48,6 +48,6 @@ void NodeTemplate::Setup(SetupParams* params) {
 
 // void NodeTemplate::Update(UpdateParams* params) { }
 
-// void NodeTemplate::Draw() { }
+// void NodeTemplate::Draw(DrawParams* params) { }
 
 // bool NodeTemplate::GuiDrawPropertiesList(UpdateParams* params) { }
