@@ -202,7 +202,7 @@ namespace seam::pins {
         }
 
         void SetChildren(std::vector<PinInput>&& children) {
-            childPins = children;
+            childPins = std::move(children);
         }
 
         inline size_t Stride() {
