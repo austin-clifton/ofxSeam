@@ -1,6 +1,6 @@
 #pragma once
 
-#include "idManager.h"
+#include "seam/idManager.h"
 
 namespace seam {
     /// @brief Singleton for distributing Seam Pin and Node IDs.

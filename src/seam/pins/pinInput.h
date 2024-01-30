@@ -6,8 +6,8 @@
 #include <cstring>
 #include <algorithm>
 
-#include "pinBase.h"
-#include "pinTypes.h"
+#include "seam/pins/pinBase.h"
+#include "seam/pins/pinTypes.h"
 #include "seam/pins/iInPinnable.h"
 #include "seam/pins/pinOutput.h"
 

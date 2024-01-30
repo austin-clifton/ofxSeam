@@ -1,4 +1,4 @@
-#include "gate.h"
+#include "seam/nodes/gate.h"
 
 using namespace seam;
 using namespace seam::nodes;

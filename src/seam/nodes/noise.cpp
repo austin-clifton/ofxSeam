@@ -1,4 +1,4 @@
-#include "noise.h"
+#include "seam/nodes/noise.h"
 
 using namespace seam;
 using namespace seam::nodes;

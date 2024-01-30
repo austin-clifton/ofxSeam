@@ -1,4 +1,4 @@
-#include "shader-utils.h"
+#include "seam/shaderUtils.h"
 
 namespace seam::ShaderUtils {
 	bool LoadShader(ofShader& shader, const std::string& shader_name) {

@@ -1,6 +1,6 @@
-#include "midi-in.h"
-#include "../flags-helper.h"
-#include "../imgui-utils/properties.h"
+#include "seam/nodes/midiIn.h"
+#include "seam/flagsHelper.h"
+#include "seam/imguiUtils/properties.h"
 
 using namespace seam::pins;
 using namespace seam::nodes;

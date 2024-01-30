@@ -1,4 +1,4 @@
-#include "seam/seam-graph.h"
+#include "seam/seamGraph.h"
 #include "seam/hash.h"
 #include "seam/properties/nodeProperty.h"
 #include "seam/pins/pinConnection.h"
@@ -142,6 +142,8 @@ namespace {
 	}
 
 	void DeserializePinInput(const seam::schema::PinIn::Reader& serializedPin, PinInput* pinIn) {
+		pinIn->id = serializedPin.getId();
+		
 		// TODO this probably shouldn't be done by default!
 		// Maybe a pin flag instead, PIN_FLAG_DYNAMIC_NUM_COORDS ?
 		pinIn->SetNumCoords(serializedPin.getNumCoords());
@@ -162,7 +164,9 @@ namespace {
 	}
 
 	PinId UpdatePinMap(PinInput* pinIn, std::map<PinId, INode*>& pinMap) {
-		pinMap.emplace(pinIn->id, pinIn->node);
+		auto emplaced = pinMap.emplace(pinIn->id, pinIn->node);
+		// IDs are expected to be unique
+		// assert(emplaced.second);
 		size_t maxId = pinIn->id;
 
 		size_t childrenSize;
@@ -175,7 +179,9 @@ namespace {
 	}
 
 	PinId UpdatePinMap(PinOutput* pinOut, std::map<PinId, INode*>& pinMap) {
-		pinMap.emplace(pinOut->id, pinOut->node);
+		auto emplaced = pinMap.emplace(pinOut->id, pinOut->node);
+		// IDs are expected to be unique
+		// assert(emplaced.second);
 		size_t maxId = pinOut->id;
 
 		size_t childrenSize;
@@ -209,6 +215,7 @@ SeamGraph::SeamGraph() {
 }
 
 SeamGraph::~SeamGraph() {
+	destructing = true;
     NewGraph();
 }
 
@@ -279,23 +286,64 @@ void SeamGraph::Update() {
     }
 }
 
+void SeamGraph::LockAudio() {
+	// Tell the audio thread to stop processing,
+	// and then wait for it to confirm it's bailed out.
+	audioLock.store(true);
+	while (processingAudio.load()) {
+		std::this_thread::yield();
+	}
+}
+
 void SeamGraph::ProcessAudio(ofSoundBuffer& buffer) {
+	// The audio thread checks if audio nodes need to be cleared and will clear them,
+	// so that the main thread doesn't have to synchronize when deleting audio nodes.
+	if (clearAudioNodes.load()) {
+		audioNodes.clear();
+		clearAudioNodes.store(false);
+	}
+
+	processingAudio.store(true);
+
+	if (audioLock.load()) {
+		processingAudio.store(false);
+		return;
+	}
+
     for (auto n : audioNodes) {
         n->ProcessAudio(buffer);
     }
+
+	processingAudio.store(false);
 }
 
 void SeamGraph::NewGraph() {
-    for (size_t i = 0; i < nodes.size(); i++) {
-        delete nodes[i];
-    }
+	LockAudio();
+	if (!destructing) {
+		clearAudioNodes.store(true);
+	} else {
+		audioNodes.clear();
+	}
 
-    nodes.clear();
+	// Clear all the various lists that keep track of nodes.
     nodesToDraw.clear();
     visibleNodes.clear();
     nodesUpdateOverTime.clear();
     nodesUpdateEveryFrame.clear();
-    audioNodes.clear();
+
+#if BUILD_AUDIO_ANALYSIS
+	while (!destructing && clearAudioNodes.load() == true) {
+		std::this_thread::yield();
+	}
+#endif
+
+	// Finally, actually delete the nodes themselves so the list of all nodes can be cleared.
+    for (size_t i = 0; i < nodes.size(); i++) {
+        delete nodes[i];
+    }
+    nodes.clear();
+
+	audioLock.store(false);
 
     IdsDistributor::GetInstance().ResetIds();
 }
@@ -324,7 +372,11 @@ INode* SeamGraph::CreateAndAdd(seam::nodes::NodeId node_id) {
 		// Does this Node process audio?
 		IAudioNode* audioNode = dynamic_cast<IAudioNode*>(node);
 		if (audioNode != nullptr) {
+			LockAudio();
+			// TODO this needs some kind of guard against the audio thread,
+			// but a mutex can't be used since it's the audio thread...
 			audioNodes.push_back(audioNode);
+			audioLock.store(false);
 		}
 	}
 
@@ -364,7 +416,9 @@ void SeamGraph::DeleteNode(INode* node) {
     
     IAudioNode* audioNode = dynamic_cast<IAudioNode*>(node);
     if (audioNode != nullptr) {
+		LockAudio();
         Erase(audioNodes, audioNode);
+		audioLock.store(false);
     }
 
     // Finally, delete the Node.
@@ -407,6 +461,13 @@ bool SeamGraph::Connect(PinInput* pinIn, PinOutput* pinOut) {
 
 	if (rearranged) {
 		RecalculateTraversalOrder(child);
+	}
+
+	// Auto-push FBO output connections so they don't have to implement OnPinConnected();
+	// this is probably a temp solution, FBO attachment / management needs some more thought
+	if (pinOut->type >= PinType::FBO_RGBA && pinOut->type <= PinType::FBO_RED) {
+		// LOL but pin out doesn't have a pointer to its FBO........
+		// pushPatterns.Push(pinOut, )
 	}
 
 	return true;
@@ -791,6 +852,8 @@ bool SeamGraph::LoadGraph(const std::string_view filename, std::vector<SeamGraph
 					printf("Dynamic Pins Node %s refused to add an input pin named %s\n",
 						node->NodeName().data(), serialized_pin_name.c_str());
 				} else {
+					DeserializePinInput(serialized_pin_in, added);
+
 					maxPinId = std::max(maxPinId, UpdatePinMap(added, inputPinMap));
 
 					// Refresh the input pins list!
@@ -804,8 +867,6 @@ bool SeamGraph::LoadGraph(const std::string_view filename, std::vector<SeamGraph
 
 			inputIndex += 1;
 		}
-
-
 
 		// Deserialize outputs
 		size_t outputs_size;
@@ -828,10 +889,13 @@ bool SeamGraph::LoadGraph(const std::string_view filename, std::vector<SeamGraph
 				DeserializePinOutput(serialized_pin_out, &pinOut);
 
 				PinOutput* added = dynamicPinsNode->AddPinOut(std::move(pinOut), 0);
+
 				if (added == nullptr) {
 					printf("Dynamic Pins Node %s refused to add an output pin named %s\n",
 						node->NodeName().data(), serialized_pin_out.getName().cStr());
 				} else {
+					assert(added->id == serialized_pin_out.getId());
+
 					maxPinId = std::max(maxPinId, UpdatePinMap(added, outputPinMap));
 
 					// Refresh the output pins list

@@ -1,4 +1,4 @@
-#include "add-store.h"
+#include "seam/nodes/addStore.h"
 
 using namespace seam;
 using namespace seam::nodes;

@@ -2,7 +2,7 @@
 
 #include <string>
 
-#include "pinTypes.h"
+#include "seam/pins/pinTypes.h"
 #include "seam/idsDistributor.h"
 #include "seam/properties/nodePropertyType.h"
 

@@ -2,7 +2,7 @@
 
 #include "ofxImGui.h"
 
-#include "properties.h"
+#include "seam/imguiUtils/properties.h"
 
 using namespace seam::pins;
 

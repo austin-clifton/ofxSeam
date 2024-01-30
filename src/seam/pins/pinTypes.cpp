@@ -1,4 +1,4 @@
-#include "pinTypes.h"
+#include "seam/pins/pinTypes.h"
 
 namespace seam::pins {
     bool IsFboPin(PinType pinType) {

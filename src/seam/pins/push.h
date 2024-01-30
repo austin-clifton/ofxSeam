@@ -3,7 +3,7 @@
 #include "seam/pins/pin.h"
 #include "seam/pins/pinConnection.h"
 #include "seam/hash.h"
-#include "seam/flags-helper.h"
+#include "seam/flagsHelper.h"
 
 namespace seam::nodes {
 	class INode;

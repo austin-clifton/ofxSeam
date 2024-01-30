@@ -2,13 +2,14 @@
 
 #include <vector>
 
-#include "seam/seam-graph.h"
-#include "nodes/iNode.h"
-#include "pins/push.h"
-#include "seam/factory.h"
-#include "frame-pool.h"
 
 #include "INIReader.h"
+
+#include "seam/factory.h"
+#include "seam/seamGraph.h"
+#include "seam/nodes/iNode.h"
+#include "seam/pins/push.h"
+#include "seam/framePool.h"
 
 namespace seam {
 

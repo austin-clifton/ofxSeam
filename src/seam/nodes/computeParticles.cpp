@@ -1,5 +1,5 @@
-#include "compute-particles.h"
-#include "../imgui-utils/properties.h"
+#include "seam/nodes/computeParticles.h"
+#include "seam/imguiUtils/properties.h"
 
 using namespace seam::nodes;
 using namespace seam::pins;

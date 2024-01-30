@@ -1,4 +1,4 @@
-#include "pin.h"
+#include "seam/pins/pin.h"
 
 const size_t seam::pins::PinInput::MAX_EVENTS = 16;
 

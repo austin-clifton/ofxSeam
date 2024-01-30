@@ -2,9 +2,9 @@
 #include "doctest.h"
 #endif
  
-#include "pinConnection.h"
-#include "pinInput.h"
-#include "pin.h"
+#include "seam/pins/pinConnection.h"
+#include "seam/pins/pinInput.h"
+#include "seam/pins/pin.h"
 
 namespace {
     template <typename SrcT, typename DstT>

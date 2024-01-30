@@ -1,6 +1,6 @@
 #pragma once
 
-#include "pinInput.h"
+#include "seam/pins/pinInput.h"
 #include "ofMain.h"
 
 namespace seam::pins {

@@ -8,7 +8,7 @@
 
 #include "seam/pins/push.h"
 #include "seam/properties/nodeProperty.h"
-#include "seam/frame-pool.h"
+#include "seam/framePool.h"
 
 #include "blueprints/builders.h"
 namespace ed = ax::NodeEditor;

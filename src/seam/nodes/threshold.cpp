@@ -1,4 +1,4 @@
-#include "threshold.h"
+#include "seam/nodes/threshold.h"
 
 using namespace seam::nodes;
 

@@ -1,4 +1,4 @@
-#include "nodeProperty.h"
+#include "seam/properties/nodeProperty.h"
 #include "seam/pins/pin.h"
 
 #include <stdexcept>
@@ -166,6 +166,8 @@ void Deserialize(const seam::schema::PinIn::Reader& serializedPin, PinInput* pin
     default:
         throw std::logic_error("not implemented!");
     }
+
+    pinIn->Callback();
 }
 
 void SerializeProperty(ValuesBuilder& builder, NodePropertyType type, void* srcBuff, size_t srcElementsCount)

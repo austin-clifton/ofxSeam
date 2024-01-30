@@ -1,18 +1,18 @@
-#include "editor.h"
+#include <io.h>
+#include <fcntl.h>
+
 #include "ofxImGui.h"
 #include "imgui_node_editor.h"
 #include "blueprints/builders.h"
-
-#include <io.h>
-#include <fcntl.h>
+#include "nfd.h"
 
 #include "capnp/message.h"
 #include "capnp/serialize-packed.h"
 #include "seam/schema/codegen/node-graph.capnp.h"
 
-#include "hash.h"
-#include "imgui-utils/properties.h"
-#include "nfd.h"
+#include "seam/editor.h"
+#include "seam/hash.h"
+#include "seam/imguiUtils/properties.h"
 
 using namespace seam;
 namespace im = ImGui;

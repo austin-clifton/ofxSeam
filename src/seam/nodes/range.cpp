@@ -1,4 +1,4 @@
-#include "range.h"
+#include "seam/nodes/range.h"
 
 using namespace seam;
 using namespace seam::nodes;

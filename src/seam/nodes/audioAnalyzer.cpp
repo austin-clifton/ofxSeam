@@ -1,4 +1,4 @@
-#include "audioAnalyzer.h"
+#include "seam/nodes/audioAnalyzer.h"
 
 #if BUILD_AUDIO_ANALYSIS
 
@@ -169,8 +169,14 @@ bool AudioAnalyzer::GuiDrawPropertiesList(UpdateParams* params) {
 			auto& valuesL = audioAnalyzer.getValues(algo.algorithm, 0, 0.0);
 			auto& valuesR = audioAnalyzer.getValues(algo.algorithm, 1, 0.0);
 
-			ImPlot::PlotLine("left", valuesL.data(), valuesL.size(), xScale);
-			ImPlot::PlotLine("right", valuesR.data(), valuesR.size(), xScale);
+			float rms = audioAnalyzer.getValue(ofxAAAlgorithm::RMS, 0);
+			auto scaledL = valuesL;
+			for (size_t i = 0; i < scaledL.size(); i++) {
+				scaledL[i] = scaledL[i] * rms;
+			}
+
+			ImPlot::PlotLine("left", scaledL.data(), scaledL.size(), xScale);
+			// ImPlot::PlotLine("right", valuesR.data(), valuesR.size(), xScale);
 
 			// ImPlot::SetupAxes(nullptr, nullptr, ImPlotAxisFlags_AutoFit, ImPlotAxisFlags_AutoFit);
 			/*

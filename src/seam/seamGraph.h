@@ -1,10 +1,11 @@
 #pragma once
 
 #include <vector>
+#include <atomic>
 
 #include "seam/nodes/iNode.h"
 #include "seam/factory.h"
-#include "pins/push.h"
+#include "seam/pins/push.h"
 
 namespace seam {
     using namespace nodes;
@@ -84,6 +85,8 @@ namespace seam {
 		}
 
     private:
+		void LockAudio();
+
 		/// @brief Recursively traverse a visual node's parent tree and update nodes in order.
 		/// Also determines the draw list (but not ordering!) for this frame.
 		void UpdateVisibleNodeGraph(INode* n, UpdateParams* params);
@@ -122,6 +125,11 @@ namespace seam {
 		FramePool allocPool = FramePool(8192);
 
 		UpdateParams updateParams;
+
+		std::atomic<bool> clearAudioNodes;
+		std::atomic<bool> processingAudio;
+		std::atomic<bool> audioLock;
+		bool destructing = false;
 
         friend class seam::Editor;
     };

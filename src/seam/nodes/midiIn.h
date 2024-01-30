@@ -4,8 +4,8 @@
 // https://github.com/danomatika/ofxMidi
 #include "ofxMidi.h"
 
-#include "iNode.h"
-#include "../ring-buffer.h"
+#include "seam/nodes/iNode.h"
+#include "seam/containers/ringBuffer.h"
 
 using namespace seam::pins;
 

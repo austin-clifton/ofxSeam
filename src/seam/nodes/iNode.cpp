@@ -3,7 +3,7 @@
 #include "ofxImGui.h"
 
 #include "blueprints/widgets.h"
-#include "../imgui-utils/properties.h"
+#include "seam/imguiUtils/properties.h"
 
 using namespace seam;
 using namespace seam::nodes;

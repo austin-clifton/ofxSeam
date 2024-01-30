@@ -1,5 +1,5 @@
 #include "seam/nodes/hdrTonemapper.h"
-#include "seam/shader-utils.h"
+#include "seam/shaderUtils.h"
 
 using namespace seam::nodes;
 
@@ -27,6 +27,12 @@ void HdrTonemapper::Draw(DrawParams* params) {
     // The brightness pass writes to the first FBO in the bloomFbos array.
     bloomFbos[0].begin();
     brightPassShader.begin();
+
+    // TODO actually manage your texture units so this isn't necessary...
+    if (hdrFbo != nullptr) {
+        brightPassShader.setUniformTexture("hdrBuffer", hdrFbo->getTexture(), 19);
+    }
+
     bloomFbos[0].clearColorBuffer(0.f);
     bloomFbos[0].draw(0,0);
     brightPassShader.end();
@@ -74,6 +80,10 @@ void HdrTonemapper::Draw(DrawParams* params) {
     tonemapShader.begin();
 
     tonemapShader.setUniform1f("gamma", gamma);
+
+    if (hdrFbo != nullptr) {
+        tonemapShader.setUniformTexture("hdrBuffer", hdrFbo->getTexture(), 19);
+    }
 
     tonemappedFbo.clearColorBuffer(0.f);
     tonemappedFbo.draw(0,0);
@@ -130,11 +140,11 @@ bool HdrTonemapper::ReloadShaders() {
 void HdrTonemapper::RebindTexture() {
 	if (hdrFbo != nullptr) {
         brightPassShader.begin();
-		brightPassShader.setUniformTexture("hdrBuffer", hdrFbo->getTexture(), 1);
+		brightPassShader.setUniformTexture("hdrBuffer", hdrFbo->getTexture(), 19);
         brightPassShader.end();
 
 		tonemapShader.begin();
-		tonemapShader.setUniformTexture("hdrBuffer", hdrFbo->getTexture(), 1);
+		tonemapShader.setUniformTexture("hdrBuffer", hdrFbo->getTexture(), 19);
 		tonemapShader.end();
 	}
 }
@@ -198,7 +208,7 @@ void HdrTonemapper::RebindBloomTextures() {
 
         GLenum err = glGetError();
 
-        tonemapShader.setUniformTexture(uniformName, bloomFbos[i].getTexture(0), i + 2);
+        tonemapShader.setUniformTexture(uniformName, bloomFbos[i].getTexture(0), i + 10);
 
         err = glGetError();
     }

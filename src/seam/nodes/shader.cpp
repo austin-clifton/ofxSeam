@@ -1,6 +1,6 @@
-#include "shader.h"
-#include "../imgui-utils/properties.h"
-#include "../shader-utils.h"
+#include "seam/nodes/shader.h"
+#include "seam/imguiUtils/properties.h"
+#include "seam/shaderUtils.h"
 
 using namespace seam;
 using namespace seam::nodes;
