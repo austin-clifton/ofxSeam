@@ -18,7 +18,7 @@
 #include "seam/pins/pinConnection.h"
 #include "seam/pins/push.h"
 #include "seam/pins/transformPinMap.h"
-#include "seam/pins/uniformsPin.h"
+#include "seam/pins/uniformsPinMap.h"
 #include "seam/pins/vectorPin.h"
 
 #include "../notes.h"

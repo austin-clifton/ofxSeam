@@ -9,6 +9,7 @@
 #include "seam/pins/push.h"
 #include "seam/properties/nodeProperty.h"
 #include "seam/framePool.h"
+#include "seam/seamState.h"
 
 #include "blueprints/builders.h"
 namespace ed = ax::NodeEditor;
@@ -157,6 +158,8 @@ namespace seam::nodes {
 			return std::vector<props::NodeProperty>();
 		}
 
+		inline SeamState Seam() { return seamState; }
+
 		virtual props::NodeProperty* TryCreateProperty(const std::string& name, props::NodePropertyType type) {
 			return nullptr;
 		}
@@ -261,6 +264,8 @@ namespace seam::nodes {
 		bool AddChild(INode* child);
 
 		void SortParents();
+
+		SeamState seamState;
 
 		// a node is dirtied when its inputs change, or time progresses in some cases
 		// a dirtied node needs to have its Update() called once it becomes part of the visual chain,

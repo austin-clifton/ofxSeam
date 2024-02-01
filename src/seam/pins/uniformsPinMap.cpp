@@ -1,21 +1,28 @@
-#include "seam/pins/uniformsPin.h"
+#include "seam/pins/uniformsPinMap.h"
 #include "seam/pins/pin.h"
 #include "seam/nodes/iNode.h"
 
 using namespace seam::pins;
 using namespace seam::nodes;
 
-PinInput UniformsPin::SetupUniformsPin(nodes::INode* node, const std::string_view name) {
+UniformsPinMap::UniformsPinMap(nodes::INode* _node) {
+	node = _node;
+}
+
+PinInput UniformsPinMap::SetupUniformsPin(const std::string_view name) {
     std::string pinName = std::string(name) + " Uniforms";
     return SetupInputPin(PinType::STRUCT, node, nullptr, 0, pinName);
 }
 
-void UniformsPin::UpdateUniforms(PinInput* uniformsPin, ofShader& shader) {
+void UniformsPinMap::UpdatePins(ofShader& shader) {
+	PinInput* uniformsPin = node->FindPinInput(uniformsPinId);
+	assert(uniformsPin != nullptr);
+
 	// Move the old uniforms buffer to a temp buffer,
 	// so uniform values can be preserved and re-set after re-loading.
 	std::vector<char> oldUniformsBuffer = std::move(uniformsBuffer);
 
-    std::vector<PinInput> newPins = UniformsToPinInputs(shader, uniformsPin->node, uniformsBuffer);
+    std::vector<PinInput> newPins = UniformsToPinInputs(shader, node, uniformsBuffer);
     
     // Loop over each new pin, and make sure ids and connections are preserved.
     for (auto& pinIn : newPins) {
@@ -24,6 +31,12 @@ void UniformsPin::UpdateUniforms(PinInput* uniformsPin, ofShader& shader) {
             pinIn.id = match->id;
             pinIn.connection = match->connection;
             match->connection = nullptr;
+
+			if (pins::IsFboPin(pinIn.type)) {
+				// Use the pin's callback to call shader.setUniformTexture() so that doesn't have to be called in a loop
+
+
+			}
 
 			// Also copy the previously set shader uniform values.
 			size_t pinSize, matchSize;
@@ -38,11 +51,10 @@ void UniformsPin::UpdateUniforms(PinInput* uniformsPin, ofShader& shader) {
     uniformsPin->node->RecacheInputConnections();
 }
 
-void UniformsPin::SetShaderUniforms(PinInput* uniformsPin, ofShader& shader) {
+void UniformsPinMap::SetUniforms(ofShader& shader) {
+	PinInput* uniformsPin = node->FindPinInput(uniformsPinId);
     size_t uniformsSize;
 	PinInput* uniforms = uniformsPin->PinInputs(uniformsSize);
-
-	int textureIndex = 1;
 
 	for (size_t i = 0; i < uniformsSize; i++) {
 		PinInput& pin = uniforms[i];
@@ -91,8 +103,9 @@ void UniformsPin::SetShaderUniforms(PinInput* uniformsPin, ofShader& shader) {
 			// TODO do sizes > 1 need to be handled?
 			assert(size == 1);
 			if (fbos[0] != nullptr) {
-				shader.setUniformTexture(pin.name, fbos[0]->getTexture(), textureIndex);
-				textureIndex += 1;
+				// TODO set uniform bindings in a lambda instead of here.
+
+				shader.setUniformTexture(pin.name, fbos[0]->getTexture(), seamState.texLocResolver.);
 			}
 			break;
 		}

@@ -351,6 +351,9 @@ void SeamGraph::NewGraph() {
 INode* SeamGraph::CreateAndAdd(seam::nodes::NodeId node_id) {
 	INode* node = factory.Create(node_id);
 	if (node != nullptr) {
+		node->seamState.pushPatterns = &pushPatterns;
+		node->seamState.texLocResolver = &texLocResolver;
+
 		node->OnWindowResized(glm::ivec2(ofGetWidth(), ofGetHeight()));
 		node->Setup(&setupParams);
 

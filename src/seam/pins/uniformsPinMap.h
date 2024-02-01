@@ -5,15 +5,20 @@
 
 namespace seam::pins {
     /// @brief Convenience container for PinInput struct which exposes shader uniforms as child Pins.
-    class UniformsPin {
+    class UniformsPinMap {
     public:
-        PinInput SetupUniformsPin(nodes::INode* node, const std::string_view name);
+        UniformsPinMap(nodes::INode* node);
 
-        void UpdateUniforms(PinInput* uniformsPin, ofShader& shader);
+        PinInput SetupUniformsPin(const std::string_view name);
 
-        void SetShaderUniforms(PinInput* uniformsPin, ofShader& shader);
+        void UpdatePins(ofShader& shader);
+
+        void SetUniforms(ofShader& shader);
 
     private:
+        INode* node;
+        pins::PinId uniformsPinId;
+
         /// @brief Space for uniform pin data is allocated to this buffer.
         std::vector<char> uniformsBuffer;
     };

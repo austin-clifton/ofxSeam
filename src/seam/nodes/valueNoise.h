@@ -31,29 +31,12 @@ namespace seam::nodes {
 		PinIntMeta octavesMeta = PinIntMeta(1, 8);
 		PinFloatMeta floatMeta = PinFloatMeta(0.001f);
 
-		UniformsPin uniformsPinMap;
+		UniformsPinMap uniformsPinMap = UniformsPinMap(this);
 
 		glm::uvec2 resolution = glm::uvec2(1024);
 
-		/*
-		// nomenclature from http://libnoise.sourceforge.net/glossary/#perlinnoise
-		int octaves = 4;
-		float frequency = 4.f;
-		float lacunarity = 2.f;
-		float seed = 0.0f;
-		*/
-
 		std::array<PinInput, 1> pinInputs = {
-			uniformsPinMap.SetupUniformsPin(this, "Noise")
-			/*
-			pins::SetupInputPin(PinType::INT, this, &octaves, 1, "Octaves",
-				PinInOptions("number of iterations of noise", &octavesMeta)),
-			pins::SetupInputPin(PinType::FLOAT, this, &frequency, 1, "Frequency", 
-				PinInOptions("initial noise frequency for the first octave", &floatMeta)),
-			pins::SetupInputPin(PinType::FLOAT, this, &lacunarity, 1, "Lacunarity",
-				PinInOptions("each octave's frequency is multiplied by this number", &floatMeta)),
-			pins::SetupInputPin(PinType::FLOAT, this, &seed, 1, "Seed")
-			*/
+			uniformsPinMap.SetupUniformsPin("Noise")
 		};
 
 		PinOutput pinOutFbo = pins::SetupOutputPin(this, pins::PinType::FBO_RGBA, "Output");

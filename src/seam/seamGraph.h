@@ -6,6 +6,7 @@
 #include "seam/nodes/iNode.h"
 #include "seam/factory.h"
 #include "seam/pins/push.h"
+#include "seam/seamState.h"
 
 namespace seam {
     using namespace nodes;
@@ -122,6 +123,7 @@ namespace seam {
 
 		EventNodeFactory factory;
 		PushPatterns pushPatterns;
+		TextureLocationResolver texLocResolver = TextureLocationResolver(&pushPatterns, GL_MAX_COMBINED_TEXTURE_IMAGE_UNITS);
 		FramePool allocPool = FramePool(8192);
 
 		UpdateParams updateParams;

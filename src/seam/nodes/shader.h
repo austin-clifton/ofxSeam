@@ -32,7 +32,7 @@ namespace seam::nodes {
 	private:
 		bool AttemptShaderLoad(const std::string& shader_name );
 
-		UniformsPin uniformsPin;
+		UniformsPinMap uniformsPin;
 		PinInput shaderPin = uniformsPin.SetupUniformsPin(this, "Shader");
 
 		std::string shader_name = "simple-glass";
