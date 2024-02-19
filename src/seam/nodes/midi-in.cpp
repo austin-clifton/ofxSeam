@@ -202,6 +202,7 @@ void MidiIn::Update(UpdateParams* params) {
 PinInput* MidiIn::AddPinIn(PinInArgs args) {
 	// MidiIn has no expected dynamic input pins!
 	assert(false);
+	return nullptr;
 }
 
 PinOutput* MidiIn::AddPinOut(PinOutput&& pinOut, size_t index) {
