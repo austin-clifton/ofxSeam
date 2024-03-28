@@ -193,7 +193,7 @@ namespace seam::pins {
         }
 
         inline void SetCallback(std::function<void(void)>&& cb) {
-            callback = cb;
+            callback = std::move(cb);
         }
 
         PinInput* PinInputs(size_t &size) override {
