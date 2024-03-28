@@ -43,7 +43,7 @@ PinInput VectorPinInput::SetupVectorPin(
     pinIn.flags = (PinFlags)(pinIn.flags | PinFlags::VECTOR);
     pinIn.seamp = this;
 
-    vectorPin = &pinIn;
+    // vectorPin = &pinIn;
 
     UpdateSize(initialSize);
     return pinIn;
@@ -77,6 +77,9 @@ void VectorPinInput::SetCallbackOptions(Options&& _options) {
 }
 
 void VectorPinInput::UpdateSize(size_t newSize) {
+    if (vectorPin == nullptr) {
+        return;
+    }
     assert(vectorPin != nullptr);
 
     if (Size() == newSize) {
