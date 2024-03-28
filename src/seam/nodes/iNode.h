@@ -6,7 +6,8 @@
 #include <atomic>
 #include <string>
 
-#include "seam/pins/push.h"
+#include "ofMain.h"
+
 #include "seam/properties/nodeProperty.h"
 #include "seam/framePool.h"
 #include "seam/seamState.h"
@@ -18,6 +19,12 @@ namespace seam {
 	class EventNodeFactory;
 	class Editor;
 	class SeamGraph;
+}
+
+namespace seam::pins {
+	class PushPatterns; 
+	class PinInput;
+	class PinOutput;
 }
 
 namespace seam::nodes {

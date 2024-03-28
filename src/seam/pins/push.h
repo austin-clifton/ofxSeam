@@ -1,7 +1,9 @@
 #pragma once
 
-#include "seam/pins/pin.h"
+#include "seam/include.h"
 #include "seam/pins/pinConnection.h"
+#include "seam/pins/pinOutput.h"
+#include "seam/pins/pinInput.h"
 #include "seam/hash.h"
 #include "seam/flagsHelper.h"
 

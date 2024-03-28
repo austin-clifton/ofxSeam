@@ -1,4 +1,4 @@
-#include "iNode.h"
+#include "seam/nodes/iNode.h"
 
 #include "ofxImGui.h"
 

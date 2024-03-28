@@ -1,6 +1,6 @@
 #pragma once
 
-#include "iNode.h"
+#include "seam/include.h"
 
 #include "seam/pins/pin.h"
 #include "seam/properties/nodeProperty.h"

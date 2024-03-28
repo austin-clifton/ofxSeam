@@ -1,4 +1,5 @@
 #include "seam/nodes/gate.h"
+#include "seam/pins/pin.h"
 
 using namespace seam;
 using namespace seam::nodes;

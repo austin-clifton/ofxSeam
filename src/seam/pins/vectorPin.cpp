@@ -1,5 +1,5 @@
 #include "seam/pins/vectorPin.h"
-#include "seam/nodes/iNode.h"
+#include "seam/include.h"
 
 using namespace seam::pins;
 

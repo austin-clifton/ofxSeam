@@ -20,7 +20,7 @@ void ValueNoise::Draw(DrawParams* params) {
 	fbo.clearColorBuffer(0.f);
 	shader.begin();
 
-	uniformsPinMap.SetShaderUniforms(&pinInputs[0], shader);
+	uniformsPinMap.SetUniforms(shader);
 
 	/*
 	shader.setUniform1i("octaves", octaves);
@@ -69,7 +69,7 @@ std::vector<props::NodeProperty> ValueNoise::GetProperties() {
 
 bool ValueNoise::ReloadShader() {
 	if (ShaderUtils::LoadShader(shader, "screen-rect.vert", "valueNoise.frag")) {
-		uniformsPinMap.UpdateUniforms(&pinInputs[0], shader);
+		uniformsPinMap.UpdatePins(shader);
 		return true;
 	}
 	return false;

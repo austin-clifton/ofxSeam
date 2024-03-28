@@ -7,7 +7,7 @@
 
 #include "seam/factory.h"
 #include "seam/seamGraph.h"
-#include "seam/nodes/iNode.h"
+#include "seam/include.h"
 #include "seam/pins/push.h"
 #include "seam/framePool.h"
 

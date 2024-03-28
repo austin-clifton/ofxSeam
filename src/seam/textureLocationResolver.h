@@ -1,7 +1,11 @@
 #pragma once
 
 #include "ofMain.h"
-#include "seam/pins/pin.h"
+
+namespace seam::pins {
+    class PinOutput;
+    class PushPatterns;
+}
 
 namespace seam {
     class TextureLocationResolver {

@@ -1,4 +1,5 @@
 #include "seam/textureLocationResolver.h"
+#include "seam/pins/push.h"
 
 using namespace seam;
 

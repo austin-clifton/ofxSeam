@@ -3,10 +3,12 @@
 #include <vector>
 #include <atomic>
 
-#include "seam/nodes/iNode.h"
+#include "seam/include.h"
 #include "seam/factory.h"
 #include "seam/pins/push.h"
 #include "seam/seamState.h"
+#include "seam/pins/pin.h"
+#include "seam/textureLocationResolver.h"
 
 namespace seam {
     using namespace nodes;

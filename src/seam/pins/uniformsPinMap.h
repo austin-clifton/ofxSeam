@@ -1,7 +1,7 @@
 #pragma once
 
 #include "seam/pins/pinInput.h"
-#include "seam/nodes/iNode.h"
+#include "seam/include.h"
 #include "ofMain.h"
 
 namespace seam::pins {

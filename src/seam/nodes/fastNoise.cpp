@@ -1,5 +1,6 @@
 #include "seam/nodes/fastNoise.h"
 #include "seam/shaderUtils.h"
+#include "seam/pins/pin.h"
 
 using namespace seam::nodes;
 

@@ -1,6 +1,6 @@
 #include "seam/pins/uniformsPinMap.h"
 #include "seam/pins/pin.h"
-#include "seam/nodes/iNode.h"
+#include "seam/include.h"
 
 using namespace seam::pins;
 using namespace seam::nodes;
@@ -11,7 +11,9 @@ UniformsPinMap::UniformsPinMap(nodes::INode* _node) {
 
 PinInput UniformsPinMap::SetupUniformsPin(const std::string_view name) {
     std::string pinName = std::string(name) + " Uniforms";
-    return SetupInputPin(PinType::STRUCT, node, nullptr, 0, pinName);
+	PinInput pinIn = SetupInputPin(PinType::STRUCT, node, nullptr, 0, pinName);
+	uniformsPinId = pinIn.id;
+    return pinIn;
 }
 
 void UniformsPinMap::UpdatePins(ofShader& shader) {

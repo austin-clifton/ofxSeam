@@ -42,7 +42,7 @@ void Shader::Draw(DrawParams* params) {
 	fbo.clearColorBuffer(ofFloatColor(0.0f));
 	shader.begin();
 
-	uniformsPin.SetShaderUniforms(&shaderPin, shader);
+	uniformsPin.SetUniforms(shader);
 
 	fbo.draw(0, 0);
 
@@ -52,7 +52,7 @@ void Shader::Draw(DrawParams* params) {
 
 bool Shader::AttemptShaderLoad(const std::string& shader_name) {
 	if (ShaderUtils::LoadShader(shader, "screen-rect.vert", shader_name + ".frag")) {
-		uniformsPin.UpdateUniforms(&shaderPin, shader);
+		uniformsPin.UpdatePins(shader);
 		return true;
 	}
 	return false;

@@ -2,7 +2,8 @@
 #include "doctest.h"
 #endif
 
-#include "push.h"
+#include "seam/pins/push.h"
+#include "seam/pins/pin.h"
 
 using namespace seam::pins;
 
@@ -14,7 +15,7 @@ PushPatterns::PushPatterns() {
 		// one-to-one means only copy once with no repeats
 		// we should simply copy a maximum of all the elements in the src array, 
 		// OR up to as many as can fit in the destination
-		size_t bytes_to_copy = min(src_size, dst_size);
+		size_t bytes_to_copy = std::min(src_size, dst_size);
 		std::copy(src, src + bytes_to_copy, dst);
 	}));
 
@@ -25,7 +26,7 @@ PushPatterns::PushPatterns() {
 		// until dst has been completely filled with repeated data from src.
 		size_t dst_off = 0;
 		while (dst_off < dst_size) {
-			size_t bytes_to_copy = min(src_size, dst_size - dst_off);
+			size_t bytes_to_copy = std::min(src_size, dst_size - dst_off);
 			std::copy(src, src + bytes_to_copy, dst + dst_off);
 			dst_off += bytes_to_copy;
 		}

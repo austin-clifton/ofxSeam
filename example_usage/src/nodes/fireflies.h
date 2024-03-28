@@ -1,6 +1,6 @@
 #pragma once
 
-#include "seam/nodes/iNode.h"
+#include "seam/include.h"
 
 #include "seam/pins/pin.h"
 #include "seam/containers/octree.h"

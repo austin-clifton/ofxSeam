@@ -1,6 +1,6 @@
 #include "seam/pins/pinOutput.h"
 #include "seam/pins/pinConnection.h"
-#include "seam/nodes/iNode.h"
+#include "seam/include.h"
 
 using namespace seam::pins;
 

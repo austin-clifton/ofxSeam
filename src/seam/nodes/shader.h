@@ -1,6 +1,6 @@
 #pragma once
 
-#include "seam/nodes/iNode.h"
+#include "seam/include.h"
 #include "seam/pins/pin.h"
 
 using namespace seam::pins;
@@ -32,8 +32,8 @@ namespace seam::nodes {
 	private:
 		bool AttemptShaderLoad(const std::string& shader_name );
 
-		UniformsPinMap uniformsPin;
-		PinInput shaderPin = uniformsPin.SetupUniformsPin(this, "Shader");
+		UniformsPinMap uniformsPin = UniformsPinMap(this);
+		PinInput shaderPin = uniformsPin.SetupUniformsPin("Shader");
 
 		std::string shader_name = "simple-glass";
 		ofShader shader;

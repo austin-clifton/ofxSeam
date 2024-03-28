@@ -1,7 +1,6 @@
 #include "seam/seamGraph.h"
 #include "seam/hash.h"
 #include "seam/properties/nodeProperty.h"
-#include "seam/pins/pinConnection.h"
 
 using namespace seam;
 using namespace seam::nodes;

@@ -5,7 +5,7 @@
 #include "implot.h"
 #include "ofxAudioAnalyzer.h"
 
-#include "seam/nodes/iNode.h"
+#include "seam/include.h"
 
 using namespace seam::pins;
 
