@@ -105,7 +105,7 @@ void UniformsPinMap::SetUniforms(ofShader& shader) {
 			if (fbos[0] != nullptr) {
 				// TODO set uniform bindings in a lambda instead of here.
 
-				shader.setUniformTexture(pin.name, fbos[0]->getTexture(), seamState.texLocResolver.);
+				// shader.setUniformTexture(pin.name, fbos[0]->getTexture(), seamState.texLocResolver.);
 			}
 			break;
 		}

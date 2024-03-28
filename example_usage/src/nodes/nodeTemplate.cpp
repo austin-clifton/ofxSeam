@@ -1,4 +1,4 @@
-#include "seam/nodes/nodeTemplate.h"
+#include "nodeTemplate.h"
 
 using namespace seam::nodes;
 using namespace seam::pins;

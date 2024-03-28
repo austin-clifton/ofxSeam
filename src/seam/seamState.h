@@ -5,7 +5,7 @@
 
 namespace seam {
     struct SeamState {
-        PushPatterns* pushPatterns = nullptr;
+        pins::PushPatterns* pushPatterns = nullptr;
         TextureLocationResolver* texLocResolver = nullptr;
     };
 }

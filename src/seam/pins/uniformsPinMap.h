@@ -1,6 +1,7 @@
 #pragma once
 
 #include "seam/pins/pinInput.h"
+#include "seam/nodes/iNode.h"
 #include "ofMain.h"
 
 namespace seam::pins {
@@ -16,7 +17,7 @@ namespace seam::pins {
         void SetUniforms(ofShader& shader);
 
     private:
-        INode* node;
+        nodes::INode* node;
         pins::PinId uniformsPinId;
 
         /// @brief Space for uniform pin data is allocated to this buffer.
