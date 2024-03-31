@@ -30,19 +30,12 @@ PinOutput* Shader::PinOutputs(size_t& size) {
 	return &pinOutMaterial;
 }
 
-void Shader::OnPinConnected(PinConnectedArgs args) {
-	if (args.pinOut->id == pinOutMaterial.id) {
-		ofFbo* fbos = { &fbo };
-		args.pushPatterns->Push(pinOutMaterial, &fbos, 1);
-	}
-}
-
 void Shader::Draw(DrawParams* params) {
 	fbo.begin();
 	fbo.clearColorBuffer(ofFloatColor(0.0f));
 	shader.begin();
 
-	uniformsPin.SetUniforms(shader);
+	uniformsPin.SetUniforms();
 
 	fbo.draw(0, 0);
 
@@ -52,7 +45,7 @@ void Shader::Draw(DrawParams* params) {
 
 bool Shader::AttemptShaderLoad(const std::string& shader_name) {
 	if (ShaderUtils::LoadShader(shader, "screen-rect.vert", shader_name + ".frag")) {
-		uniformsPin.UpdatePins(shader);
+		uniformsPin.UpdatePins();
 		return true;
 	}
 	return false;

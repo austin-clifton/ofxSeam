@@ -198,7 +198,7 @@ PinInput* Fireflies::PinInputs(size_t& size) {
 
 PinOutput* Fireflies::PinOutputs(size_t& size) {
 	size = 1;
-	return &pin_out_texture;
+	return &pinOutFbo;
 }
 
 void Fireflies::Update(UpdateParams* params) {
@@ -236,7 +236,7 @@ void Fireflies::Update(UpdateParams* params) {
 		glFlushMappedNamedBufferRange(mom_directions_ssbo, 0, sizeof(glm::vec4) * moms_count);
 	}
 
-	pin_out_texture.DirtyConnections();
+	pinOutFbo.DirtyConnections();
 }
 
 void Fireflies::Draw(DrawParams* params) {
@@ -266,14 +266,6 @@ void Fireflies::Draw(DrawParams* params) {
 
 	camera.end();
 	fbo.end();
-}
-
-void Fireflies::OnPinConnected(PinConnectedArgs args) {
-	// The output FBO doesn't change; only push it on pin connected.
-	if (args.pinOut->id == pin_out_texture.id) {
-		ofFbo* fbos = { &fbo };
-		args.pushPatterns->Push(pin_out_texture, &fbos, 1);
-	}
 }
 
 bool Fireflies::LoadShaders() {

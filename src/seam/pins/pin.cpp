@@ -65,14 +65,48 @@ namespace seam::pins {
 #if !defined(RUN_DOCTEST)
 		assert(node != nullptr);
 #endif
-		PinOutput pin_out;
-		pin_out.node = node;
-		pin_out.type = type;
-		pin_out.name = name;
-		pin_out.SetNumCoords(numCoords);
-		pin_out.flags = (PinFlags)(flags | PinFlags::OUTPUT);
-		pin_out.userp = userp;
-		return pin_out;
+		PinOutput pinOut;
+		pinOut.node = node;
+		pinOut.type = type;
+		pinOut.name = name;
+		pinOut.SetNumCoords(numCoords);
+		pinOut.flags = (PinFlags)(flags | PinFlags::OUTPUT);
+		pinOut.userp = userp;
+		return pinOut;
+	}
+
+	PinOutput SetupOutputStaticFboPin(
+		nodes::INode* node,
+		ofFbo* fbo,
+		PinType fboType,
+		const std::string_view name,
+		PinFlags flags,
+		const std::string_view description,
+		void* userp
+	) {
+#if !defined(RUN_DOCTEST)
+		assert(node != nullptr);
+#endif
+		assert(IsFboPin(fboType));
+
+		PinOutput pinOut;
+		pinOut.node = node;
+		pinOut.type = fboType;
+		pinOut.name = name;
+		pinOut.flags = (PinFlags)(flags | PinFlags::OUTPUT);
+		pinOut.userp = userp;
+
+		pinOut.SetOnConnected([fbo](PinConnectedArgs args) {
+			ofFbo* fbos = { fbo };
+			args.pushPatterns->Push<ofFbo*>(*args.pinOut, &fbos, 1);
+		});
+
+		pinOut.SetOnDisconnected([](PinConnectedArgs args) {
+			ofFbo* fbos = { nullptr };
+			args.pushPatterns->Push<ofFbo*>(*args.pinOut, &fbos, 1);
+		});
+
+		return pinOut;
 	}
 
 	std::vector<PinInput> UniformsToPinInputs(
@@ -255,7 +289,62 @@ namespace seam::pins {
 			options.stride > 0 ? options.stride : elementSize * options.numCoords,
 			options.offset,
 			options.numCoords,
-			std::move(options.callback),
+			std::move(options.onValueChanged),
+			std::move(options.onValueChanging),
+			options.pinMetadata
+		);
+	}
+
+	PinInput SetupInputFboPin(
+		PinType pinType,
+		nodes::INode* node,
+		ofShader* shader,
+		ofFbo** fbo,
+		const std::string_view uniformName,
+		const std::string_view name,
+		PinInOptions&& options
+	) {
+		assert(IsFboPin(pinType));
+
+		ValueChangedCallback onValueChanged = std::move(options.onValueChanged);
+		ValueChangingCallback onValueChanging = std::move(options.onValueChanging);
+
+		return PinInput(
+			pinType,
+			name,
+			options.description,
+			node,
+			fbo,	// We need the address of the fbo pointer, not the fbo pointer itself
+			1,
+			sizeof(ofFbo*),
+			options.stride > 0 ? options.stride : sizeof(ofFbo*),
+			options.offset,
+			1,
+			[shader, fbo, node, onValueChanged, uniformName]() {
+				if (*fbo == nullptr) {
+					return;
+				}
+
+				shader->begin();
+
+				uint32_t textureLoc = node->Seam().texLocResolver->Bind(&(*fbo)->getTexture());
+				shader->setUniformTexture(uniformName.data(), (*fbo)->getTexture(), textureLoc);
+
+				shader->end();
+
+				if (onValueChanged) {
+					onValueChanged();
+				}
+			},
+			[fbo, node, onValueChanging]() {
+				if (*fbo != nullptr) {
+					node->Seam().texLocResolver->Release(&(*fbo)->getTexture());
+				}
+
+				if (onValueChanging) {
+					onValueChanging();
+				}
+			},
 			options.pinMetadata
 		);
 	}

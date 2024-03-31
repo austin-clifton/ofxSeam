@@ -79,6 +79,18 @@ namespace seam {
 			PinInOptions&& options = PinInOptions()
 		);
 
+		/// @brief Set up an input pin which should 1:1 bind an input FBO to a shader uniform.
+		/// For more complex cases, use the value changed callback (like this function uses internally) for binding instead.
+		PinInput SetupInputFboPin(
+			PinType pinType,
+			nodes::INode* node,
+			ofShader* shader,
+			ofFbo** fbo,
+			const std::string_view uniformName,
+			const std::string_view name = "Input Image",
+			PinInOptions&& options = PinInOptions()
+		);
+
 		PinInput SetupInputQueuePin(
 			PinType pinType,
 			nodes::INode* node,
@@ -102,6 +114,19 @@ namespace seam {
 			std::string_view name,
 			uint16_t numCoords = 1,
 			PinFlags flags = PinFlags::FLAGS_NONE,
+			void* userp = nullptr
+		);
+
+		/// @brief Use this Setup function if render output is always written to the same frame buffer.
+		/// Pins set up using this method will automatically manage FBO texture bindings on pin connected and disconnected.
+		/// After updating the _contents_ of an FBO, call fboPinOut.DirtyConnections() to ensure receiving Nodes update.
+		PinOutput SetupOutputStaticFboPin(
+			nodes::INode* node,
+			ofFbo* fbo,
+			PinType fboType,
+			const std::string_view name = "Input FBO",
+			PinFlags flags = PinFlags::FLAGS_NONE,
+			const std::string_view description = "",
 			void* userp = nullptr
 		);
 		

@@ -20,7 +20,7 @@ void ValueNoise::Draw(DrawParams* params) {
 	fbo.clearColorBuffer(0.f);
 	shader.begin();
 
-	uniformsPinMap.SetUniforms(shader);
+	uniformsPinMap.SetUniforms();
 
 	/*
 	shader.setUniform1i("octaves", octaves);
@@ -69,7 +69,7 @@ std::vector<props::NodeProperty> ValueNoise::GetProperties() {
 
 bool ValueNoise::ReloadShader() {
 	if (ShaderUtils::LoadShader(shader, "screen-rect.vert", "valueNoise.frag")) {
-		uniformsPinMap.UpdatePins(shader);
+		uniformsPinMap.UpdatePins();
 		return true;
 	}
 	return false;
@@ -78,12 +78,4 @@ bool ValueNoise::ReloadShader() {
 void ValueNoise::ResizeFbo() {
 	fbo.clear();
 	fbo.allocate(resolution.x, resolution.y, GL_RGBA16F);
-}
-
-void ValueNoise::OnPinConnected(PinConnectedArgs args) {
-	// The output FBO doesn't change; only push it on pin connected.
-	if (args.pinOut->id == pinOutFbo.id) {
-		ofFbo* fbos = { &fbo };
-		args.pushPatterns->Push<ofFbo*>(pinOutFbo, &fbos, 1);
-	}
 }

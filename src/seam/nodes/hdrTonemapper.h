@@ -26,8 +26,6 @@ namespace seam::nodes {
 
 		PinOutput* PinOutputs(size_t& size) override;
 
-        void OnPinConnected(PinConnectedArgs args) override;
-
 		bool GuiDrawPropertiesList(UpdateParams* params) override;
 
 		void OnWindowResized(glm::uvec2 resolution) override;
@@ -60,12 +58,17 @@ namespace seam::nodes {
 
 		std::array<PinInput, 3> pinInputs = {
 			pins::SetupInputPin(PinType::FBO_RGBA16F, this, &hdrFbo, 1, "HDR FBO",
-				PinInOptions(std::bind(&HdrTonemapper::RebindTexture, this))),
+				PinInOptions::WithChangedCallbacks(
+					std::bind(&HdrTonemapper::RebindTexture, this),
+					[this]() { Seam().texLocResolver->Release(&hdrFbo->getTexture()); }
+				)
+			),
 			pins::SetupInputPin(PinType::INT, this, &resolution, 2, "Resolution", 
 				PinInOptions(std::bind(&HdrTonemapper::OnResolutionChanged, this))),
 			pins::SetupInputPin(PinType::FLOAT, this, &gamma, 1, "Gamma"),
 		};
         
-        PinOutput pinOutFbo = pins::SetupOutputPin(this, pins::PinType::FBO_RGBA, "Tonemapped FBO");
+        PinOutput pinOutFbo = pins::SetupOutputStaticFboPin(
+			this, &tonemappedFbo, pins::PinType::FBO_RGBA, "Tonemapped FBO");
 	};
 }

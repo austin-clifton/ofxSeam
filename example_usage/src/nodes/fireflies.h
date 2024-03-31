@@ -26,8 +26,6 @@ namespace seam::nodes {
 
 		PinOutput* PinOutputs(size_t& size) override;
 
-        void OnPinConnected(PinConnectedArgs args) override;
-
 		bool GuiDrawPropertiesList(UpdateParams* params) override;
 
 	private:
@@ -148,6 +146,6 @@ namespace seam::nodes {
 			pins::SetupInputPin(PinType::UINT, this, &resolution, 1, "Resolution", PinInOptions::WithCoords(2)),
 		};
 		
-		PinOutput pin_out_texture = pins::SetupOutputPin(this, pins::PinType::FBO_RGBA, "texture");
+		PinOutput pinOutFbo = pins::SetupOutputStaticFboPin(this, &fbo, pins::PinType::FBO_RGBA, "texture");
 	};
 }

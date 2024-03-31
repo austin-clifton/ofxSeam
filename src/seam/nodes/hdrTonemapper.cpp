@@ -28,11 +28,6 @@ void HdrTonemapper::Draw(DrawParams* params) {
     bloomFbos[0].begin();
     brightPassShader.begin();
 
-    // TODO actually manage your texture units so this isn't necessary...
-    if (hdrFbo != nullptr) {
-        brightPassShader.setUniformTexture("hdrBuffer", hdrFbo->getTexture(), 19);
-    }
-
     bloomFbos[0].clearColorBuffer(0.f);
     bloomFbos[0].draw(0,0);
     brightPassShader.end();
@@ -81,10 +76,6 @@ void HdrTonemapper::Draw(DrawParams* params) {
 
     tonemapShader.setUniform1f("gamma", gamma);
 
-    if (hdrFbo != nullptr) {
-        tonemapShader.setUniformTexture("hdrBuffer", hdrFbo->getTexture(), 19);
-    }
-
     tonemappedFbo.clearColorBuffer(0.f);
     tonemappedFbo.draw(0,0);
 
@@ -100,13 +91,6 @@ PinInput* HdrTonemapper::PinInputs(size_t& size) {
 PinOutput* HdrTonemapper::PinOutputs(size_t& size) {
     size = 1;
     return &pinOutFbo;
-}
-
-void HdrTonemapper::OnPinConnected(PinConnectedArgs args) {
-    if (args.pinOut->id == pinOutFbo.id) {
-        ofFbo* fbos = { &tonemappedFbo };
-        args.pushPatterns->Push(pinOutFbo, &fbos, 1);
-    }
 }
 
 bool HdrTonemapper::GuiDrawPropertiesList(UpdateParams* params) {
@@ -139,12 +123,14 @@ bool HdrTonemapper::ReloadShaders() {
 
 void HdrTonemapper::RebindTexture() {
 	if (hdrFbo != nullptr) {
+        uint32_t texLoc = Seam().texLocResolver->Bind(&hdrFbo->getTexture());
+
         brightPassShader.begin();
-		brightPassShader.setUniformTexture("hdrBuffer", hdrFbo->getTexture(), 19);
+		brightPassShader.setUniformTexture("hdrBuffer", hdrFbo->getTexture(), texLoc);
         brightPassShader.end();
 
 		tonemapShader.begin();
-		tonemapShader.setUniformTexture("hdrBuffer", hdrFbo->getTexture(), 19);
+		tonemapShader.setUniformTexture("hdrBuffer", hdrFbo->getTexture(), texLoc);
 		tonemapShader.end();
 	}
 }
@@ -186,14 +172,18 @@ void HdrTonemapper::SetupBloomTextures() {
         return;
     }
 
-    for (size_t i = 0; i < bloomDownScales; i++) {
-        bloomFbos[i].clear();
-        bloomFbosBack[i].clear();
+    if (bloomFbos[0].isAllocated()) {
+        for (size_t i = 0; i < bloomDownScales; i++) {
+            Seam().texLocResolver->Release(&bloomFbos[i].getTexture());
 
-        bloomFbos[i].allocate(dsRes.x, dsRes.y, GL_RGBA16F);
-        bloomFbosBack[i].allocate(dsRes.x, dsRes.y, GL_RGBA16F);
+            bloomFbos[i].clear();
+            bloomFbosBack[i].clear();
 
-        dsRes = dsRes / 2;
+            bloomFbos[i].allocate(dsRes.x, dsRes.y, GL_RGBA16F);
+            bloomFbosBack[i].allocate(dsRes.x, dsRes.y, GL_RGBA16F);
+
+            dsRes = dsRes / 2;
+        }
     }
 
     RebindBloomTextures();
@@ -204,13 +194,11 @@ void HdrTonemapper::RebindBloomTextures() {
 
     std::string uniformName = "blurTexN";
     for (size_t i = 0; i < bloomDownScales; i++) {
+        // Set the last char of the uniformName (N) to the actual index using offset from char '0'
         uniformName[uniformName.size() - 1] = '0' + i;
 
-        GLenum err = glGetError();
-
-        tonemapShader.setUniformTexture(uniformName, bloomFbos[i].getTexture(0), i + 10);
-
-        err = glGetError();
+        uint32_t texLoc = Seam().texLocResolver->Bind(&bloomFbos[i].getTexture(0));
+        tonemapShader.setUniformTexture(uniformName, bloomFbos[i].getTexture(0), texLoc);
     }
      
     tonemapShader.end();

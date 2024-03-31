@@ -130,11 +130,3 @@ bool FastNoise::ReloadShaders() {
     const std::string fragName = "fastNoiseLite.frag";
     return ShaderUtils::LoadShader(shader, "screen-rect.vert", fragName);
 }
-
-void FastNoise::OnPinConnected(PinConnectedArgs args) {
-	// The output FBO doesn't change; only push it on pin connected.
-	if (args.pinOut->id == pinOutFbo.id) {
-		ofFbo* fbos = { &fbo };
-		args.pushPatterns->Push<ofFbo*>(pinOutFbo, &fbos, 1);
-	}
-}

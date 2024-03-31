@@ -90,12 +90,6 @@ namespace seam::nodes {
 		// not sure what else is needed here yet
 	};
 
-	struct PinConnectedArgs {
-		pins::PinInput* pinIn;
-		pins::PinOutput* pinOut;
-		seam::pins::PushPatterns* pushPatterns;
-	};
-
 	/// Base class for all nodes that use the eventing system
 	class INode : public pins::IInPinnable, public pins::IOutPinnable {
 	public:
@@ -137,12 +131,6 @@ namespace seam::nodes {
 		/// @brief Is called during OpenFrameworks' draw() loop.
 		/// Override if your Node draws to an FBO.
 		virtual void Draw(DrawParams* params) { }
-
-		/// @brief Override to receive a callback when a pin on this node is connected to another pin.
-		virtual void OnPinConnected(PinConnectedArgs args) { }
-
-		/// @brief Override to receive a callback when a pin on this node is disconnected from another pin.
-		virtual void OnPinDisconnected(pins::PinInput* pinIn, pins::PinOutput* pinOut) { }
 
 		/// @brief Override to manage FBO resizing yourself when the window resolution changes.
 		/// Generally, you should just be able to add to windowFbos instead though.

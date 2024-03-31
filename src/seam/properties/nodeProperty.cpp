@@ -167,7 +167,7 @@ void Deserialize(const seam::schema::PinIn::Reader& serializedPin, PinInput* pin
         throw std::logic_error("not implemented!");
     }
 
-    pinIn->Callback();
+    pinIn->OnValueChanged();
 }
 
 void SerializeProperty(ValuesBuilder& builder, NodePropertyType type, void* srcBuff, size_t srcElementsCount)

@@ -95,7 +95,7 @@ namespace seam::props {
 		}
 		case PinType::FLOW: {
 			if (ImGui::Button(input->name.c_str())) {
-				input->Callback();
+				input->OnValueChanged();
 				pinsChanged = true;
 			}
 			break;
@@ -120,10 +120,6 @@ namespace seam::props {
 			for (size_t i = 0; i < childrenSize; i++) {
 				bool childChanged = DrawPinInput(&children[i]);
 				pinsChanged = pinsChanged || childChanged;
-				
-				if (childChanged) {
-					children[i].Callback();
-				}
 			}
 			ImGui::Unindent();
 			break;
@@ -153,7 +149,7 @@ namespace seam::props {
 		}
 
 		if (pinsChanged) {
-			input->Callback();
+			input->OnValueChanged();
 		}
 
 		ImGui::PopID();

@@ -19,8 +19,6 @@ namespace seam::nodes {
 		PinInput* PinInputs(size_t& size) override;
 		PinOutput* PinOutputs(size_t& size) override;
 
-        void OnPinConnected(PinConnectedArgs args) override;
-
 		bool GuiDrawPropertiesList(UpdateParams* params) override;
 		std::vector<props::NodeProperty> GetProperties() override;
 
@@ -31,7 +29,7 @@ namespace seam::nodes {
 		PinIntMeta octavesMeta = PinIntMeta(1, 8);
 		PinFloatMeta floatMeta = PinFloatMeta(0.001f);
 
-		UniformsPinMap uniformsPinMap = UniformsPinMap(this);
+		UniformsPinMap uniformsPinMap = UniformsPinMap(this, &shader);
 
 		glm::uvec2 resolution = glm::uvec2(1024);
 
@@ -39,7 +37,8 @@ namespace seam::nodes {
 			uniformsPinMap.SetupUniformsPin("Noise")
 		};
 
-		PinOutput pinOutFbo = pins::SetupOutputPin(this, pins::PinType::FBO_RGBA, "Output");
+		PinOutput pinOutFbo = pins::SetupOutputStaticFboPin(
+			this, &fbo, pins::PinType::FBO_RGBA, "Output");
 
 		ofFbo fbo;
 		ofShader shader;

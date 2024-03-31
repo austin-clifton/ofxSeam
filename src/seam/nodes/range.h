@@ -17,8 +17,6 @@ namespace seam::nodes {
 
 		PinOutput* PinOutputs(size_t& size) override;
 
-		void OnPinConnected(PinConnectedArgs args) override;
-
 	private:
 		const static char* inputValuePinName;
 

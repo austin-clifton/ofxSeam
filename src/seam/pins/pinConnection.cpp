@@ -111,7 +111,7 @@ namespace seam::pins {
                 }
             case PinType::FLOW: {
                 return [](ConvertSingleArgs args) {
-                    args.pinIn->Callback();
+                    args.pinIn->OnValueChanged();
                 };
             }
             default:

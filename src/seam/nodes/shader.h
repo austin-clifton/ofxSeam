@@ -27,18 +27,16 @@ namespace seam::nodes {
 
 		PinOutput* PinOutputs(size_t& size) override;
 
-        void OnPinConnected(PinConnectedArgs args) override;
-
 	private:
 		bool AttemptShaderLoad(const std::string& shader_name );
 
-		UniformsPinMap uniformsPin = UniformsPinMap(this);
+		UniformsPinMap uniformsPin = UniformsPinMap(this, &shader);
 		PinInput shaderPin = uniformsPin.SetupUniformsPin("Shader");
 
 		std::string shader_name = "simple-glass";
 		ofShader shader;
 		ofFbo fbo;
 
-		PinOutput pinOutMaterial = pins::SetupOutputPin(this, pins::PinType::FBO_RGBA, "material");
+		PinOutput pinOutMaterial = pins::SetupOutputStaticFboPin(this, &fbo, pins::PinType::FBO_RGBA, "Image");
 	};
 }

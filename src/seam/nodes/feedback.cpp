@@ -4,19 +4,15 @@
 using namespace seam;
 using namespace seam::nodes;
 
+const std::string Feedback::fboInputName = "Input FBO";
+
 Feedback::Feedback() : INode("Feedback") {
 	flags = (NodeFlags)(flags | NodeFlags::IS_VISUAL);
 	gui_display_fbo = &fbo1;
 }
 
 void Feedback::Setup(SetupParams* params) {
-
-
 	ReloadShader();
-}
-
-Feedback::~Feedback() {
-
 }
 
 void Feedback::Update(UpdateParams* params) {
@@ -52,33 +48,6 @@ void Feedback::Draw(DrawParams* params) {
 	write_to_fbo1 = !write_to_fbo1;
 }
 
-void Feedback::OnPinConnected(PinConnectedArgs args) {
-	if (args.pinIn->name == "Input FBO") {
-		const float width = inTexture->getWidth();
-		const float height = inTexture->getHeight();
-
-		// Resize FBOs according to the input FBO
-		if (width != fbo1.getWidth() || height != fbo1.getHeight()) {
-			fbo1.clear();
-			fbo2.clear();
-			fbo1.allocate(width, height);
-			fbo2.allocate(width, height);
-
-			fbo1.begin();
-			ofClear(0.f);
-			fbo1.end();
-
-			fbo2.begin();
-			ofClear(0.f);
-			fbo2.end();
-
-			feedback_shader.begin();
-			feedback_shader.setUniform2i("resolution", width, height);
-			feedback_shader.end();
-		}
-	}
-}
-
 PinInput* Feedback::PinInputs(size_t& size) {
 	size = pin_inputs.size();
 	return pin_inputs.data();
@@ -101,11 +70,31 @@ bool Feedback::ReloadShader() {
 	return ShaderUtils::LoadShader(feedback_shader, "screen-rect.vert", "feedback.frag");
 }
 
-void Feedback::RebindTexture() {
-	if (inTexture != nullptr) {
-		// Have to set the feedback shader as the current program before re-binding the texture.
+void Feedback::ResizeFrameBuffers() {
+	if (inTexture == nullptr) {
+		return;
+	}
+
+	const float width = inTexture->getWidth();
+	const float height = inTexture->getHeight();
+
+	// Resize FBOs according to the input FBO
+	if (width != fbo1.getWidth() || height != fbo1.getHeight()) {
+		fbo1.clear();
+		fbo2.clear();
+		fbo1.allocate(width, height);
+		fbo2.allocate(width, height);
+
+		fbo1.begin();
+		ofClear(0.f);
+		fbo1.end();
+
+		fbo2.begin();
+		ofClear(0.f);
+		fbo2.end();
+
 		feedback_shader.begin();
-		feedback_shader.setUniformTexture("imgTex", inTexture->getTexture(), 1);
+		feedback_shader.setUniform2i("resolution", width, height);
 		feedback_shader.end();
 	}
 }

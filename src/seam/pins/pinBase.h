@@ -1,6 +1,7 @@
 #pragma once
 
 #include <string>
+#include <functional>
 
 #include "seam/pins/pinTypes.h"
 #include "seam/idsDistributor.h"
@@ -11,6 +12,19 @@ namespace seam::nodes {
 }
 
 namespace seam::pins {
+    class PinInput;
+    class PinOutput;
+    class PushPatterns;
+
+	struct PinConnectedArgs {
+		PinInput* pinIn;
+		PinOutput* pinOut;
+		PushPatterns* pushPatterns;
+	};
+
+    using ConnectedCallback = std::function<void(PinConnectedArgs)>;
+    using DisconnectedCallback = std::function<void(PinConnectedArgs)>;
+
     using PinId = uint64_t;
     using PushId = uint32_t; 
 
@@ -65,7 +79,7 @@ namespace seam::pins {
         nodes::INode* node = nullptr;
 
         PinFlags flags = (PinFlags)0;
- 
+
         /// @brief Don't touch! For seam internal usage.
         void* seamp = nullptr;
 

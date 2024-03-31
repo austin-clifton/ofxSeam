@@ -448,8 +448,8 @@ bool SeamGraph::Connect(PinInput* pinIn, PinOutput* pinOut) {
 	connectedArgs.pinOut = pinOut;
 	connectedArgs.pushPatterns = &pushPatterns;
 
-	parent->OnPinConnected(connectedArgs);
-	child->OnPinConnected(connectedArgs);
+	pinOut->OnConnected(connectedArgs);
+	pinIn->OnConnected(connectedArgs);
 
 	// give the input pin the default push pattern
 	pinIn->push_id = pushPatterns.Default().id;
@@ -463,13 +463,6 @@ bool SeamGraph::Connect(PinInput* pinIn, PinOutput* pinOut) {
 
 	if (rearranged) {
 		RecalculateTraversalOrder(child);
-	}
-
-	// Auto-push FBO output connections so they don't have to implement OnPinConnected();
-	// this is probably a temp solution, FBO attachment / management needs some more thought
-	if (pinOut->type >= PinType::FBO_RGBA && pinOut->type <= PinType::FBO_RED) {
-		// LOL but pin out doesn't have a pointer to its FBO........
-		// pushPatterns.Push(pinOut, )
 	}
 
 	return true;
@@ -496,9 +489,14 @@ bool SeamGraph::Disconnect(PinInput* pinIn, PinOutput* pinOut) {
 	}
 	assert(i < pinOut->connections.size());
 	pinOut->connections.erase(pinOut->connections.begin() + i);
+	 
+	PinConnectedArgs args;
+	args.pinIn = pinIn;
+	args.pinOut = pinOut;
+	args.pushPatterns = &pushPatterns;
 
-	parent->OnPinDisconnected(pinIn, pinOut);
-	child->OnPinDisconnected(pinIn, pinOut);
+	pinIn->OnDisconnected(args);
+	pinOut->OnDisconnected(args);
 
 	// Null out disconnected FBO pin pointers; this will need to be done for other pointer types!
 	// This is probably a temporary solution.

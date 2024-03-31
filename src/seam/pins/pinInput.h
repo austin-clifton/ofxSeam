@@ -14,43 +14,58 @@
 namespace seam::pins {
     class VectorPinInput;
 
+    /// @brief Is called before a pin's value has been updated.
+    /// NOTE: Is called when pushing to an input pin right now, but not from user GUI updates.
+    using ValueChangingCallback = std::function<void(void)>;
+    /// @brief Is called after a pin's value has been updated.
+    using ValueChangedCallback = std::function<void(void)>;
+
     struct PinInOptions {
         PinInOptions() { }
 
-        PinInOptions(std::function<void(void)>&& _callback) {
-            callback = std::move(_callback);
+        PinInOptions(ValueChangedCallback&& _onValueChanged) {
+            onValueChanged = std::move(_onValueChanged);
         }
 
         PinInOptions(size_t _stride,
             uint16_t _numCoords = 1,
             size_t _offset = 0,
-            std::function<void(void)>&& _callback = std::function<void(void)>()
+            ValueChangedCallback&& _onValueChanged = ValueChangedCallback()
         ) {
             stride = _stride;
             offset = _offset;
             numCoords = _numCoords;
-            callback = std::move(_callback);
+            onValueChanged = std::move(_onValueChanged);
         }
 
         PinInOptions(
             std::string_view _description,
             void* _pinMetadata = nullptr,
-            std::function<void(void)>&& _callback = std::function<void(void)>(),
+            ValueChangedCallback&& _onValueChanged = ValueChangedCallback(),
             size_t _elementSize = 0
         ) {
             pinMetadata = _pinMetadata;
             description = _description;
             elementSize = _elementSize;
-            callback = std::move(_callback);
+            onValueChanged = std::move(_onValueChanged);
         }
 
+        static PinInOptions WithChangedCallbacks(
+            ValueChangedCallback&& _onValueChanged = ValueChangedCallback(),
+            ValueChangingCallback&& _onValueChanging = ValueChangingCallback()
+        ) {
+            PinInOptions options;
+            options.onValueChanged = std::move(_onValueChanged);
+            options.onValueChanging = std::move(_onValueChanging);
+            return options;
+        }
             
         static PinInOptions WithCoords(uint16_t numCoords, 
-            std::function<void(void)>&& _callback = std::function<void(void)>()) 
+            ValueChangedCallback&& _onValueChanged = ValueChangedCallback()) 
         {
             PinInOptions options;
             options.numCoords = numCoords;
-            options.callback = std::move(_callback);
+            options.onValueChanged = std::move(_onValueChanged);
             return options;
         }
 
@@ -60,7 +75,8 @@ namespace seam::pins {
         size_t stride = 0;
         size_t offset = 0;
         uint16_t numCoords = 1;
-        std::function<void(void)> callback;
+        ValueChangedCallback onValueChanged;
+        ValueChangingCallback onValueChanging;
     };
 
     class PinInput final : public Pin, public IInPinnable {
@@ -81,7 +97,8 @@ namespace seam::pins {
             size_t _stride,
             size_t _offset,
             uint16_t _numCoords,
-            std::function<void(void)>&& _callback,
+            ValueChangedCallback&& _onValueChanged,
+            ValueChangingCallback&& _onValueChanging,
             void* _pinMetadata
             )
         {
@@ -97,7 +114,8 @@ namespace seam::pins {
             stride = _stride;
             offset = _offset;
             numCoords = _numCoords;
-            callback = std::move(_callback);
+            onValueChanged = std::move(_onValueChanged);
+            onValueChanging = std::move(_onValueChanging);
             pinMetadata = _pinMetadata;
 
             assert(stride >= sizeInBytes);
@@ -124,7 +142,7 @@ namespace seam::pins {
         PinInput(const std::string_view _name,
             const std::string_view _description,
             nodes::INode* _node,
-            std::function<void(void)>&& _callback,
+            ValueChangedCallback&& _onValueChanged,
             void* _pinMetadata
         )
         {
@@ -135,7 +153,7 @@ namespace seam::pins {
             isQueue = false;
             flags = (PinFlags)(flags | PinFlags::INPUT);
             pinMetadata = _pinMetadata;
-            callback = std::move(_callback);
+            onValueChanged = std::move(_onValueChanged);
             sizeInBytes = 0;
         }
 
@@ -186,14 +204,44 @@ namespace seam::pins {
             totalElements = elements;
         }
 
-        inline void Callback() {
-            if (callback) {
-                callback();
+        inline void OnValueChanged() {
+            if (onValueChanged) {
+                onValueChanged();
             }
         }
 
-        inline void SetCallback(std::function<void(void)>&& cb) {
-            callback = std::move(cb);
+        inline void SetOnValueChanged(ValueChangedCallback&& cb) {
+            onValueChanged = std::move(cb);
+        }
+
+        inline void OnValueChanging() {
+            if (onValueChanging) {
+                onValueChanging();
+            }
+        }
+
+        inline void SetOnValueChanging(ValueChangingCallback&& cb) {
+            onValueChanging = std::move(cb);
+        }
+
+        inline void SetOnConnected(ConnectedCallback&& _onConnected) {
+            onConnected = std::move(_onConnected);
+        }
+
+        inline void OnConnected(PinConnectedArgs args) {
+            if (onConnected) {
+                onConnected(args);
+            }
+        }
+
+        inline void SetOnDisconnected(DisconnectedCallback&& _onDisconnected) {
+            onDisconnected = std::move(_onDisconnected);
+        }
+
+        inline void OnDisconnected(PinConnectedArgs args) {
+            if (onDisconnected) {
+                onDisconnected(args);
+            }
         }
 
         PinInput* PinInputs(size_t &size) override {
@@ -234,6 +282,7 @@ namespace seam::pins {
         bool isQueue = false;
 
         void* buffer = nullptr;
+
         /// @brief The buffer points to this many elements starting at offset and separated by the stride.
         size_t totalElements = 0;
 
@@ -253,7 +302,10 @@ namespace seam::pins {
 
         std::vector<PinInput> childPins;
 
-        std::function<void(void)> callback;
+        ConnectedCallback onConnected;
+        DisconnectedCallback onDisconnected;
+        ValueChangingCallback onValueChanging;
+        ValueChangedCallback onValueChanged;
 
         // Should be set by pin types which have GUI metadata for mins/maxes etc.
         void* pinMetadata;

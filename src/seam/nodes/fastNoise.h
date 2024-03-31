@@ -47,8 +47,6 @@ namespace seam::nodes {
 
 		PinOutput* PinOutputs(size_t& size) override;
 
-        void OnPinConnected(PinConnectedArgs args) override;
-
 	private:
         void ResizeFbo();
         bool ReloadShaders();
@@ -122,6 +120,6 @@ namespace seam::nodes {
         // Pins are set up in the constructor!            
         std::array<PinInput, 21> pinInputs;
 
-        PinOutput pinOutFbo = pins::SetupOutputPin(this, pins::PinType::FBO_RGBA, "Output");
+        PinOutput pinOutFbo = pins::SetupOutputStaticFboPin(this, &fbo, pins::PinType::FBO_RGBA, "Output");
 	};
 }
