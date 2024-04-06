@@ -15,6 +15,8 @@ namespace seam::nodes {
 		MidiIn();
 		~MidiIn();
 
+		void Setup(SetupParams* params) override;
+
 		void Update(UpdateParams* params) override;
 
 		bool GuiDrawPropertiesList(UpdateParams* params) override;

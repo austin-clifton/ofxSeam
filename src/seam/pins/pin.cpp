@@ -383,7 +383,7 @@ namespace seam::pins {
 
 	PinInput SetupInputFlowPin(
 		nodes::INode* node,
-		std::function<void(void)>&& callback,
+		ValueChangedCallback&& callback,
 		const std::string_view name,
 		void* pinMetadata,
 		const std::string_view description

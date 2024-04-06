@@ -18,16 +18,18 @@ MidiIn::MidiIn() : IDynamicPinsNode("MIDI In") {
 	// external input requires updating every frame
 	flags = (NodeFlags)(flags | NodeFlags::UPDATES_EVERY_FRAME);
 	custom_pins_index = pin_outputs.size();
+}
 
+MidiIn::~MidiIn() {
+	// nothing to do?
+}
+
+void MidiIn::Setup(SetupParams* params) {
 	ListenOnPort(midi_port);
 
 	midi_in.addListener(this);
 	// TODO make this settable
 	midi_in.setVerbose(true);
-}
-
-MidiIn::~MidiIn() {
-	// nothing to do?
 }
 
 bool MidiIn::ListenOnPort(unsigned int port) {

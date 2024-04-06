@@ -124,7 +124,7 @@ namespace seam {
 			nodes::INode* node,
 			ofFbo* fbo,
 			PinType fboType,
-			const std::string_view name = "Input FBO",
+			const std::string_view name = "Image",
 			PinFlags flags = PinFlags::FLAGS_NONE,
 			const std::string_view description = "",
 			void* userp = nullptr

@@ -40,7 +40,7 @@ EventNodeFactory::EventNodeFactory() {
 	Register(MakeCreate<nodes::Gate>());
 	Register(MakeCreate<nodes::HdrTonemapper>());
 	Register(MakeCreate<nodes::Markov>());
-	Register(MakeCreate<nodes::MidiIn>());
+	// Register(MakeCreate<nodes::MidiIn>());
 	Register(MakeCreate<nodes::MultiTrigger>());
 	Register(MakeCreate<nodes::Noise>());
 	Register(MakeCreate<nodes::NotesPrinter>());
