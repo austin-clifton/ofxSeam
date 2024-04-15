@@ -112,7 +112,8 @@ namespace seam::pins {
 	std::vector<PinInput> UniformsToPinInputs(
 		ofShader& shader, 
 		nodes::INode* node, 
-		std::vector<char>& pinBuffer
+		std::vector<char>& pinBuffer,
+		const std::unordered_set<std::string>& blacklist
 	) {
 		// sanity check there were no errors before now
 		assert(glGetError() == GL_NO_ERROR);
@@ -158,10 +159,14 @@ namespace seam::pins {
 			GLenum err = glGetError();
 			assert(err == GL_NO_ERROR);
 
-			// use string_view with c_str() so it finds the nul char for us
-			std::string_view snippedName(name.c_str());
+			// init string with c_str() so it finds the nul char for us
+			std::string snippedName(name.c_str());
 
-			// TODO filter out uniforms prefixed with "gl_"?
+			if (blacklist.find(snippedName) != blacklist.end() 
+				|| snippedName.substr(0, 3) == "gl_") 
+			{
+				continue;
+			}
 
 			bool failed = false;
 			PinType pinType = PinType::TYPE_NONE;

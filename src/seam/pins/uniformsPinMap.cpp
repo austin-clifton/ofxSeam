@@ -11,21 +11,21 @@ UniformsPinMap::UniformsPinMap(nodes::INode* _node, ofShader* _shader) {
 }
 
 PinInput UniformsPinMap::SetupUniformsPin(const std::string_view name) {
-    std::string pinName = std::string(name) + " Uniforms";
-	PinInput pinIn = SetupInputPin(PinType::STRUCT, node, nullptr, 0, pinName);
-	uniformsPinId = pinIn.id;
+	uniformsPinName = std::string(name) + " Uniforms";
+	PinInput pinIn = SetupInputPin(PinType::STRUCT, node, nullptr, 0, uniformsPinName);
+	pinIn.seamp = this;
     return pinIn;
 }
 
-void UniformsPinMap::UpdatePins() {
-	PinInput* uniformsPin = node->FindPinInput(uniformsPinId);
+void UniformsPinMap::UpdatePins(const std::unordered_set<std::string>& blacklist) {
+	PinInput* uniformsPin = FindPinInByName(node, uniformsPinName);
 	assert(uniformsPin != nullptr);
 
 	// Move the old uniforms buffer to a temp buffer,
 	// so uniform values can be preserved and re-set after re-loading.
 	std::vector<char> oldUniformsBuffer = std::move(uniformsBuffer);
 
-    std::vector<PinInput> newPins = UniformsToPinInputs(*shader, node, uniformsBuffer);
+    std::vector<PinInput> newPins = UniformsToPinInputs(*shader, node, uniformsBuffer, blacklist);
     
     // Loop over each new pin, and make sure ids and connections are preserved.
     for (auto& pinIn : newPins) {
@@ -82,7 +82,9 @@ void UniformsPinMap::UpdatePins() {
 }
 
 void UniformsPinMap::SetUniforms() {
-	PinInput* uniformsPin = node->FindPinInput(uniformsPinId);
+	PinInput* uniformsPin = FindPinInByName(node, uniformsPinName);
+	assert(uniformsPin != nullptr);
+
     size_t uniformsSize;
 	PinInput* uniforms = uniformsPin->PinInputs(uniformsSize);
 
