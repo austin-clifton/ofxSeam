@@ -11,6 +11,8 @@ namespace seam::nodes {
 		Gate();
 		~Gate();
 
+		void Setup(SetupParams* params) override;
+
 		void Update(UpdateParams* params) override;
 
 		PinInput* PinInputs(size_t& size) override;

@@ -11,6 +11,8 @@ namespace seam::nodes {
 	class Toggle : public INode {
 	public:
 		Toggle();
+
+		void Setup(SetupParams* params) override;
         
 		PinInput* PinInputs(size_t& size) override;
 
