@@ -46,6 +46,10 @@ uint32_t TextureLocationResolver::Bind(ofTexture* tex) {
 }
 
 bool TextureLocationResolver::Release(ofTexture* tex) {
+    if (tex == nullptr) {
+        return false;
+    }
+
     auto existing = FindLocation(tex);
 
     if (existing != textureLocations.end()) {
@@ -60,6 +64,10 @@ bool TextureLocationResolver::Release(ofTexture* tex) {
 }
 
 void TextureLocationResolver::ReleaseAll(ofTexture* tex, pins::PinOutput* pinOutFbo) {
+    if (tex == nullptr) {
+        return;
+    }
+    
     auto existing = FindLocation(tex);
     if (existing != textureLocations.end()) {
         assert(existing->bindings > 0);
