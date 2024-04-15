@@ -60,7 +60,11 @@ namespace seam::nodes {
 			pins::SetupInputPin(PinType::FBO_RGBA16F, this, &hdrFbo, 1, "HDR FBO",
 				PinInOptions::WithChangedCallbacks(
 					std::bind(&HdrTonemapper::RebindTexture, this),
-					[this]() { Seam().texLocResolver->Release(&hdrFbo->getTexture()); }
+					[this]() {
+						if (hdrFbo != nullptr) {
+							Seam().texLocResolver->Release(&hdrFbo->getTexture()); 
+						}
+					}
 				)
 			),
 			pins::SetupInputPin(PinType::INT, this, &resolution, 2, "Resolution", 

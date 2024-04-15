@@ -172,18 +172,17 @@ void HdrTonemapper::SetupBloomTextures() {
         return;
     }
 
-    if (bloomFbos[0].isAllocated()) {
-        for (size_t i = 0; i < bloomDownScales; i++) {
-            Seam().texLocResolver->Release(&bloomFbos[i].getTexture());
+    for (size_t i = 0; i < bloomDownScales; i++) {
+        Seam().texLocResolver->ReleaseAll(&bloomFbos[i].getTexture());
 
-            bloomFbos[i].clear();
-            bloomFbosBack[i].clear();
 
-            bloomFbos[i].allocate(dsRes.x, dsRes.y, GL_RGBA16F);
-            bloomFbosBack[i].allocate(dsRes.x, dsRes.y, GL_RGBA16F);
+        bloomFbos[i].clear();
+        bloomFbosBack[i].clear();
 
-            dsRes = dsRes / 2;
-        }
+        bloomFbos[i].allocate(dsRes.x, dsRes.y, GL_RGBA16F);
+        bloomFbosBack[i].allocate(dsRes.x, dsRes.y, GL_RGBA16F);
+
+        dsRes = dsRes / 2;
     }
 
     RebindBloomTextures();
