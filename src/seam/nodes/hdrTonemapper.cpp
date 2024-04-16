@@ -6,8 +6,6 @@ using namespace seam::nodes;
 HdrTonemapper::HdrTonemapper() : INode("HDR Tone Mapper") {
     flags = (NodeFlags)(flags | NodeFlags::IS_VISUAL);
 	gui_display_fbo = &tonemappedFbo;
-
-    windowFbos.push_back(WindowRatioFbo(&tonemappedFbo));
 }
 
 void HdrTonemapper::Setup(SetupParams* params) {
@@ -125,6 +123,12 @@ void HdrTonemapper::RebindTexture() {
 	if (hdrFbo != nullptr) {
         // Resolution is set via the input FBO
         resolution = glm::vec2(hdrFbo->getWidth(), hdrFbo->getHeight());
+
+        // Output resolution should match input resolution
+        Seam().texLocResolver->ReleaseAll(&tonemappedFbo.getTexture());
+        tonemappedFbo.clear();
+        tonemappedFbo.allocate(resolution.x, resolution.y, GL_RGBA);
+
         SetupBloomTextures();
 
         uint32_t texLoc = Seam().texLocResolver->Bind(&hdrFbo->getTexture());
@@ -142,6 +146,9 @@ void HdrTonemapper::RebindTexture() {
 		tonemapShader.setUniformTexture("hdrBuffer", hdrFbo->getTexture(), texLoc);
         tonemapShader.setUniform2i("resolution", resolution.x, resolution.y);
 		tonemapShader.end();
+
+        // Tonemapped FBO changed, force reconnect
+        pinOutFbo.Reconnect(Seam().pushPatterns);
 	}
 }
 
@@ -165,7 +172,6 @@ void HdrTonemapper::SetupBloomTextures() {
 
     for (size_t i = 0; i < bloomDownScales; i++) {
         Seam().texLocResolver->ReleaseAll(&bloomFbos[i].getTexture());
-
 
         bloomFbos[i].clear();
         bloomFbosBack[i].clear();

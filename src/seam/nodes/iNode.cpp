@@ -231,6 +231,9 @@ void INode::OnWindowResized(glm::uvec2 resolution) {
 	for (auto& windowFbo : windowFbos) {
 		glm::ivec2 expected = resolution * windowFbo.ratio;
 		if (windowFbo.fbo->getWidth() != expected.x || windowFbo.fbo->getHeight() != expected.y) {
+
+			Seam().texLocResolver->ReleaseAll(&windowFbo.fbo->getTexture());
+
 			// Destroy and reallocate the FBO.
 			windowFbo.fbo->clear();
 			windowFbo.fboSettings.width = expected.x;
@@ -239,6 +242,11 @@ void INode::OnWindowResized(glm::uvec2 resolution) {
 
 			UpdateResolutionPin(expected);
 			SetDirty();
+
+			// Refresh pin connections since the fbo changed
+			if (windowFbo.pinOutFbo != nullptr) {
+				windowFbo.pinOutFbo->Reconnect(Seam().pushPatterns);
+			}
 		}
 	}
 }

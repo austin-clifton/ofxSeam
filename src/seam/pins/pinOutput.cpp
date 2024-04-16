@@ -23,3 +23,17 @@ void PinOutput::SetNumCoords(uint16_t newNumCoords) {
         conn.RecacheConverts();
     }
 }
+
+void PinOutput::Reconnect(seam::pins::PushPatterns* pushPatterns) {
+    if (!onConnected) {
+        return;
+    }
+
+    PinConnectedArgs args;
+    args.pinOut = this;
+    args.pushPatterns = pushPatterns;
+    for (auto conn : connections) {
+        args.pinIn = conn.pinIn;
+        OnConnected(args);
+    }
+}
