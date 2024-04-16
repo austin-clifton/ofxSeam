@@ -28,12 +28,9 @@ namespace seam::nodes {
 
 		bool GuiDrawPropertiesList(UpdateParams* params) override;
 
-		void OnWindowResized(glm::uvec2 resolution) override;
-
 	private:
         bool ReloadShaders();
 		void RebindTexture();
-		void OnResolutionChanged();
 		void SetupBloomTextures();
 		void RebindBloomTextures();
 		glm::ivec2 DownscaledRes();
@@ -56,7 +53,7 @@ namespace seam::nodes {
 		ofShader blurShader;
         ofShader tonemapShader;
 
-		std::array<PinInput, 3> pinInputs = {
+		std::array<PinInput, 2> pinInputs = {
 			pins::SetupInputPin(PinType::FBO_RGBA16F, this, &hdrFbo, 1, "HDR FBO",
 				PinInOptions::WithChangedCallbacks(
 					std::bind(&HdrTonemapper::RebindTexture, this),
@@ -67,8 +64,6 @@ namespace seam::nodes {
 					}
 				)
 			),
-			pins::SetupInputPin(PinType::INT, this, &resolution, 2, "Resolution", 
-				PinInOptions(std::bind(&HdrTonemapper::OnResolutionChanged, this))),
 			pins::SetupInputPin(PinType::FLOAT, this, &gamma, 1, "Gamma"),
 		};
         

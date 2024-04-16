@@ -115,7 +115,7 @@ bool HdrTonemapper::ReloadShaders() {
     // Shaders were reloaded, update resolution params
     bool allLoaded = brightPassLoaded && tonemapLoaded && blurLoaded;
     if (allLoaded) {
-        OnResolutionChanged();
+        RebindTexture();
     }
 
     return allLoaded;
@@ -123,35 +123,26 @@ bool HdrTonemapper::ReloadShaders() {
 
 void HdrTonemapper::RebindTexture() {
 	if (hdrFbo != nullptr) {
+        // Resolution is set via the input FBO
+        resolution = glm::vec2(hdrFbo->getWidth(), hdrFbo->getHeight());
+        SetupBloomTextures();
+
         uint32_t texLoc = Seam().texLocResolver->Bind(&hdrFbo->getTexture());
+
+        // The brightness shader writes to the first downscaled FBO for bloom blur,
+        // so make sure the right resolution is used!
+        glm::ivec2 dsRes = DownscaledRes();
 
         brightPassShader.begin();
 		brightPassShader.setUniformTexture("hdrBuffer", hdrFbo->getTexture(), texLoc);
+        brightPassShader.setUniform2i("resolution", dsRes.x, dsRes.y);
         brightPassShader.end();
 
 		tonemapShader.begin();
 		tonemapShader.setUniformTexture("hdrBuffer", hdrFbo->getTexture(), texLoc);
+        tonemapShader.setUniform2i("resolution", resolution.x, resolution.y);
 		tonemapShader.end();
 	}
-}
-
-void HdrTonemapper::OnResolutionChanged() {
-    tonemapShader.begin();
-    tonemapShader.setUniform2i("resolution", resolution.x, resolution.y);
-    tonemapShader.end();
-
-    // The brightness shader writes to the first downscaled FBO for bloom blur,
-    // so make sure the right resolution is used!
-    glm::ivec2 dsRes = DownscaledRes();
-
-    brightPassShader.begin();
-    brightPassShader.setUniform2i("resolution", dsRes.x, dsRes.y);
-    brightPassShader.end();
-}
-
-void HdrTonemapper::OnWindowResized(glm::uvec2 res) {
-    INode::OnWindowResized(res);
-    SetupBloomTextures();
 }
 
 void HdrTonemapper::SetupBloomTextures() {

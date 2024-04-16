@@ -252,7 +252,9 @@ void INode::UpdateResolutionPin(glm::uvec2 resolution) {
 		void* buffer = resolutionPin->Buffer(size);
 		assert(size * resolutionPin->NumCoords() == 2);
 
+		resolutionPin->OnValueChanging();
 		*((glm::uvec2*)buffer) = resolution;
+		resolutionPin->OnValueChanged();
 	}
 }
 

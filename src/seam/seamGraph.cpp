@@ -934,6 +934,11 @@ bool SeamGraph::LoadGraph(const std::string_view filename, std::vector<SeamGraph
 
 	ed::NavigateToContent();
 
+	// Ensure that window-size related pins use the current resolution instead of the file's resolution.
+	for (auto n : nodes) {
+		n->OnWindowResized(glm::vec2(ofGetWidth(), ofGetHeight()));
+	}
+
 	// Make sure the IdsDistributor knows where to start assigning IDs from.
 	IdsDistributor::GetInstance().ResetIds();
 	IdsDistributor::GetInstance().SetNextNodeId(maxNodeId + 1);
