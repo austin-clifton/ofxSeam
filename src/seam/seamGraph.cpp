@@ -730,6 +730,11 @@ bool SeamGraph::LoadGraph(const std::string_view filename, std::vector<SeamGraph
 
 	PrintGraph(node_graph);
 	NewGraph();
+	
+	// Make sure the IdsDistributor knows where to start assigning IDs from.
+	IdsDistributor::GetInstance().ResetIds();
+	IdsDistributor::GetInstance().SetNextNodeId(node_graph.getMaxNodeId() + 1);
+	IdsDistributor::GetInstance().SetNextPinId(node_graph.getMaxPinId() + 1);
 
 	// Keep a pin id to node map so pins can be looked up for connecting shortly.
 	// Pins have to be looked up through the Node each time we want them,
@@ -737,15 +742,10 @@ bool SeamGraph::LoadGraph(const std::string_view filename, std::vector<SeamGraph
 	std::map<PinId, INode*> inputPinMap;
 	std::map<PinId, INode*> outputPinMap;
 
-	// Remember max pin and node IDs.
-	PinId maxPinId = 0;
-	NodeId maxNodeId = 0;
-
 	// First deserialize nodes and pins
 	for (const auto& serialized_node : node_graph.getNodes()) {
 		auto node = CreateAndAdd(serialized_node.getNodeName().cStr());
 		node->id = serialized_node.getId();
-		maxNodeId = std::max(node->id, maxNodeId);
 		node->instance_name = serialized_node.getDisplayName();
 
 		auto position = ImVec2(serialized_node.getPosition().getX(), serialized_node.getPosition().getY());
@@ -839,7 +839,7 @@ bool SeamGraph::LoadGraph(const std::string_view filename, std::vector<SeamGraph
 				}
 				
 				DeserializePinInput(serialized_pin_in, match);
-				maxPinId = std::max(maxPinId, UpdatePinMap(match, inputPinMap));
+				UpdatePinMap(match, inputPinMap);
 
 			} else if (dynamicPinsNode != nullptr) {
 				PinType pinType = (PinType)serialized_pin_in.getType();
@@ -853,8 +853,7 @@ bool SeamGraph::LoadGraph(const std::string_view filename, std::vector<SeamGraph
 						node->NodeName().data(), serialized_pin_name.c_str());
 				} else {
 					DeserializePinInput(serialized_pin_in, added);
-
-					maxPinId = std::max(maxPinId, UpdatePinMap(added, inputPinMap));
+					UpdatePinMap(added, inputPinMap);
 
 					// Refresh the input pins list!
 					input_pins = node->PinInputs(inputs_size);
@@ -879,7 +878,7 @@ bool SeamGraph::LoadGraph(const std::string_view filename, std::vector<SeamGraph
 
 			if (match != nullptr) {
 				DeserializePinOutput(serialized_pin_out, match);
-				maxPinId = std::max(maxPinId, UpdatePinMap(match, outputPinMap));
+				UpdatePinMap(match, outputPinMap);
 
 			} else if (dynamicPinsNode != nullptr) {
 				PinType pinType = (PinType)serialized_pin_out.getType();
@@ -896,7 +895,7 @@ bool SeamGraph::LoadGraph(const std::string_view filename, std::vector<SeamGraph
 				} else {
 					assert(added->id == serialized_pin_out.getId());
 
-					maxPinId = std::max(maxPinId, UpdatePinMap(added, outputPinMap));
+					UpdatePinMap(added, outputPinMap);
 
 					// Refresh the output pins list
 					output_pins = node->PinOutputs(outputs_size);
@@ -938,11 +937,6 @@ bool SeamGraph::LoadGraph(const std::string_view filename, std::vector<SeamGraph
 	for (auto n : nodes) {
 		n->OnWindowResized(glm::vec2(ofGetWidth(), ofGetHeight()));
 	}
-
-	// Make sure the IdsDistributor knows where to start assigning IDs from.
-	IdsDistributor::GetInstance().ResetIds();
-	IdsDistributor::GetInstance().SetNextNodeId(maxNodeId + 1);
-	IdsDistributor::GetInstance().SetNextPinId(maxPinId + 1);
 
     return true;
 }

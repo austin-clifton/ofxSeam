@@ -60,4 +60,6 @@ struct NodeGraph {
     nodes       @0 :List(Node);
     connections @1 :List(PinConnection);
     name        @2 :Text;
+    maxNodeId   @3 :UInt64;
+    maxPinId    @4 :UInt64;
 }
