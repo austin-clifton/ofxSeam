@@ -7,7 +7,7 @@ TextureLocationResolver::TextureLocationResolver(pins::PushPatterns* _pushPatter
     pushPatterns = _pushPatterns;
     textureLocations.resize(availableLocations);
 
-    for (uint32_t i = 0; i <= availableLocations; i++) {
+    for (uint32_t i = 0; i < availableLocations; i++) {
         textureLocations[i].index = i + 1;
     }
 }
