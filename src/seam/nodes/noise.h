@@ -28,6 +28,8 @@ namespace seam::nodes {
 
 		uint32_t numCoords = 1;
 
+		float seed;
+
 		std::array<PinInput, 3> pin_inputs = {
 			pins::SetupInputPin(PinType::FLOAT, this, &speedMultiplier, 1, "Speed"),
 			pins::SetupInputPin(PinType::FLOAT, this, &minN, 1, "Min Output"),

@@ -5,6 +5,7 @@ using namespace seam::nodes;
 
 Noise::Noise() : INode("Noise") {
 	flags = (NodeFlags)(flags | NodeFlags::UPDATES_OVER_TIME);
+	seed = ofRandom(-100.f, 100.f);
 }
 
 Noise::~Noise() {
@@ -25,10 +26,10 @@ void Noise::Update(UpdateParams* params) {
 	glm::vec4 noises;
 	for (uint32_t i = 0; i < numCoords; i++) {
 		samples[i] = samples[i] + params->delta_time * speedMultiplier;
-		noises[i] = minN + ofNoise(samples[i]) * (maxN - minN);
+		noises[i] = minN + ofNoise(seed + samples[i]) * (maxN - minN);
 	}
 
-	params->push_patterns->Push(pinOutNoiseVal, &noises, 1);
+	params->push_patterns->Push(pinOutNoiseVal, &noises, numCoords);
 }
 
 std::vector<props::NodeProperty> Noise::GetProperties() {
