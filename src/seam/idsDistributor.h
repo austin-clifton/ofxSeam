@@ -23,12 +23,12 @@ namespace seam {
                 return pinIdManager.RetrieveNext();
             }
 
-            inline void SetNextPinId(size_t id) {
-                pinIdManager.SetNextAvailableId(id);
-            }
-
             inline void SetNextNodeId(size_t id) {
                 nodeIdManager.SetNextAvailableId(id);
+            }
+
+            inline void SetNextPinId(size_t id) {
+                pinIdManager.SetNextAvailableId(id);
             }
 
             inline void ResetIds() {

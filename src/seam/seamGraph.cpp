@@ -165,7 +165,7 @@ namespace {
 	PinId UpdatePinMap(PinInput* pinIn, std::map<PinId, INode*>& pinMap) {
 		auto emplaced = pinMap.emplace(pinIn->id, pinIn->node);
 		// IDs are expected to be unique
-		// assert(emplaced.second);
+		assert(emplaced.second);
 		size_t maxId = pinIn->id;
 
 		size_t childrenSize;
@@ -180,7 +180,7 @@ namespace {
 	PinId UpdatePinMap(PinOutput* pinOut, std::map<PinId, INode*>& pinMap) {
 		auto emplaced = pinMap.emplace(pinOut->id, pinOut->node);
 		// IDs are expected to be unique
-		// assert(emplaced.second);
+		assert(emplaced.second);
 		size_t maxId = pinOut->id;
 
 		size_t childrenSize;
@@ -231,13 +231,11 @@ void SeamGraph::Draw() {
 void SeamGraph::UpdateVisibleNodeGraph(INode* n, UpdateParams* params) {
     // Traverse parents and update them before traversing this node.
     // Parents are sorted by update order, so that any "shared parents" are updated first
-    int16_t last_update_order = -1;
     static std::vector<INode*> in_use_parents;
     n->InUseParents(in_use_parents);
 
     for (auto p : in_use_parents) {
-        // assert(last_update_order <= p->update_order);
-        last_update_order = p->update_order;
+        assert(p->update_order < n->update_order);
         UpdateVisibleNodeGraph(p, params);
     }
 
@@ -704,7 +702,9 @@ bool SeamGraph::SaveGraph(const std::string_view filename, const std::vector<INo
     }
 
     // TODO get a name from elsewhere
-    serialized_graph.setName(filename.data());
+    serialized_graph.setName(filename.data()); 
+	serialized_graph.setMaxNodeId(IdsDistributor::GetInstance().NextNodeId());
+	serialized_graph.setMaxPinId(IdsDistributor::GetInstance().NextPinId());
 
     PrintGraph(serialized_graph.asReader());
 
@@ -732,9 +732,12 @@ bool SeamGraph::LoadGraph(const std::string_view filename, std::vector<SeamGraph
 	NewGraph();
 	
 	// Make sure the IdsDistributor knows where to start assigning IDs from.
+	// Note we set the max node/pin ID BEFORE deserializing, so that
+	// any new pins since the last load (for instance from shader uniforms)
+	// get new pin IDs based on the last maximum.
 	IdsDistributor::GetInstance().ResetIds();
-	IdsDistributor::GetInstance().SetNextNodeId(node_graph.getMaxNodeId() + 1);
-	IdsDistributor::GetInstance().SetNextPinId(node_graph.getMaxPinId() + 1);
+	IdsDistributor::GetInstance().SetNextNodeId(node_graph.getMaxNodeId());
+	IdsDistributor::GetInstance().SetNextPinId(node_graph.getMaxPinId());
 
 	// Keep a pin id to node map so pins can be looked up for connecting shortly.
 	// Pins have to be looked up through the Node each time we want them,
