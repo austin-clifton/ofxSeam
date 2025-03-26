@@ -97,6 +97,9 @@ namespace seam::nodes {
         float speed = 1.f;
         bool animateOverTime = true;
         bool enableDomainWarp = false;
+        bool filterNearest = false;
+        bool calculateGChannel = true;
+        bool calculateBChannel = true;
 
         // Fractal type configuration
         int octaves = 3;
@@ -118,7 +121,7 @@ namespace seam::nodes {
 		ofShader shader;
 
         // Pins are set up in the constructor!            
-        std::array<PinInput, 21> pinInputs;
+        std::array<PinInput, 24> pinInputs;
 
         PinOutput pinOutFbo = pins::SetupOutputStaticFboPin(this, &fbo, pins::PinType::FBO_RGBA, "Output");
 	};
