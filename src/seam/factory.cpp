@@ -24,6 +24,7 @@
 #include "seam/nodes/timer.h"
 #include "seam/nodes/toggle.h"
 #include "seam/nodes/valueNoise.h"
+#include "seam/nodes/videoPlayer.h"
 
 using namespace seam;
 
@@ -53,8 +54,12 @@ EventNodeFactory::EventNodeFactory() {
 	Register(MakeCreate<nodes::Timer>());
 	Register(MakeCreate<nodes::Toggle>());
 	Register(MakeCreate<nodes::ValueNoise>());
+	Register(MakeCreate<nodes::VideoPlayer>());
 
 	// TODO register more seam internal generators here
+
+
+	IdsDistributor::GetInstance().ResetIds();
 }
 
 EventNodeFactory::~EventNodeFactory() {
