@@ -183,6 +183,10 @@ namespace seam::nodes {
 			return instance_name;
 		}
 
+		inline bool IsDirty() {
+			return dirty;
+		}
+
 		inline void SetDirty() {
 			dirty = true;
 			// dirtying a node dirties its children
