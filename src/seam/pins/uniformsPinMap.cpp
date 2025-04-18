@@ -17,7 +17,7 @@ PinInput UniformsPinMap::SetupUniformsPin(const std::string_view name) {
     return pinIn;
 }
 
-void UniformsPinMap::UpdatePins(const std::unordered_set<std::string>& blacklist) {
+void UniformsPinMap::UpdatePins(const std::unordered_set<const char*>& blacklist) {
 	PinInput* uniformsPin = FindPinInByName(node, uniformsPinName);
 	assert(uniformsPin != nullptr);
 
@@ -36,12 +36,12 @@ void UniformsPinMap::UpdatePins(const std::unordered_set<std::string>& blacklist
 				size_t size;
 				void* buf = pinIn.Buffer(size);
 				assert(size == 1);
-				ofFbo* fbo = (ofFbo*)buf;
+				ofFbo** fbo = (ofFbo**)buf;
 
-				if (fbo != nullptr) {
-					uint32_t texLoc = node->Seam().texLocResolver->Bind(&fbo->getTexture());
+				if (fbo != nullptr && *fbo != nullptr) {
+					uint32_t texLoc = node->Seam().texLocResolver->Bind(&(*fbo)->getTexture());
 					shader->begin();
-					shader->setUniformTexture(pinIn.name, fbo->getTexture(), texLoc);
+					shader->setUniformTexture(pinIn.name, (*fbo)->getTexture(), texLoc);
 					shader->end();
 				}
 			});
@@ -50,10 +50,10 @@ void UniformsPinMap::UpdatePins(const std::unordered_set<std::string>& blacklist
 				size_t size;
 				void* buf = pinIn.Buffer(size);
 				assert(size == 1);
-				ofFbo* fbo = (ofFbo*)buf;
+				ofFbo** fbo = (ofFbo**)buf;
 
-				if (fbo != nullptr) {
-					node->Seam().texLocResolver->Release(&fbo->getTexture());
+				if (fbo != nullptr && *fbo != nullptr) {
+					node->Seam().texLocResolver->Release(&(*fbo)->getTexture());
 				}
 			});
 		}
@@ -92,12 +92,13 @@ void UniformsPinMap::SetUniforms() {
 		PinInput& pin = uniforms[i];
 		size_t size;
 		void* buffer = pin.Buffer(size);
+		uint16_t numCoords = pin.NumCoords();
 		
 		// TODO put this somewhere more accessible,
 		// and add more type conversions as you add more to UniformsToPinInputs()
 		switch (pin.type) {
 		case pins::PinType::FLOAT: {
-            switch (size) {
+            switch (numCoords) {
                 case 1:
     				shader->setUniform1f(pin.name, *(float*)buffer);
                     break;
@@ -110,17 +111,18 @@ void UniformsPinMap::SetUniforms() {
             }
 			break;
 		}
-		case pins::PinType::INT: {
-			if (size == 1) {
-				shader->setUniform1i(pin.name, *(int*)buffer);
+		case pins::PinType::INT: { 
+			int32_t* ichans = (int32_t*)buffer;
+			if (numCoords == 1) {
+				shader->setUniform1i(pin.name, ichans[0]);
 			} else {
-				shader->setUniform2i(pin.name, ((int*)(buffer))[0], ((int*)(buffer))[1]);
+				shader->setUniform2i(pin.name, ichans[0], ichans[1]);
 			}
 			break;
 		}
 		case pins::PinType::UINT: {
 			uint32_t* uchans = (uint32_t*)buffer;
-			if (size == 1) {
+			if (numCoords == 1) {
 				glUniform1ui(shader->getUniformLocation(pin.name), *uchans);
 			} else {
 				glUniform2ui(shader->getUniformLocation(pin.name), uchans[0], uchans[1]);

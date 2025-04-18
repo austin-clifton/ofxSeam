@@ -156,7 +156,7 @@ namespace seam {
 			ofShader& shader, 
 			nodes::INode* node, 
 			std::vector<char>& pinBuffer,
-			const std::unordered_set<std::string>& blacklist = {}
+			const std::unordered_set<const char*>& blacklist = {}
 		);
 		
  		PinType SerializedPinTypeToPinType(seam::schema::PinValue::Which pinType);

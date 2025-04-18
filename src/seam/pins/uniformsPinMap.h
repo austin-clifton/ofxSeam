@@ -16,7 +16,7 @@ namespace seam::pins {
 
         /// @brief Should be called after uniforms change (when loading / reloading the shader)
         /// @param blacklist Uniform names in the blacklist won't be exposed as pins
-        void UpdatePins(const std::unordered_set<std::string>& blacklist = {});
+        void UpdatePins(const std::unordered_set<const char*>& blacklist = {});
 
         /// @brief Should be called whenever pins change and uniform values should be updated.
         void SetUniforms();

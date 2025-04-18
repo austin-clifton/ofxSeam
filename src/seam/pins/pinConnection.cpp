@@ -114,6 +114,17 @@ namespace seam::pins {
                     args.pinIn->OnValueChanged();
                 };
             }
+            // The pin system can't always infer what type of FBO is expected,
+            // for instance in cases where we create an FBO pin from uniforms.
+            // So, allow any FBO pin type to connect to another FBO pin type.
+            case PinType::FBO_RGBA:
+            case PinType::FBO_RED:
+            case PinType::FBO_RGBA16F:
+            {
+                if (IsFboPin(srcType)) {
+                    return Convert<ofFbo*, ofFbo*>;
+                }
+            }
             default:
                 break;
         }
