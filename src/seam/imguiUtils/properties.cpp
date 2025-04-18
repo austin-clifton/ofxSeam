@@ -33,7 +33,7 @@ namespace seam::props {
 
 	bool DrawShaderPath(std::string_view label, std::string& path) {
 		// refresh button needs a logo
-		bool refresh_requested = ImGui::Button("refresh shader");
+		bool refresh_requested = ImGui::Button("Refresh shader");
 		bool name_changed = DrawTextInput(label, path);
 		return refresh_requested || name_changed;
 	}
