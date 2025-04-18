@@ -26,9 +26,13 @@ namespace {
 }
 
 Editor::~Editor() {
+	std::ofstream fout(CONFIG_FILE_NAME, std::ios::trunc);
+	assert(!fout == false);
+
+	fout << "windowWidth = " << ofGetWidth() << std::endl;
+	fout << "windowHeight = " << ofGetHeight() << std::endl;
+
 	if (!loadedFile.empty()) {
-		std::ofstream fout(CONFIG_FILE_NAME, std::ios::trunc);
-		assert(!fout == false);
 		fout << "lastLoadedFile = " << loadedFile << std::endl;
 		fout.close();
 	}
@@ -49,6 +53,20 @@ void Editor::Setup(ofSoundStreamSettings* soundSettings) {
 		ed::SetCurrentEditor(nodeEditorContext);
 		LoadGraph(filename); 
 		ed::SetCurrentEditor(nullptr);
+	}
+
+	std::string widthStr = iniReader.Get("", "windowWidth", "0");
+	std::string heightStr = iniReader.Get("", "windowHeight", "0");
+	int32_t width, height;
+	try {
+		width = std::stoi(widthStr.c_str());
+		height = std::stoi(heightStr.c_str());
+		if (width > 0 && height > 0) {
+			ofSetWindowShape(width, height);
+			graph.OnWindowResized(width, height);
+		}
+	} catch (std::exception& e) {
+		printf("ERROR: Invalid window width or height, could not restore from previous session");
 	}
 }
 

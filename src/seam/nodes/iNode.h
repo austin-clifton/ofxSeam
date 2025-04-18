@@ -140,7 +140,7 @@ namespace seam::nodes {
 		virtual void OnWindowResized(glm::uvec2 resolution);
 
 		/// @brief Updates a resolution pin when the window is resized, if a resolution pin exists.
-		virtual void UpdateResolutionPin(glm::uvec2 resolution);
+		virtual bool UpdateResolutionPin(glm::uvec2 resolution);
 
 		/// @brief Override to draw a custom GUI in the Node Inspector window using Dear ImGui.
 		/// By default, this function will call GetProperties() and draw a property editor for each returned property.

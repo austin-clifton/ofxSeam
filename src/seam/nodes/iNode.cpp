@@ -240,18 +240,18 @@ void INode::OnWindowResized(glm::uvec2 resolution) {
 			windowFbo.fboSettings.height = expected.y;
 			windowFbo.fbo->allocate(windowFbo.fboSettings);
 
-			UpdateResolutionPin(expected);
-			SetDirty();
-
 			// Refresh pin connections since the fbo changed
 			if (windowFbo.pinOutFbo != nullptr) {
 				windowFbo.pinOutFbo->Reconnect(Seam().pushPatterns);
 			}
 		}
+
+		UpdateResolutionPin(expected);
+		SetDirty();
 	}
 }
 
-void INode::UpdateResolutionPin(glm::uvec2 resolution) {
+bool INode::UpdateResolutionPin(glm::uvec2 resolution) {
 	PinInput* resolutionPin = FindPinInByName(this, "resolution");
 	if (resolutionPin != nullptr) {
 		// Expect resolution to be an ivec2 or uvec2
@@ -263,7 +263,9 @@ void INode::UpdateResolutionPin(glm::uvec2 resolution) {
 		resolutionPin->OnValueChanging();
 		*((glm::uvec2*)buffer) = resolution;
 		resolutionPin->OnValueChanged();
+		return true;
 	}
+	return false;
 }
 
 bool INode::GuiDrawPropertiesList(UpdateParams* params) {
