@@ -437,6 +437,7 @@ void Editor::GuiDraw() {
 		ImGui::PushStyleColor(ImGuiCol_Border, ImVec4(0.5f, 0.5f, 0.5f, 0.5f));
 
 		im::Begin(WINDOW_NAME_NODE_MENU, nullptr, ImGuiWindowFlags_NoCollapse);
+		ImGui::Text("Node: %s", selectedNode->NodeName().data());
 		ImGui::Text("Update: %d", selectedNode->update_order);
 		ImGui::Text("Pins:");
 		bool dirty = props::DrawPinInputs(selectedNode);
