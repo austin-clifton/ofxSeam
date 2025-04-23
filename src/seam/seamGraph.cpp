@@ -539,6 +539,7 @@ bool SeamGraph::Disconnect(PinInput* pinIn, PinOutput* pinOut) {
 }
 
 void SeamGraph::OnWindowResized(int w, int h) {
+	assert(w > 0 && h > 0);
 	for (auto n : nodes) {
 		n->OnWindowResized(glm::ivec2(w, h));
 	}
