@@ -56,20 +56,20 @@ namespace seam::nodes {
 	struct WindowRatioFbo {
 		WindowRatioFbo(
 			ofFbo* _fbo, 
-			glm::vec2 _ratio = glm::vec2(1.0f),
 			pins::PinOutput* _pinOutFbo = nullptr,
+			glm::vec2 _ratio = glm::vec2(1.0f),
 			ofFboSettings _settings = ofFboSettings()
 		) {
 			fbo = _fbo;
-			ratio = _ratio;
 			pinOutFbo = _pinOutFbo;
+			ratio = _ratio;
 			fboSettings = _settings;
 		}
 
 		ofFbo* fbo = nullptr;
+		pins::PinOutput* pinOutFbo;
 		/// @brief Set to (1,1) for window size, (0.5,0.5) for half screen dimensions, etc.
 		glm::vec2 ratio = glm::vec2(1.0f);
-		pins::PinOutput* pinOutFbo;
 		ofFboSettings fboSettings;
 
 		// IMPROVEMENT: multi-window indexing

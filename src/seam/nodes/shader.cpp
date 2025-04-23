@@ -8,7 +8,7 @@ using namespace seam::nodes;
 Shader::Shader() : INode("Shader Material") {
 	flags = (NodeFlags)(flags | NodeFlags::IS_VISUAL);
 
-	windowFbos.push_back(WindowRatioFbo(&fbo, glm::vec2(1.f), &pinOutMaterial));
+	windowFbos.push_back(WindowRatioFbo(&fbo, &pinOutMaterial));
 	gui_display_fbo = &fbo;
 }
 

@@ -21,7 +21,7 @@ Fireflies::Fireflies() : INode("Fireflies"),
 	flags = (NodeFlags)(flags | NodeFlags::UPDATES_OVER_TIME);
 
 	gui_display_fbo = &fbo;
-	windowFbos.push_back(WindowRatioFbo(&fbo, glm::vec2(1.f), &pinOutFbo));
+	windowFbos.push_back(WindowRatioFbo(&fbo, &pinOutFbo));
 }
 
 void Fireflies::Setup(SetupParams* params) {
