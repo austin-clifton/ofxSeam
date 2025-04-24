@@ -1,7 +1,6 @@
-#include "seam/seam-graph.h"
+#include "seam/seamGraph.h"
 #include "seam/hash.h"
 #include "seam/properties/nodeProperty.h"
-#include "seam/pins/pinConnection.h"
 
 using namespace seam;
 using namespace seam::nodes;
@@ -142,6 +141,8 @@ namespace {
 	}
 
 	void DeserializePinInput(const seam::schema::PinIn::Reader& serializedPin, PinInput* pinIn) {
+		pinIn->id = serializedPin.getId();
+		
 		// TODO this probably shouldn't be done by default!
 		// Maybe a pin flag instead, PIN_FLAG_DYNAMIC_NUM_COORDS ?
 		pinIn->SetNumCoords(serializedPin.getNumCoords());
@@ -162,7 +163,9 @@ namespace {
 	}
 
 	PinId UpdatePinMap(PinInput* pinIn, std::map<PinId, INode*>& pinMap) {
-		pinMap.emplace(pinIn->id, pinIn->node);
+		auto emplaced = pinMap.emplace(pinIn->id, pinIn->node);
+		// IDs are expected to be unique
+		assert(emplaced.second);
 		size_t maxId = pinIn->id;
 
 		size_t childrenSize;
@@ -175,7 +178,9 @@ namespace {
 	}
 
 	PinId UpdatePinMap(PinOutput* pinOut, std::map<PinId, INode*>& pinMap) {
-		pinMap.emplace(pinOut->id, pinOut->node);
+		auto emplaced = pinMap.emplace(pinOut->id, pinOut->node);
+		// IDs are expected to be unique
+		assert(emplaced.second);
 		size_t maxId = pinOut->id;
 
 		size_t childrenSize;
@@ -209,6 +214,7 @@ SeamGraph::SeamGraph() {
 }
 
 SeamGraph::~SeamGraph() {
+	destructing = true;
     NewGraph();
 }
 
@@ -225,13 +231,11 @@ void SeamGraph::Draw() {
 void SeamGraph::UpdateVisibleNodeGraph(INode* n, UpdateParams* params) {
     // Traverse parents and update them before traversing this node.
     // Parents are sorted by update order, so that any "shared parents" are updated first
-    int16_t last_update_order = -1;
     static std::vector<INode*> in_use_parents;
     n->InUseParents(in_use_parents);
 
     for (auto p : in_use_parents) {
-        // assert(last_update_order <= p->update_order);
-        last_update_order = p->update_order;
+        assert(p->update_order < n->update_order);
         UpdateVisibleNodeGraph(p, params);
     }
 
@@ -279,23 +283,64 @@ void SeamGraph::Update() {
     }
 }
 
+void SeamGraph::LockAudio() {
+	// Tell the audio thread to stop processing,
+	// and then wait for it to confirm it's bailed out.
+	audioLock.store(true);
+	while (processingAudio.load()) {
+		std::this_thread::yield();
+	}
+}
+
 void SeamGraph::ProcessAudio(ofSoundBuffer& buffer) {
+	// The audio thread checks if audio nodes need to be cleared and will clear them,
+	// so that the main thread doesn't have to synchronize when deleting audio nodes.
+	if (clearAudioNodes.load()) {
+		audioNodes.clear();
+		clearAudioNodes.store(false);
+	}
+
+	processingAudio.store(true);
+
+	if (audioLock.load()) {
+		processingAudio.store(false);
+		return;
+	}
+
     for (auto n : audioNodes) {
         n->ProcessAudio(buffer);
     }
+
+	processingAudio.store(false);
 }
 
 void SeamGraph::NewGraph() {
-    for (size_t i = 0; i < nodes.size(); i++) {
-        delete nodes[i];
-    }
+	LockAudio();
+	if (!destructing) {
+		clearAudioNodes.store(true);
+	} else {
+		audioNodes.clear();
+	}
 
-    nodes.clear();
+	// Clear all the various lists that keep track of nodes.
     nodesToDraw.clear();
     visibleNodes.clear();
     nodesUpdateOverTime.clear();
     nodesUpdateEveryFrame.clear();
-    audioNodes.clear();
+
+#if BUILD_AUDIO_ANALYSIS
+	while (!destructing && clearAudioNodes.load() == true) {
+		std::this_thread::yield();
+	}
+#endif
+
+	// Finally, actually delete the nodes themselves so the list of all nodes can be cleared.
+    for (size_t i = 0; i < nodes.size(); i++) {
+        delete nodes[i];
+    }
+    nodes.clear();
+
+	audioLock.store(false);
 
     IdsDistributor::GetInstance().ResetIds();
 }
@@ -303,6 +348,9 @@ void SeamGraph::NewGraph() {
 INode* SeamGraph::CreateAndAdd(seam::nodes::NodeId node_id) {
 	INode* node = factory.Create(node_id);
 	if (node != nullptr) {
+		node->seamState.pushPatterns = &pushPatterns;
+		node->seamState.texLocResolver = &texLocResolver;
+
 		node->OnWindowResized(glm::ivec2(ofGetWidth(), ofGetHeight()));
 		node->Setup(&setupParams);
 
@@ -324,7 +372,11 @@ INode* SeamGraph::CreateAndAdd(seam::nodes::NodeId node_id) {
 		// Does this Node process audio?
 		IAudioNode* audioNode = dynamic_cast<IAudioNode*>(node);
 		if (audioNode != nullptr) {
+			LockAudio();
+			// TODO this needs some kind of guard against the audio thread,
+			// but a mutex can't be used since it's the audio thread...
 			audioNodes.push_back(audioNode);
+			audioLock.store(false);
 		}
 	}
 
@@ -364,7 +416,9 @@ void SeamGraph::DeleteNode(INode* node) {
     
     IAudioNode* audioNode = dynamic_cast<IAudioNode*>(node);
     if (audioNode != nullptr) {
+		LockAudio();
         Erase(audioNodes, audioNode);
+		audioLock.store(false);
     }
 
     // Finally, delete the Node.
@@ -392,8 +446,8 @@ bool SeamGraph::Connect(PinInput* pinIn, PinOutput* pinOut) {
 	connectedArgs.pinOut = pinOut;
 	connectedArgs.pushPatterns = &pushPatterns;
 
-	parent->OnPinConnected(connectedArgs);
-	child->OnPinConnected(connectedArgs);
+	pinOut->OnConnected(connectedArgs);
+	pinIn->OnConnected(connectedArgs);
 
 	// give the input pin the default push pattern
 	pinIn->push_id = pushPatterns.Default().id;
@@ -433,9 +487,14 @@ bool SeamGraph::Disconnect(PinInput* pinIn, PinOutput* pinOut) {
 	}
 	assert(i < pinOut->connections.size());
 	pinOut->connections.erase(pinOut->connections.begin() + i);
+	 
+	PinConnectedArgs args;
+	args.pinIn = pinIn;
+	args.pinOut = pinOut;
+	args.pushPatterns = &pushPatterns;
 
-	parent->OnPinDisconnected(pinIn, pinOut);
-	child->OnPinDisconnected(pinIn, pinOut);
+	pinIn->OnDisconnected(args);
+	pinOut->OnDisconnected(args);
 
 	// Null out disconnected FBO pin pointers; this will need to be done for other pointer types!
 	// This is probably a temporary solution.
@@ -480,6 +539,7 @@ bool SeamGraph::Disconnect(PinInput* pinIn, PinOutput* pinOut) {
 }
 
 void SeamGraph::OnWindowResized(int w, int h) {
+	assert(w > 0 && h > 0);
 	for (auto n : nodes) {
 		n->OnWindowResized(glm::ivec2(w, h));
 	}
@@ -643,7 +703,9 @@ bool SeamGraph::SaveGraph(const std::string_view filename, const std::vector<INo
     }
 
     // TODO get a name from elsewhere
-    serialized_graph.setName(filename.data());
+    serialized_graph.setName(filename.data()); 
+	serialized_graph.setMaxNodeId(IdsDistributor::GetInstance().NextNodeId());
+	serialized_graph.setMaxPinId(IdsDistributor::GetInstance().NextPinId());
 
     PrintGraph(serialized_graph.asReader());
 
@@ -669,6 +731,14 @@ bool SeamGraph::LoadGraph(const std::string_view filename, std::vector<SeamGraph
 
 	PrintGraph(node_graph);
 	NewGraph();
+	
+	// Make sure the IdsDistributor knows where to start assigning IDs from.
+	// Note we set the max node/pin ID BEFORE deserializing, so that
+	// any new pins since the last load (for instance from shader uniforms)
+	// get new pin IDs based on the last maximum.
+	IdsDistributor::GetInstance().ResetIds();
+	IdsDistributor::GetInstance().SetNextNodeId(node_graph.getMaxNodeId());
+	IdsDistributor::GetInstance().SetNextPinId(node_graph.getMaxPinId());
 
 	// Keep a pin id to node map so pins can be looked up for connecting shortly.
 	// Pins have to be looked up through the Node each time we want them,
@@ -676,15 +746,10 @@ bool SeamGraph::LoadGraph(const std::string_view filename, std::vector<SeamGraph
 	std::map<PinId, INode*> inputPinMap;
 	std::map<PinId, INode*> outputPinMap;
 
-	// Remember max pin and node IDs.
-	PinId maxPinId = 0;
-	NodeId maxNodeId = 0;
-
 	// First deserialize nodes and pins
 	for (const auto& serialized_node : node_graph.getNodes()) {
 		auto node = CreateAndAdd(serialized_node.getNodeName().cStr());
 		node->id = serialized_node.getId();
-		maxNodeId = std::max(node->id, maxNodeId);
 		node->instance_name = serialized_node.getDisplayName();
 
 		auto position = ImVec2(serialized_node.getPosition().getX(), serialized_node.getPosition().getY());
@@ -778,7 +843,7 @@ bool SeamGraph::LoadGraph(const std::string_view filename, std::vector<SeamGraph
 				}
 				
 				DeserializePinInput(serialized_pin_in, match);
-				maxPinId = std::max(maxPinId, UpdatePinMap(match, inputPinMap));
+				UpdatePinMap(match, inputPinMap);
 
 			} else if (dynamicPinsNode != nullptr) {
 				PinType pinType = (PinType)serialized_pin_in.getType();
@@ -791,7 +856,8 @@ bool SeamGraph::LoadGraph(const std::string_view filename, std::vector<SeamGraph
 					printf("Dynamic Pins Node %s refused to add an input pin named %s\n",
 						node->NodeName().data(), serialized_pin_name.c_str());
 				} else {
-					maxPinId = std::max(maxPinId, UpdatePinMap(added, inputPinMap));
+					DeserializePinInput(serialized_pin_in, added);
+					UpdatePinMap(added, inputPinMap);
 
 					// Refresh the input pins list!
 					input_pins = node->PinInputs(inputs_size);
@@ -805,8 +871,6 @@ bool SeamGraph::LoadGraph(const std::string_view filename, std::vector<SeamGraph
 			inputIndex += 1;
 		}
 
-
-
 		// Deserialize outputs
 		size_t outputs_size;
 		auto output_pins = node->PinOutputs(outputs_size);
@@ -818,7 +882,7 @@ bool SeamGraph::LoadGraph(const std::string_view filename, std::vector<SeamGraph
 
 			if (match != nullptr) {
 				DeserializePinOutput(serialized_pin_out, match);
-				maxPinId = std::max(maxPinId, UpdatePinMap(match, outputPinMap));
+				UpdatePinMap(match, outputPinMap);
 
 			} else if (dynamicPinsNode != nullptr) {
 				PinType pinType = (PinType)serialized_pin_out.getType();
@@ -828,11 +892,14 @@ bool SeamGraph::LoadGraph(const std::string_view filename, std::vector<SeamGraph
 				DeserializePinOutput(serialized_pin_out, &pinOut);
 
 				PinOutput* added = dynamicPinsNode->AddPinOut(std::move(pinOut), 0);
+
 				if (added == nullptr) {
 					printf("Dynamic Pins Node %s refused to add an output pin named %s\n",
 						node->NodeName().data(), serialized_pin_out.getName().cStr());
 				} else {
-					maxPinId = std::max(maxPinId, UpdatePinMap(added, outputPinMap));
+					assert(added->id == serialized_pin_out.getId());
+
+					UpdatePinMap(added, outputPinMap);
 
 					// Refresh the output pins list
 					output_pins = node->PinOutputs(outputs_size);
@@ -870,10 +937,8 @@ bool SeamGraph::LoadGraph(const std::string_view filename, std::vector<SeamGraph
 
 	ed::NavigateToContent();
 
-	// Make sure the IdsDistributor knows where to start assigning IDs from.
-	IdsDistributor::GetInstance().ResetIds();
-	IdsDistributor::GetInstance().SetNextNodeId(maxNodeId + 1);
-	IdsDistributor::GetInstance().SetNextPinId(maxPinId + 1);
-
+	// Ensure that window-size related pins use the current resolution instead of the file's resolution.
+	OnWindowResized(ofGetWidth(), ofGetHeight());
+	
     return true;
 }

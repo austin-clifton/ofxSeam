@@ -1,18 +1,18 @@
-#include "editor.h"
+#include <io.h>
+#include <fcntl.h>
+
 #include "ofxImGui.h"
 #include "imgui_node_editor.h"
 #include "blueprints/builders.h"
-
-#include <io.h>
-#include <fcntl.h>
+#include "nfd.h"
 
 #include "capnp/message.h"
 #include "capnp/serialize-packed.h"
 #include "seam/schema/codegen/node-graph.capnp.h"
 
-#include "hash.h"
-#include "imgui-utils/properties.h"
-#include "nfd.h"
+#include "seam/editor.h"
+#include "seam/hash.h"
+#include "seam/imguiUtils/properties.h"
 
 using namespace seam;
 namespace im = ImGui;
@@ -22,13 +22,18 @@ const char* Editor::CONFIG_FILE_NAME = "seamConfig.ini";
 
 namespace {
 	const char* POPUP_NAME_NEW_NODE = "Create New Node";
+	const char* POPUP_NAME_WINDOW_RESIZE = "Resize Windows";
 	const char* WINDOW_NAME_NODE_MENU = "Node Properties Menu";
 }
 
 Editor::~Editor() {
+	std::ofstream fout(CONFIG_FILE_NAME, std::ios::trunc);
+	assert(!fout == false);
+
+	fout << "windowWidth = " << ofGetWidth() << std::endl;
+	fout << "windowHeight = " << ofGetHeight() << std::endl;
+
 	if (!loadedFile.empty()) {
-		std::ofstream fout(CONFIG_FILE_NAME, std::ios::trunc);
-		assert(!fout == false);
 		fout << "lastLoadedFile = " << loadedFile << std::endl;
 		fout.close();
 	}
@@ -49,6 +54,19 @@ void Editor::Setup(ofSoundStreamSettings* soundSettings) {
 		ed::SetCurrentEditor(nodeEditorContext);
 		LoadGraph(filename); 
 		ed::SetCurrentEditor(nullptr);
+	}
+
+	std::string widthStr = iniReader.Get("", "windowWidth", "0");
+	std::string heightStr = iniReader.Get("", "windowHeight", "0");
+	int32_t width, height;
+	try {
+		width = std::stoi(widthStr.c_str());
+		height = std::stoi(heightStr.c_str());
+		if (width > 0 && height > 0) {
+			ResizeWindow(width, height);
+		}
+	} catch (std::exception& e) {
+		printf("ERROR: Invalid window width or height, could not restore from previous session");
 	}
 }
 
@@ -72,14 +90,24 @@ void Editor::ProcessAudio(ofSoundBuffer& buffer) {
 	graph.ProcessAudio(buffer);
 }
 
+void Editor::ResizeWindow(int32_t width, int32_t height) {
+	ofSetWindowShape(width, height);
+	graph.OnWindowResized(width, height);
+}
+
 void Editor::GuiDrawPopups() {
 	const ImVec2 open_popup_position = ImGui::GetMousePos();
 
 	ed::Suspend();
 
+	if (showWindowResize) {
+		showWindowResize = false;
+		ImGui::OpenPopup(POPUP_NAME_WINDOW_RESIZE);
+	}
+
 	ed::NodeId node_id;
 	if (ed::ShowBackgroundContextMenu()) {
-		show_create_dialog = true;
+		showCreateDialog = true;
 		ImGui::OpenPopup(POPUP_NAME_NEW_NODE);
 	} else if (ed::ShowNodeContextMenu(&node_id)) {
 		// TODO this is a right click on the node, not left click
@@ -87,20 +115,37 @@ void Editor::GuiDrawPopups() {
 	// TODO there are more contextual menus, see blueprints-example.cpp line 1545
 
 	if (ImGui::BeginPopup(POPUP_NAME_NEW_NODE)) {
-		// TODO specify an input or output type here if new_link_pin != nullptr
+		// TODO specify an input or output type here if newLinkPin != nullptr
 		NodeId new_node_id = graph.GetFactory()->DrawCreatePopup();
 		if (new_node_id != 0) {
-			show_create_dialog = false;
+			showCreateDialog = false;
 			INode* node = graph.CreateAndAdd(new_node_id);
 			ed::SetNodePosition((ed::NodeId)node, open_popup_position);
 
-			// TODO handle new_link_pin
-			new_link_pin = nullptr;
+			// TODO handle newLinkPin
+			newLinkPin = nullptr;
 		}
 
 		ImGui::EndPopup();
 	} else {
-		show_create_dialog = false;
+		showCreateDialog = false;
+	}
+
+	ImGui::SetNextWindowSize(ImVec2(250, 250));
+	if (ImGui::BeginPopup(POPUP_NAME_WINDOW_RESIZE)) {
+		ImGui::InputInt("Width", &windowSize.x);
+		ImGui::SetItemDefaultFocus();
+		ImGui::InputInt("Height", &windowSize.y);
+		windowSize.x = std::max(800, windowSize.x);
+		windowSize.y = std::max(600, windowSize.y);
+		if (ImGui::Button("Resize") || ImGui::IsKeyDown(ImGuiKey_Enter)) {
+			ResizeWindow(windowSize.x, windowSize.y);
+			ImGui::CloseCurrentPopup();
+		}
+
+		ImGui::EndPopup();
+	} else {
+		showWindowResize = false;
 	}
 
 	ed::Resume();
@@ -112,10 +157,11 @@ void Editor::NewGraph() {
 	links.clear();
 	loadedFile.clear();
 
-	selected_node = nullptr;
+	selectedNode = nullptr;
 	lastSelectedVisualNode = nullptr;
-	new_link_pin = nullptr;
-	show_create_dialog = false;
+	newLinkPin = nullptr;
+	showCreateDialog = false;
+	showWindowResize = false;
 
 	ed::ClearSelection();
 }
@@ -179,18 +225,19 @@ void Editor::GuiDraw() {
 
 
 			}
-			/*
-			if (ImGui::MenuItem("Save Selected")) {
-				ImGui::BeginPopup
-			}
-			*/
 			if (ImGui::MenuItem("New")) {
 				NewGraph();
 			}
 			ImGui::EndMenu();
 		}
-
-
+		
+		if (ImGui::BeginMenu("Window")) {
+			if (ImGui::MenuItem("Resize Window")) {
+				showWindowResize = true;
+				windowSize = glm::ivec2(ofGetWidth(), ofGetHeight());
+			}
+			ImGui::EndMenu();
+		}
 		ImGui::EndMenuBar();
 	}
 
@@ -216,21 +263,21 @@ void Editor::GuiDraw() {
 
 	// query if node(s) have been selected with left click
 	// the last selected node should be shown in the properties editor
-	std::vector<ed::NodeId> selected_nodes;
-	selected_nodes.resize(ed::GetSelectedObjectCount());
-	int nodes_count = ed::GetSelectedNodes(selected_nodes.data(), static_cast<int>(selected_nodes.size()));
+	std::vector<ed::NodeId> selectedNodes;
+	selectedNodes.resize(ed::GetSelectedObjectCount());
+	int nodes_count = ed::GetSelectedNodes(selectedNodes.data(), static_cast<int>(selectedNodes.size()));
 	if (nodes_count) {
 		// the last selected node is the one we'll show in the properties editor
-		selected_node = selected_nodes.back().AsPointer<INode>();
-		if (selected_node->IsVisual()) {
-			lastSelectedVisualNode = selected_node;
+		selectedNode = selectedNodes.back().AsPointer<INode>();
+		if (selectedNode->IsVisual()) {
+			lastSelectedVisualNode = selectedNode;
 		}
 	} else {
-		selected_node = nullptr;
+		selectedNode = nullptr;
 	}
 
 	// if the create dialog isn't up, handle node graph interactions
-	if (!show_create_dialog) {
+	if (!showCreateDialog) {
 		// are we trying to create a new pin or node connection? if so, visualize it
 		if (ed::BeginCreate(ImColor(255, 255, 255), 2.0f)) {
 			auto showLabel = [](const char* label, ImColor color) {
@@ -301,19 +348,19 @@ void Editor::GuiDraw() {
 				// figure out if it's an input or output pin
 				PinInput* pin_in = dynamic_cast<PinInput*>(pin_id.AsPointer<PinInput>());
 				if (pin_in != nullptr) {
-					new_link_pin = pin_in;
+					newLinkPin = pin_in;
 				} else {
 					PinOutput* pin_out = dynamic_cast<PinOutput*>(pin_id.AsPointer<PinOutput>());
 					assert(pin_out != nullptr);
-					new_link_pin = pin_out;
+					newLinkPin = pin_out;
 				}
 				
-				if (new_link_pin) {
+				if (newLinkPin) {
 					showLabel("+ Create Node", ImColor(32, 45, 32, 180));
 				}
 
 				if (ed::AcceptNewItem()) {
-					show_create_dialog = true;
+					showCreateDialog = true;
 					// I don't understand why the example does this
 					// newNodeLinkPin = FindPin(pin_id);
 					// newLinkPin = nullptr;
@@ -323,7 +370,7 @@ void Editor::GuiDraw() {
 				}
 			}
 		} else {
-			new_link_pin = nullptr;
+			newLinkPin = nullptr;
 		}
 
 		ed::EndCreate();
@@ -363,8 +410,8 @@ void Editor::GuiDraw() {
 					graph.DeleteNode(node);
 					
 					// If this node is the selected node, unselect.
-					if (selected_node == node) {
-						selected_node = nullptr;
+					if (selectedNode == node) {
+						selectedNode = nullptr;
 					}
 
 					if (lastSelectedVisualNode == node) {
@@ -384,20 +431,21 @@ void Editor::GuiDraw() {
 
 	im::End();
 
-	if (selected_node) {
+	if (selectedNode) {
 		ImGui::PushStyleVar(ImGuiStyleVar_ChildBorderSize, 2.f);
 		ImGui::PushStyleVar(ImGuiStyleVar_ChildRounding, 4.f);
 		ImGui::PushStyleColor(ImGuiCol_Border, ImVec4(0.5f, 0.5f, 0.5f, 0.5f));
 
 		im::Begin(WINDOW_NAME_NODE_MENU, nullptr, ImGuiWindowFlags_NoCollapse);
-		ImGui::Text("Update: %d", selected_node->update_order);
+		ImGui::Text("Node: %s", selectedNode->NodeName().data());
+		ImGui::Text("Update: %d", selectedNode->update_order);
 		ImGui::Text("Pins:");
-		bool dirty = props::DrawPinInputs(selected_node);
+		bool dirty = props::DrawPinInputs(selectedNode);
 		ImGui::Text("Properties:");
 
-		dirty = selected_node->GuiDrawPropertiesList(graph.GetUpdateParams()) || dirty;
+		dirty = selectedNode->GuiDrawPropertiesList(graph.GetUpdateParams()) || dirty;
 		if (dirty) {
-			selected_node->SetDirty();
+			selectedNode->SetDirty();
 		}
 
 		im::End();

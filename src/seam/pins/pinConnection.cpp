@@ -2,9 +2,9 @@
 #include "doctest.h"
 #endif
  
-#include "pinConnection.h"
-#include "pinInput.h"
-#include "pin.h"
+#include "seam/pins/pinConnection.h"
+#include "seam/pins/pinInput.h"
+#include "seam/pins/pin.h"
 
 namespace {
     template <typename SrcT, typename DstT>
@@ -111,8 +111,19 @@ namespace seam::pins {
                 }
             case PinType::FLOW: {
                 return [](ConvertSingleArgs args) {
-                    args.pinIn->Callback();
+                    args.pinIn->OnValueChanged();
                 };
+            }
+            // The pin system can't always infer what type of FBO is expected,
+            // for instance in cases where we create an FBO pin from uniforms.
+            // So, allow any FBO pin type to connect to another FBO pin type.
+            case PinType::FBO_RGBA:
+            case PinType::FBO_RED:
+            case PinType::FBO_RGBA16F:
+            {
+                if (IsFboPin(srcType)) {
+                    return Convert<ofFbo*, ofFbo*>;
+                }
             }
             default:
                 break;

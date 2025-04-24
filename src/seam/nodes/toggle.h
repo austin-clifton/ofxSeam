@@ -1,6 +1,6 @@
 #pragma once
 
-#include "seam/nodes/iNode.h"
+#include "seam/include.h"
 #include "seam/pins/pin.h"
 
 using namespace seam::pins;
@@ -11,6 +11,8 @@ namespace seam::nodes {
 	class Toggle : public INode {
 	public:
 		Toggle();
+
+		void Setup(SetupParams* params) override;
         
 		PinInput* PinInputs(size_t& size) override;
 

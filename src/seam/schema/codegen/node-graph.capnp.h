@@ -153,7 +153,7 @@ struct NodeGraph {
   class Pipeline;
 
   struct _capnpPrivate {
-    CAPNP_DECLARE_STRUCT_HEADER(ecd07e563d6e33f1, 0, 3)
+    CAPNP_DECLARE_STRUCT_HEADER(ecd07e563d6e33f1, 2, 3)
     #if !CAPNP_LITE
     static constexpr ::capnp::_::RawBrandedSchema const* brand() { return &schema->defaultBrand; }
     #endif  // !CAPNP_LITE
@@ -913,6 +913,10 @@ public:
   inline bool hasName() const;
   inline  ::capnp::Text::Reader getName() const;
 
+  inline  ::uint64_t getMaxNodeId() const;
+
+  inline  ::uint64_t getMaxPinId() const;
+
 private:
   ::capnp::_::StructReader _reader;
   template <typename, ::capnp::Kind>
@@ -961,6 +965,12 @@ public:
   inline  ::capnp::Text::Builder initName(unsigned int size);
   inline void adoptName(::capnp::Orphan< ::capnp::Text>&& value);
   inline ::capnp::Orphan< ::capnp::Text> disownName();
+
+  inline  ::uint64_t getMaxNodeId();
+  inline void setMaxNodeId( ::uint64_t value);
+
+  inline  ::uint64_t getMaxPinId();
+  inline void setMaxPinId( ::uint64_t value);
 
 private:
   ::capnp::_::StructBuilder _builder;
@@ -1858,6 +1868,34 @@ inline void NodeGraph::Builder::adoptName(
 inline ::capnp::Orphan< ::capnp::Text> NodeGraph::Builder::disownName() {
   return ::capnp::_::PointerHelpers< ::capnp::Text>::disown(_builder.getPointerField(
       ::capnp::bounded<2>() * ::capnp::POINTERS));
+}
+
+inline  ::uint64_t NodeGraph::Reader::getMaxNodeId() const {
+  return _reader.getDataField< ::uint64_t>(
+      ::capnp::bounded<0>() * ::capnp::ELEMENTS);
+}
+
+inline  ::uint64_t NodeGraph::Builder::getMaxNodeId() {
+  return _builder.getDataField< ::uint64_t>(
+      ::capnp::bounded<0>() * ::capnp::ELEMENTS);
+}
+inline void NodeGraph::Builder::setMaxNodeId( ::uint64_t value) {
+  _builder.setDataField< ::uint64_t>(
+      ::capnp::bounded<0>() * ::capnp::ELEMENTS, value);
+}
+
+inline  ::uint64_t NodeGraph::Reader::getMaxPinId() const {
+  return _reader.getDataField< ::uint64_t>(
+      ::capnp::bounded<1>() * ::capnp::ELEMENTS);
+}
+
+inline  ::uint64_t NodeGraph::Builder::getMaxPinId() {
+  return _builder.getDataField< ::uint64_t>(
+      ::capnp::bounded<1>() * ::capnp::ELEMENTS);
+}
+inline void NodeGraph::Builder::setMaxPinId( ::uint64_t value) {
+  _builder.setDataField< ::uint64_t>(
+      ::capnp::bounded<1>() * ::capnp::ELEMENTS, value);
 }
 
 }  // namespace

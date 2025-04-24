@@ -1,15 +1,19 @@
-#include "gate.h"
+#include "seam/nodes/gate.h"
+#include "seam/pins/pin.h"
 
 using namespace seam;
 using namespace seam::nodes;
 
 Gate::Gate() : INode("Gate") {
-	pinInputs.push_back(SetupInputPin(PinType::INT, this, &selectedGate, 1, "Selected Gate"));
-	UpdateGatesCount(2);
 }
 
 Gate::~Gate() {
 
+}
+
+void Gate::Setup(SetupParams* params) {
+	pinInputs.push_back(SetupInputPin(PinType::INT, this, &selectedGate, 1, "Selected Gate"));
+	UpdateGatesCount(2);
 }
 
 void Gate::Update(UpdateParams* params) {

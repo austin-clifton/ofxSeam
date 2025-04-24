@@ -1,8 +1,7 @@
 #pragma once
 
-#include "iNode.h"
-
-#include "../pins/pin.h"
+#include "seam/include.h"
+#include "seam/pins/pin.h"
 
 using namespace seam::pins;
 
@@ -17,8 +16,6 @@ namespace seam::nodes {
 		PinInput* PinInputs(size_t& size) override;
 
 		PinOutput* PinOutputs(size_t& size) override;
-
-		void OnPinConnected(PinConnectedArgs args) override;
 
 	private:
 		const static char* inputValuePinName;

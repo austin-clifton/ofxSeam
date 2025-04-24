@@ -1,6 +1,6 @@
 #pragma once
 
-#include "iNode.h"
+#include "seam/include.h"
 
 #include "seam/pins/pin.h"
 #include "seam/properties/nodeProperty.h"
@@ -20,9 +20,9 @@ namespace seam::nodes {
 
 		PinOutput* PinOutputs(size_t& size) override;
 
-        void OnPinConnected(PinConnectedArgs args) override;
+        // void OnPinConnected(PinConnectedArgs args) override;
 
-		void OnPinDisconnected(pins::PinInput* pinIn, pins::PinOutput* pinOut) override;
+		// void OnPinDisconnected(pins::PinInput* pinIn, pins::PinOutput* pinOut) override;
 
 		bool GuiDrawPropertiesList(UpdateParams* params) override;
 

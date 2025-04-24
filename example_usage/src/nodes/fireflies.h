@@ -1,6 +1,6 @@
 #pragma once
 
-#include "seam/nodes/iNode.h"
+#include "seam/include.h"
 
 #include "seam/pins/pin.h"
 #include "seam/containers/octree.h"
@@ -25,8 +25,6 @@ namespace seam::nodes {
 		PinInput* PinInputs(size_t& size) override;
 
 		PinOutput* PinOutputs(size_t& size) override;
-
-        void OnPinConnected(PinConnectedArgs args) override;
 
 		bool GuiDrawPropertiesList(UpdateParams* params) override;
 
@@ -148,6 +146,6 @@ namespace seam::nodes {
 			pins::SetupInputPin(PinType::UINT, this, &resolution, 1, "Resolution", PinInOptions::WithCoords(2)),
 		};
 		
-		PinOutput pin_out_texture = pins::SetupOutputPin(this, pins::PinType::FBO_RGBA, "texture");
+		PinOutput pinOutFbo = pins::SetupOutputStaticFboPin(this, &fbo, pins::PinType::FBO_RGBA, "texture");
 	};
 }

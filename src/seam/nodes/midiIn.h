@@ -4,8 +4,8 @@
 // https://github.com/danomatika/ofxMidi
 #include "ofxMidi.h"
 
-#include "iNode.h"
-#include "../ring-buffer.h"
+#include "seam/include.h"
+#include "seam/containers/ringBuffer.h"
 
 using namespace seam::pins;
 
@@ -14,6 +14,8 @@ namespace seam::nodes {
 	public:
 		MidiIn();
 		~MidiIn();
+
+		void Setup(SetupParams* params) override;
 
 		void Update(UpdateParams* params) override;
 

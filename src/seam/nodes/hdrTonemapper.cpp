@@ -1,13 +1,11 @@
 #include "seam/nodes/hdrTonemapper.h"
-#include "seam/shader-utils.h"
+#include "seam/shaderUtils.h"
 
 using namespace seam::nodes;
 
 HdrTonemapper::HdrTonemapper() : INode("HDR Tone Mapper") {
     flags = (NodeFlags)(flags | NodeFlags::IS_VISUAL);
 	gui_display_fbo = &tonemappedFbo;
-
-    windowFbos.push_back(WindowRatioFbo(&tonemappedFbo));
 }
 
 void HdrTonemapper::Setup(SetupParams* params) {
@@ -27,6 +25,7 @@ void HdrTonemapper::Draw(DrawParams* params) {
     // The brightness pass writes to the first FBO in the bloomFbos array.
     bloomFbos[0].begin();
     brightPassShader.begin();
+
     bloomFbos[0].clearColorBuffer(0.f);
     bloomFbos[0].draw(0,0);
     brightPassShader.end();
@@ -92,13 +91,6 @@ PinOutput* HdrTonemapper::PinOutputs(size_t& size) {
     return &pinOutFbo;
 }
 
-void HdrTonemapper::OnPinConnected(PinConnectedArgs args) {
-    if (args.pinOut->id == pinOutFbo.id) {
-        ofFbo* fbos = { &tonemappedFbo };
-        args.pushPatterns->Push(pinOutFbo, &fbos, 1);
-    }
-}
-
 bool HdrTonemapper::GuiDrawPropertiesList(UpdateParams* params) {
     bool changed = false;
     if (ImGui::Button("Reload Shaders")) {
@@ -121,7 +113,7 @@ bool HdrTonemapper::ReloadShaders() {
     // Shaders were reloaded, update resolution params
     bool allLoaded = brightPassLoaded && tonemapLoaded && blurLoaded;
     if (allLoaded) {
-        OnResolutionChanged();
+        RebindTexture();
     }
 
     return allLoaded;
@@ -129,33 +121,35 @@ bool HdrTonemapper::ReloadShaders() {
 
 void HdrTonemapper::RebindTexture() {
 	if (hdrFbo != nullptr) {
+        // Resolution is set via the input FBO
+        resolution = glm::vec2(hdrFbo->getWidth(), hdrFbo->getHeight());
+
+        // Output resolution should match input resolution
+        Seam().texLocResolver->ReleaseAll(&tonemappedFbo.getTexture());
+        tonemappedFbo.clear();
+        tonemappedFbo.allocate(resolution.x, resolution.y, GL_RGBA);
+
+        SetupBloomTextures();
+
+        uint32_t texLoc = Seam().texLocResolver->Bind(&hdrFbo->getTexture());
+
+        // The brightness shader writes to the first downscaled FBO for bloom blur,
+        // so make sure the right resolution is used!
+        glm::ivec2 dsRes = DownscaledRes();
+
         brightPassShader.begin();
-		brightPassShader.setUniformTexture("hdrBuffer", hdrFbo->getTexture(), 1);
+		brightPassShader.setUniformTexture("hdrBuffer", hdrFbo->getTexture(), texLoc);
+        brightPassShader.setUniform2i("resolution", dsRes.x, dsRes.y);
         brightPassShader.end();
 
 		tonemapShader.begin();
-		tonemapShader.setUniformTexture("hdrBuffer", hdrFbo->getTexture(), 1);
+		tonemapShader.setUniformTexture("hdrBuffer", hdrFbo->getTexture(), texLoc);
+        tonemapShader.setUniform2i("resolution", resolution.x, resolution.y);
 		tonemapShader.end();
+
+        // Tonemapped FBO changed, force reconnect
+        pinOutFbo.Reconnect(Seam().pushPatterns);
 	}
-}
-
-void HdrTonemapper::OnResolutionChanged() {
-    tonemapShader.begin();
-    tonemapShader.setUniform2i("resolution", resolution.x, resolution.y);
-    tonemapShader.end();
-
-    // The brightness shader writes to the first downscaled FBO for bloom blur,
-    // so make sure the right resolution is used!
-    glm::ivec2 dsRes = DownscaledRes();
-
-    brightPassShader.begin();
-    brightPassShader.setUniform2i("resolution", dsRes.x, dsRes.y);
-    brightPassShader.end();
-}
-
-void HdrTonemapper::OnWindowResized(glm::uvec2 res) {
-    INode::OnWindowResized(res);
-    SetupBloomTextures();
 }
 
 void HdrTonemapper::SetupBloomTextures() {
@@ -177,6 +171,8 @@ void HdrTonemapper::SetupBloomTextures() {
     }
 
     for (size_t i = 0; i < bloomDownScales; i++) {
+        Seam().texLocResolver->ReleaseAll(&bloomFbos[i].getTexture());
+
         bloomFbos[i].clear();
         bloomFbosBack[i].clear();
 
@@ -194,13 +190,11 @@ void HdrTonemapper::RebindBloomTextures() {
 
     std::string uniformName = "blurTexN";
     for (size_t i = 0; i < bloomDownScales; i++) {
+        // Set the last char of the uniformName (N) to the actual index using offset from char '0'
         uniformName[uniformName.size() - 1] = '0' + i;
 
-        GLenum err = glGetError();
-
-        tonemapShader.setUniformTexture(uniformName, bloomFbos[i].getTexture(0), i + 2);
-
-        err = glGetError();
+        uint32_t texLoc = Seam().texLocResolver->Bind(&bloomFbos[i].getTexture(0));
+        tonemapShader.setUniformTexture(uniformName, bloomFbos[i].getTexture(0), texLoc);
     }
      
     tonemapShader.end();

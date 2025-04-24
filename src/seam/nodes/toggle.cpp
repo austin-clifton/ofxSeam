@@ -4,6 +4,9 @@ using namespace seam::nodes;
 using namespace seam::pins;
 
 Toggle::Toggle() : INode("Toggle") {
+}
+
+void Toggle::Setup(SetupParams* params) {
     ReconfigureInputs(2);
 }
 

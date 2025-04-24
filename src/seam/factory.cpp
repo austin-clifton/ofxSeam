@@ -1,29 +1,30 @@
-#include "factory.h"
-#include "hash.h"
+#include "seam/factory.h"
+#include "seam/hash.h"
 
-#include "seam/nodes/add-store.h"
+#include "seam/nodes/addStore.h"
 #include "seam/nodes/audioAnalyzer.h"
 #include "seam/nodes/channelMap.h"
-#include "seam/nodes/compute-particles.h"
+#include "seam/nodes/computeParticles.h"
 #include "seam/nodes/cos.h"
 #include "seam/nodes/fastNoise.h"
 #include "seam/nodes/feedback.h"
 #include "seam/nodes/gate.h"
 #include "seam/nodes/hdrTonemapper.h"
 #include "seam/nodes/markov.h"
-#include "seam/nodes/midi-in.h"
+#include "seam/nodes/midiIn.h"
 #include "seam/nodes/multiTrigger.h"
 #include "seam/nodes/noise.h"
-#include "seam/nodes/notes-printer.h"
+#include "seam/nodes/notesPrinter.h"
 #include "seam/nodes/percussiveTrigger.h"
 #include "seam/nodes/range.h"
 #include "seam/nodes/saw.h"
 #include "seam/nodes/shader.h"
 #include "seam/nodes/step.h"
-#include "seam/nodes/texgen-perlin.h"
 #include "seam/nodes/threshold.h"
 #include "seam/nodes/timer.h"
 #include "seam/nodes/toggle.h"
+#include "seam/nodes/valueNoise.h"
+#include "seam/nodes/videoPlayer.h"
 
 using namespace seam;
 
@@ -40,7 +41,7 @@ EventNodeFactory::EventNodeFactory() {
 	Register(MakeCreate<nodes::Gate>());
 	Register(MakeCreate<nodes::HdrTonemapper>());
 	Register(MakeCreate<nodes::Markov>());
-	Register(MakeCreate<nodes::MidiIn>());
+	// Register(MakeCreate<nodes::MidiIn>());
 	Register(MakeCreate<nodes::MultiTrigger>());
 	Register(MakeCreate<nodes::Noise>());
 	Register(MakeCreate<nodes::NotesPrinter>());
@@ -49,12 +50,16 @@ EventNodeFactory::EventNodeFactory() {
 	Register(MakeCreate<nodes::Saw>());
 	Register(MakeCreate<nodes::Shader>());
 	Register(MakeCreate<nodes::Step>());
-	Register(MakeCreate<nodes::TexgenPerlin>());
 	Register(MakeCreate<nodes::Threshold>());
 	Register(MakeCreate<nodes::Timer>());
 	Register(MakeCreate<nodes::Toggle>());
+	Register(MakeCreate<nodes::ValueNoise>());
+	Register(MakeCreate<nodes::VideoPlayer>());
 
 	// TODO register more seam internal generators here
+
+
+	IdsDistributor::GetInstance().ResetIds();
 }
 
 EventNodeFactory::~EventNodeFactory() {

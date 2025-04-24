@@ -47,15 +47,11 @@ namespace seam {
 			auto old_res = FindLeaf(old_pos, root, tree_center, tree_bounds);
 			auto new_res = FindLeaf(new_pos, root, tree_center, tree_bounds);
 			if (old_res.leaf != new_res.leaf) {
-				// printf("update remove/add\n");
 
 				Remove(item, old_pos);
 				ValidateTree(root);
 
 				Add(item, new_pos);
-
-				//Remove(item, old_pos, old_res.branch, old_res.branch_center, old_res.branch_bounds);
-				// Add(item, new_pos, new_res.branch, new_res.branch_center, new_res.branch_bounds);
 
 				ValidateTree(root);
 			}

@@ -1,6 +1,6 @@
 #pragma once
 
-#include "iNode.h"
+#include "seam/include.h"
 
 using namespace seam::pins;
 

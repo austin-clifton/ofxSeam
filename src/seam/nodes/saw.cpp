@@ -1,4 +1,4 @@
-#include "saw.h"
+#include "seam/nodes/saw.h"
 
 using namespace seam;
 using namespace seam::nodes;

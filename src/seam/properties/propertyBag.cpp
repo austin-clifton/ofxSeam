@@ -1,4 +1,4 @@
-#include "propertyBag.h"
+#include "seam/properties/propertyBag.h"
 #include "seam/pins/pin.h"
 
 using namespace seam::pins;

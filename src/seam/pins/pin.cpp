@@ -1,4 +1,4 @@
-#include "pin.h"
+#include "seam/pins/pin.h"
 
 const size_t seam::pins::PinInput::MAX_EVENTS = 16;
 
@@ -65,20 +65,57 @@ namespace seam::pins {
 #if !defined(RUN_DOCTEST)
 		assert(node != nullptr);
 #endif
-		PinOutput pin_out;
-		pin_out.node = node;
-		pin_out.type = type;
-		pin_out.name = name;
-		pin_out.SetNumCoords(numCoords);
-		pin_out.flags = (PinFlags)(flags | PinFlags::OUTPUT);
-		pin_out.userp = userp;
-		return pin_out;
+		PinOutput pinOut;
+		pinOut.node = node;
+		pinOut.type = type;
+		pinOut.name = name;
+		pinOut.SetNumCoords(numCoords);
+		pinOut.flags = (PinFlags)(flags | PinFlags::OUTPUT);
+		pinOut.userp = userp;
+		return pinOut;
+	}
+
+	PinOutput SetupOutputStaticFboPin(
+		nodes::INode* node,
+		ofFbo* fbo,
+		PinType fboType,
+		const std::string_view name,
+		PinFlags flags,
+		const std::string_view description,
+		void* userp
+	) {
+#if !defined(RUN_DOCTEST)
+		assert(node != nullptr);
+#endif
+		assert(IsFboPin(fboType));
+
+		PinOutput pinOut;
+		pinOut.node = node;
+		pinOut.type = fboType;
+		pinOut.name = name;
+		pinOut.flags = (PinFlags)(flags | PinFlags::OUTPUT);
+		pinOut.userp = userp;
+
+		pinOut.SetOnConnected([fbo](PinConnectedArgs args) {
+			if (fbo->isAllocated()) {
+				ofFbo* fbos = { fbo };
+				args.pushPatterns->Push<ofFbo*>(*args.pinOut, &fbos, 1);
+			}
+		});
+
+		pinOut.SetOnDisconnected([](PinConnectedArgs args) {
+			ofFbo* fbos = { nullptr };
+			args.pushPatterns->Push<ofFbo*>(*args.pinOut, &fbos, 1);
+		});
+
+		return pinOut;
 	}
 
 	std::vector<PinInput> UniformsToPinInputs(
 		ofShader& shader, 
 		nodes::INode* node, 
-		std::vector<char>& pinBuffer
+		std::vector<char>& pinBuffer,
+		const std::unordered_set<const char*>& blacklist
 	) {
 		// sanity check there were no errors before now
 		assert(glGetError() == GL_NO_ERROR);
@@ -124,10 +161,14 @@ namespace seam::pins {
 			GLenum err = glGetError();
 			assert(err == GL_NO_ERROR);
 
-			// use string_view with c_str() so it finds the nul char for us
-			std::string_view snippedName(name.c_str());
+			// init string with c_str() so it finds the nul char for us
+			std::string snippedName(name.c_str());
 
-			// TODO filter out uniforms prefixed with "gl_"?
+			if (blacklist.find(snippedName.c_str()) != blacklist.end() 
+				|| snippedName.substr(0, 3) == "gl_") 
+			{
+				continue;
+			}
 
 			bool failed = false;
 			PinType pinType = PinType::TYPE_NONE;
@@ -183,7 +224,23 @@ namespace seam::pins {
 			const size_t bytesPerChannel = PinTypeToElementSize(pinType);
 			totalBytesNeeded += bytesPerChannel * numCoords;
 
-			pin_inputs.push_back(SetupInputPin(pinType, node, nullptr, numCoords, snippedName));
+			if (IsFboPin(pinType)) {
+				pin_inputs.push_back(
+					SetupInputFboPin(
+						pinType,
+						node,
+						&shader,
+						nullptr,
+						snippedName,
+						snippedName,
+						PinInOptions::WithCoords(numCoords)
+					)
+				);
+			} else {
+				pin_inputs.push_back(
+					SetupInputPin(pinType, node, nullptr, 1, snippedName, PinInOptions::WithCoords(numCoords))
+				);
+			}
 		}
 
 		// Resize the pin buffer now and point each Pin's channel buffer at it.
@@ -195,11 +252,9 @@ namespace seam::pins {
 
 			// Now that memory has been alloc'd for the uniforms buffer,
 			// set each Pin's buffer to point to the right place.
-			size_t totalElements;
-			void* buffer = pinIn.Buffer(totalElements);
-			buffer = &pinBuffer[currentByte];
-			pinIn.SetBuffer(buffer, totalElements);
-			currentByte += PinTypeToElementSize(pinIn.type) * totalElements;
+			void* buffer = &pinBuffer[currentByte];
+			pinIn.SetBuffer(buffer, 1);
+			currentByte += PinTypeToElementSize(pinIn.type) * pinIn.NumCoords();
 
 			// grab the location of the uniform so we can set initial values for the Pin
 			GLint uniform_location = glGetUniformLocation(program, pinIn.name.c_str());
@@ -209,21 +264,20 @@ namespace seam::pins {
 			switch (pinIn.type) {
 			case PinType::FLOAT:
 				glGetnUniformfv(program, uniform_location, 
-					totalElements * sizeof(float), (float*)buffer);
+					pinIn.NumCoords() * sizeof(float), (float*)buffer);
 				break;
 			case PinType::INT:
 				glGetnUniformiv(program, uniform_location, 
-					totalElements * sizeof(int32_t), (int32_t*)buffer);
+					pinIn.NumCoords() * sizeof(int32_t), (int32_t*)buffer);
 				break;
 			case PinType::UINT:
 				glGetnUniformuiv(program, uniform_location, 
-					totalElements * sizeof(uint32_t), (uint32_t*)buffer);
+					pinIn.NumCoords() * sizeof(uint32_t), (uint32_t*)buffer);
 				break;
 			case PinType::FBO_RGBA:
 			case PinType::FBO_RGBA16F:
 			case PinType::FBO_RED:
-				ofFbo** fbo = (ofFbo**)buffer;
-				*fbo = nullptr;
+				memset(buffer, 0, sizeof(ofFbo**));
 				break;
 			}
 
@@ -241,6 +295,17 @@ namespace seam::pins {
 		const std::string_view name,
 		PinInOptions&& options
 	) {
+#if DEBUG
+		// FBO pin types should use SetupInputFboPin() instead in most cases,
+		// unless the shader re-bind logic is more complex than
+		// simply setting the the texture uniform of the shader.
+		if (IsFboPin(pinType)) {
+			printf("WARNING: Node %s uses SetupInputPin() for FBO pin %s, "
+				"in most cases you should use SetupInputFboPin() instead.\n",
+				node->NodeName().data(), name.data());
+		}
+#endif
+
 		size_t elementSize = options.elementSize > 0 
 			? options.elementSize : PinTypeToElementSize(pinType);
 
@@ -255,7 +320,62 @@ namespace seam::pins {
 			options.stride > 0 ? options.stride : elementSize * options.numCoords,
 			options.offset,
 			options.numCoords,
-			std::move(options.callback),
+			std::move(options.onValueChanged),
+			std::move(options.onValueChanging),
+			options.pinMetadata
+		);
+	}
+
+	PinInput SetupInputFboPin(
+		PinType pinType,
+		nodes::INode* node,
+		ofShader* shader,
+		ofFbo** fbo,
+		const std::string_view uniformName,
+		const std::string_view name,
+		PinInOptions&& options
+	) {
+		assert(IsFboPin(pinType));
+
+		ValueChangedCallback onValueChanged = std::move(options.onValueChanged);
+		ValueChangingCallback onValueChanging = std::move(options.onValueChanging);
+
+		return PinInput(
+			pinType,
+			name,
+			options.description,
+			node,
+			fbo,	// We need the address of the fbo pointer, not the fbo pointer itself
+			1,
+			sizeof(ofFbo*),
+			options.stride > 0 ? options.stride : sizeof(ofFbo*),
+			options.offset,
+			1,
+			[shader, fbo, node, onValueChanged, uniformName]() {
+				if (*fbo == nullptr) {
+					return;
+				}
+
+				shader->begin();
+
+				uint32_t textureLoc = node->Seam().texLocResolver->Bind(&(*fbo)->getTexture());
+				shader->setUniformTexture(uniformName.data(), (*fbo)->getTexture(), textureLoc);
+
+				shader->end();
+
+				if (onValueChanged) {
+					onValueChanged();
+				}
+			},
+			[fbo, node, onValueChanging]() {
+				if (*fbo != nullptr) {
+					node->Seam().texLocResolver->Release(&(*fbo)->getTexture());
+				}
+
+				if (onValueChanging) {
+					onValueChanging();
+				}
+			},
 			options.pinMetadata
 		);
 	}
@@ -294,7 +414,7 @@ namespace seam::pins {
 
 	PinInput SetupInputFlowPin(
 		nodes::INode* node,
-		std::function<void(void)>&& callback,
+		ValueChangedCallback&& callback,
 		const std::string_view name,
 		void* pinMetadata,
 		const std::string_view description

@@ -2,13 +2,14 @@
 
 #include <vector>
 
-#include "seam/seam-graph.h"
-#include "nodes/iNode.h"
-#include "pins/push.h"
-#include "seam/factory.h"
-#include "frame-pool.h"
 
 #include "INIReader.h"
+
+#include "seam/factory.h"
+#include "seam/seamGraph.h"
+#include "seam/include.h"
+#include "seam/pins/push.h"
+#include "seam/framePool.h"
 
 namespace seam {
 
@@ -42,6 +43,8 @@ namespace seam {
 		seam::EventNodeFactory* GetFactory() { return graph.GetFactory(); }
 	
 	private:
+		void ResizeWindow(int32_t width, int32_t height);
+
 		void NewGraph();
 		void SaveGraph(const std::string_view filename, const std::vector<INode*>& nodesToSave);
 		void LoadGraph(const std::string_view filename);
@@ -58,11 +61,13 @@ namespace seam {
 		std::vector<SeamGraph::Link> links;
 
 		// book keeping for GUI interactions
-		Pin* new_link_pin;
-		INode* selected_node = nullptr;
+		Pin* newLinkPin;
+		INode* selectedNode = nullptr;
 		INode* lastSelectedVisualNode = nullptr;
 
-		bool show_create_dialog = false;
+		bool showCreateDialog = false;
+		bool showWindowResize = false;
+		glm::ivec2 windowSize;
 
 		std::string loadedFile;
 

@@ -46,8 +46,8 @@ void NodeTemplate::Setup(SetupParams* params) {
     // - Setup() is called right after instantiation. Serialized Pin values will NOT be set by this time!
 }
 
-// void NodeTemplate::Update(UpdateParams* params) { }
+// void NodeTemplate::Update(UpdateParams* params) {}
 
-// void NodeTemplate::Draw() { }
+// void NodeTemplate::Draw(DrawParams* params) {}
 
-// bool NodeTemplate::GuiDrawPropertiesList(UpdateParams* params) { }
+// bool NodeTemplate::GuiDrawPropertiesList(UpdateParams* params) {}

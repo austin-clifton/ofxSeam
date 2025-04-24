@@ -1,9 +1,9 @@
-#include "iNode.h"
+#include "seam/nodes/iNode.h"
 
 #include "ofxImGui.h"
 
 #include "blueprints/widgets.h"
-#include "../imgui-utils/properties.h"
+#include "seam/imguiUtils/properties.h"
 
 using namespace seam;
 using namespace seam::nodes;
@@ -231,19 +231,27 @@ void INode::OnWindowResized(glm::uvec2 resolution) {
 	for (auto& windowFbo : windowFbos) {
 		glm::ivec2 expected = resolution * windowFbo.ratio;
 		if (windowFbo.fbo->getWidth() != expected.x || windowFbo.fbo->getHeight() != expected.y) {
+
+			Seam().texLocResolver->ReleaseAll(&windowFbo.fbo->getTexture());
+
 			// Destroy and reallocate the FBO.
 			windowFbo.fbo->clear();
 			windowFbo.fboSettings.width = expected.x;
 			windowFbo.fboSettings.height = expected.y;
 			windowFbo.fbo->allocate(windowFbo.fboSettings);
 
-			UpdateResolutionPin(expected);
-			SetDirty();
+			// Refresh pin connections since the fbo changed
+			if (windowFbo.pinOutFbo != nullptr) {
+				windowFbo.pinOutFbo->Reconnect(Seam().pushPatterns);
+			}
 		}
+
+		UpdateResolutionPin(expected);
+		SetDirty();
 	}
 }
 
-void INode::UpdateResolutionPin(glm::uvec2 resolution) {
+bool INode::UpdateResolutionPin(glm::uvec2 resolution) {
 	PinInput* resolutionPin = FindPinInByName(this, "resolution");
 	if (resolutionPin != nullptr) {
 		// Expect resolution to be an ivec2 or uvec2
@@ -252,8 +260,12 @@ void INode::UpdateResolutionPin(glm::uvec2 resolution) {
 		void* buffer = resolutionPin->Buffer(size);
 		assert(size * resolutionPin->NumCoords() == 2);
 
+		resolutionPin->OnValueChanging();
 		*((glm::uvec2*)buffer) = resolution;
+		resolutionPin->OnValueChanged();
+		return true;
 	}
+	return false;
 }
 
 bool INode::GuiDrawPropertiesList(UpdateParams* params) {

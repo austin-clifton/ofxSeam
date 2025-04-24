@@ -1,4 +1,4 @@
-#include "timer.h"
+#include "seam/nodes/timer.h"
 
 using namespace seam;
 using namespace seam::nodes;

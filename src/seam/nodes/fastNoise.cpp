@@ -1,5 +1,6 @@
 #include "seam/nodes/fastNoise.h"
-#include "seam/shader-utils.h"
+#include "seam/shaderUtils.h"
+#include "seam/pins/pin.h"
 
 using namespace seam::nodes;
 
@@ -11,7 +12,7 @@ FastNoise::FastNoise() : INode("Fast Noise") {
 
     // Input pins are set up in the constructor since they require a loop.
 
-    std::array<PinInput, 15> nonEnumInputPins = {
+    std::array<PinInput, 18> nonEnumInputPins = {
         SetupInputPin(PinType::INT, this, &resolution, 1, "Resolution", 
             PinInOptions(sizeof(glm::vec2), 2, 0, std::bind(&FastNoise::ResizeFbo, this))),
         SetupInputPin(PinType::INT, this, &vSplits, 1, "Vertical Splits"),
@@ -19,6 +20,7 @@ FastNoise::FastNoise() : INode("Fast Noise") {
         SetupInputPin(PinType::FLOAT, this, &speed, 1, "Speed"),
         SetupInputPin(PinType::BOOL, this, &animateOverTime, 1, "Animate Over Time"),
         SetupInputPin(PinType::BOOL, this, &enableDomainWarp, 1, "Enable Domain Warp"),
+        SetupInputPin(PinType::BOOL, this, &filterNearest, 1, "Filter Nearest"),
         SetupInputPin(PinType::INT, this, &seed, 1, "Seed"),
         SetupInputPin(PinType::FLOAT, this, &frequency, 1, "Frequency"),
         SetupInputPin(PinType::INT, this, &octaves, 1, "Octaves"),
@@ -28,6 +30,8 @@ FastNoise::FastNoise() : INode("Fast Noise") {
         SetupInputPin(PinType::FLOAT, this, &pingPongStrength, 1, "Ping Pong Strength"),
         SetupInputPin(PinType::FLOAT, this, &cellularJitterMod, 1, "Cellular Jitter Mod"),
         SetupInputPin(PinType::FLOAT, this, &domainWarpAmp, 1, "Domain Warp Amp"),
+        SetupInputPin(PinType::BOOL, this, &calculateGChannel, 1, "Calculate G Channel"),
+        SetupInputPin(PinType::BOOL, this, &calculateBChannel, 1, "Calculate B Channel"),
     };
 
     // Exactly this many non-enum pins are expected!
@@ -48,6 +52,10 @@ void FastNoise::Setup(SetupParams* params) {
 }
 
 void FastNoise::Draw(DrawParams* params) {
+    if (!animateOverTime && !IsDirty()) {
+        return;
+    }
+
     // Set uniforms; ideally this should be done in less GPU calls???
     // Each pin could have a callback, but that might be more expensive with binding/unbinding the shader.
     // A cpu-writable SSBO might be more ideal for flushing info over, idk
@@ -71,6 +79,8 @@ void FastNoise::Draw(DrawParams* params) {
     shader.setUniform1f("cellularJitterMod", cellularJitterMod);
     shader.setUniform1f("domainWarpAmp", domainWarpAmp);
     shader.setUniform1i("enableDomainWarp", enableDomainWarp);
+    shader.setUniform1i("calculateG", (int)calculateGChannel);
+    shader.setUniform1i("calculateB", (int)calculateBChannel);
 
     for (size_t i = 0; i < fnlOptions.size(); i++) {
         shader.setUniform1i(fnlOptions[i].uniformName, fnlOptions[i].currValue);
@@ -122,18 +132,14 @@ void FastNoise::ResizeFbo() {
     fbo.clear();
     fbo.allocate(resolution.x, resolution.y, GL_RGB);
 
-    fbo.getTexture().setTextureMinMagFilter(GL_NEAREST, GL_NEAREST);
+    if (filterNearest) {
+        fbo.getTexture().setTextureMinMagFilter(GL_NEAREST, GL_NEAREST);
+    } else {
+        fbo.getTexture().setTextureMinMagFilter(GL_LINEAR, GL_LINEAR);
+    }
 }
 
 bool FastNoise::ReloadShaders() {
     const std::string fragName = "fastNoiseLite.frag";
     return ShaderUtils::LoadShader(shader, "screen-rect.vert", fragName);
-}
-
-void FastNoise::OnPinConnected(PinConnectedArgs args) {
-	// The output FBO doesn't change; only push it on pin connected.
-	if (args.pinOut->id == pinOutFbo.id) {
-		ofFbo* fbos = { &fbo };
-		args.pushPatterns->Push<ofFbo*>(pinOutFbo, &fbos, 1);
-	}
 }

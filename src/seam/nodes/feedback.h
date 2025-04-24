@@ -1,8 +1,6 @@
 #pragma once
 
-#include "iNode.h"
-
-#include "../pins/pin.h"
+#include "seam/include.h"
 
 using namespace seam::pins;
 
@@ -10,15 +8,12 @@ namespace seam::nodes {
 	class Feedback : public INode {
 	public:
 		Feedback();
-		~Feedback();
 
 		void Setup(SetupParams* params) override;
 
 		void Draw(DrawParams* params) override;
 
 		void Update(UpdateParams* params) override;
-
-		void OnPinConnected(PinConnectedArgs args) override;
 
 		PinInput* PinInputs(size_t& size) override;
 
@@ -28,7 +23,7 @@ namespace seam::nodes {
 
 	private:
 		bool ReloadShader();
-		void RebindTexture();
+		void ResizeFrameBuffers();
 
 		// Use two FBOs to ping pong for feedback.
 		ofFbo fbo1;
@@ -43,10 +38,13 @@ namespace seam::nodes {
 		glm::vec2 feedbackOffset = glm::vec2(0.f);
 
 		PinFloatMeta decayMeta = PinFloatMeta(0.f, 1.f);
+
+		static const std::string fboInputName;
 			
 		std::array<PinInput, 4> pin_inputs = {
-			pins::SetupInputPin(PinType::FBO_RGBA, this, &inTexture, 1, "Input FBO", 
-				PinInOptions(std::bind(&Feedback::RebindTexture, this))),
+			pins::SetupInputFboPin(PinType::FBO_RGBA, this, &feedback_shader, &inTexture, "imgTex", fboInputName,
+				PinInOptions::WithChangedCallbacks([this]() { ResizeFrameBuffers(); })
+			),
 			pins::SetupInputPin(PinType::FLOAT, this, &decay, 1, "Decay", PinInOptions("", &decayMeta)),
 			pins::SetupInputPin(PinType::FLOAT, this, &filterColor, 1, "Filter Color", PinInOptions::WithCoords(4)),
 			pins::SetupInputPin(PinType::FLOAT, this, &feedbackOffset, 1, "Feedback Offset", PinInOptions::WithCoords(2)),

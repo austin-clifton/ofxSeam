@@ -1,5 +1,4 @@
-#include "notes-printer.h"
-#include "seam/containers/octree.h"
+#include "seam/nodes/notesPrinter.h"
 
 using namespace seam;
 using namespace seam::nodes;

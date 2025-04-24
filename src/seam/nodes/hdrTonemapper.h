@@ -1,6 +1,6 @@
 #pragma once
 
-#include "seam/nodes/iNode.h"
+#include "seam/include.h"
 
 using namespace seam::pins;
 
@@ -26,16 +26,11 @@ namespace seam::nodes {
 
 		PinOutput* PinOutputs(size_t& size) override;
 
-        void OnPinConnected(PinConnectedArgs args) override;
-
 		bool GuiDrawPropertiesList(UpdateParams* params) override;
-
-		void OnWindowResized(glm::uvec2 resolution) override;
 
 	private:
         bool ReloadShaders();
 		void RebindTexture();
-		void OnResolutionChanged();
 		void SetupBloomTextures();
 		void RebindBloomTextures();
 		glm::ivec2 DownscaledRes();
@@ -58,14 +53,21 @@ namespace seam::nodes {
 		ofShader blurShader;
         ofShader tonemapShader;
 
-		std::array<PinInput, 3> pinInputs = {
+		std::array<PinInput, 2> pinInputs = {
 			pins::SetupInputPin(PinType::FBO_RGBA16F, this, &hdrFbo, 1, "HDR FBO",
-				PinInOptions(std::bind(&HdrTonemapper::RebindTexture, this))),
-			pins::SetupInputPin(PinType::INT, this, &resolution, 2, "Resolution", 
-				PinInOptions(std::bind(&HdrTonemapper::OnResolutionChanged, this))),
+				PinInOptions::WithChangedCallbacks(
+					std::bind(&HdrTonemapper::RebindTexture, this),
+					[this]() {
+						if (hdrFbo != nullptr) {
+							Seam().texLocResolver->Release(&hdrFbo->getTexture()); 
+						}
+					}
+				)
+			),
 			pins::SetupInputPin(PinType::FLOAT, this, &gamma, 1, "Gamma"),
 		};
         
-        PinOutput pinOutFbo = pins::SetupOutputPin(this, pins::PinType::FBO_RGBA, "Tonemapped FBO");
+        PinOutput pinOutFbo = pins::SetupOutputStaticFboPin(
+			this, &tonemappedFbo, pins::PinType::FBO_RGBA, "Tonemapped FBO");
 	};
 }

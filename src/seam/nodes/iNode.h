@@ -6,9 +6,11 @@
 #include <atomic>
 #include <string>
 
-#include "seam/pins/push.h"
+#include "ofMain.h"
+
 #include "seam/properties/nodeProperty.h"
-#include "seam/frame-pool.h"
+#include "seam/framePool.h"
+#include "seam/seamState.h"
 
 #include "blueprints/builders.h"
 namespace ed = ax::NodeEditor;
@@ -17,6 +19,12 @@ namespace seam {
 	class EventNodeFactory;
 	class Editor;
 	class SeamGraph;
+}
+
+namespace seam::pins {
+	class PushPatterns; 
+	class PinInput;
+	class PinOutput;
 }
 
 namespace seam::nodes {
@@ -48,15 +56,18 @@ namespace seam::nodes {
 	struct WindowRatioFbo {
 		WindowRatioFbo(
 			ofFbo* _fbo, 
-			glm::vec2 _ratio = glm::vec2(1.0f), 
+			pins::PinOutput* _pinOutFbo = nullptr,
+			glm::vec2 _ratio = glm::vec2(1.0f),
 			ofFboSettings _settings = ofFboSettings()
 		) {
 			fbo = _fbo;
+			pinOutFbo = _pinOutFbo;
 			ratio = _ratio;
 			fboSettings = _settings;
 		}
 
 		ofFbo* fbo = nullptr;
+		pins::PinOutput* pinOutFbo;
 		/// @brief Set to (1,1) for window size, (0.5,0.5) for half screen dimensions, etc.
 		glm::vec2 ratio = glm::vec2(1.0f);
 		ofFboSettings fboSettings;
@@ -80,12 +91,6 @@ namespace seam::nodes {
 		float delta_time;
 		float time;
 		// not sure what else is needed here yet
-	};
-
-	struct PinConnectedArgs {
-		pins::PinInput* pinIn;
-		pins::PinOutput* pinOut;
-		seam::pins::PushPatterns* pushPatterns;
 	};
 
 	/// Base class for all nodes that use the eventing system
@@ -130,18 +135,12 @@ namespace seam::nodes {
 		/// Override if your Node draws to an FBO.
 		virtual void Draw(DrawParams* params) { }
 
-		/// @brief Override to receive a callback when a pin on this node is connected to another pin.
-		virtual void OnPinConnected(PinConnectedArgs args) { }
-
-		/// @brief Override to receive a callback when a pin on this node is disconnected from another pin.
-		virtual void OnPinDisconnected(pins::PinInput* pinIn, pins::PinOutput* pinOut) { }
-
 		/// @brief Override to manage FBO resizing yourself when the window resolution changes.
 		/// Generally, you should just be able to add to windowFbos instead though.
 		virtual void OnWindowResized(glm::uvec2 resolution);
 
 		/// @brief Updates a resolution pin when the window is resized, if a resolution pin exists.
-		virtual void UpdateResolutionPin(glm::uvec2 resolution);
+		virtual bool UpdateResolutionPin(glm::uvec2 resolution);
 
 		/// @brief Override to draw a custom GUI in the Node Inspector window using Dear ImGui.
 		/// By default, this function will call GetProperties() and draw a property editor for each returned property.
@@ -156,6 +155,8 @@ namespace seam::nodes {
 		virtual std::vector<props::NodeProperty> GetProperties() {
 			return std::vector<props::NodeProperty>();
 		}
+
+		inline SeamState Seam() { return seamState; }
 
 		virtual props::NodeProperty* TryCreateProperty(const std::string& name, props::NodePropertyType type) {
 			return nullptr;
@@ -180,6 +181,10 @@ namespace seam::nodes {
 
 		inline const std::string& InstanceName() {
 			return instance_name;
+		}
+
+		inline bool IsDirty() {
+			return dirty;
 		}
 
 		inline void SetDirty() {
@@ -261,6 +266,8 @@ namespace seam::nodes {
 		bool AddChild(INode* child);
 
 		void SortParents();
+
+		SeamState seamState;
 
 		// a node is dirtied when its inputs change, or time progresses in some cases
 		// a dirtied node needs to have its Update() called once it becomes part of the visual chain,

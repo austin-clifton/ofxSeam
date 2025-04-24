@@ -1,4 +1,4 @@
-#include "multiTrigger.h"
+#include "seam/nodes/multiTrigger.h"
 
 using namespace seam;
 using namespace seam::nodes;

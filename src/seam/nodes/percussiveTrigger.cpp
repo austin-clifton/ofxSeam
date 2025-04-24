@@ -1,4 +1,4 @@
-#include "percussiveTrigger.h"
+#include "seam/nodes/percussiveTrigger.h"
 
 using namespace seam;
 using namespace seam::nodes;

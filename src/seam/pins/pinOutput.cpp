@@ -1,6 +1,6 @@
 #include "seam/pins/pinOutput.h"
 #include "seam/pins/pinConnection.h"
-#include "seam/nodes/iNode.h"
+#include "seam/include.h"
 
 using namespace seam::pins;
 
@@ -21,5 +21,19 @@ void PinOutput::SetNumCoords(uint16_t newNumCoords) {
     numCoords = newNumCoords;
     for (auto& conn : connections) {
         conn.RecacheConverts();
+    }
+}
+
+void PinOutput::Reconnect(seam::pins::PushPatterns* pushPatterns) {
+    if (!onConnected) {
+        return;
+    }
+
+    PinConnectedArgs args;
+    args.pinOut = this;
+    args.pushPatterns = pushPatterns;
+    for (auto conn : connections) {
+        args.pinIn = conn.pinIn;
+        OnConnected(args);
     }
 }

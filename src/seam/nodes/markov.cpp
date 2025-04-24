@@ -1,4 +1,4 @@
-#include "markov.h"
+#include "seam/nodes/markov.h"
 
 using namespace seam;
 using namespace seam::nodes;

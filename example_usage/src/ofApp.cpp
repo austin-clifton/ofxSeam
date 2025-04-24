@@ -1,7 +1,7 @@
 #include "ofApp.h"
 
 #include "nodes/fireflies.h"
-#include "nodes/force-grid.h"
+#include "nodes/forceGrid.h"
 
 //--------------------------------------------------------------
 void ofApp::setup(){

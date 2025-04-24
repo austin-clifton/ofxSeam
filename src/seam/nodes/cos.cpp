@@ -1,4 +1,4 @@
-#include "cos.h"
+#include "seam/nodes/cos.h"
 
 using namespace seam;
 using namespace seam::nodes;

@@ -1,5 +1,5 @@
 #include "seam/pins/vectorPin.h"
-#include "seam/nodes/iNode.h"
+#include "seam/include.h"
 
 using namespace seam::pins;
 
@@ -64,14 +64,14 @@ void VectorPinInput::SetCallbackOptions(Options&& _options) {
         // TODO this doesn't handle hierarchies / structs!
         for (size_t i = 0; i < vectorPin->childPins.size(); i++) {
             PinInput& childPin = vectorPin->childPins[i];
-            childPins[i].SetCallback([this, i]() {
+            childPins[i].SetOnValueChanged([this, i]() {
                 options.onPinChanged(&vectorPin->childPins[i], i);
             });
         }
     } else {
         // Clear existing callbacks
         for (size_t i = 0; i < size; i++) {
-            childPins[i].SetCallback(std::function<void(void)>());
+            childPins[i].SetOnValueChanged(std::function<void(void)>());
         }
     }
 }
@@ -101,7 +101,7 @@ void VectorPinInput::UpdateSize(size_t newSize) {
 
         PinInput childPin = createCb(this, vectorPin->childPins.size());
         childPin.node = vectorPin->node;
-        childPin.SetCallback(std::move(changedCb));
+        childPin.SetOnValueChanged(std::move(changedCb));
         vectorPin->childPins.push_back(std::move(childPin));
     }
 

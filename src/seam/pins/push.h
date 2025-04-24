@@ -1,9 +1,11 @@
 #pragma once
 
-#include "seam/pins/pin.h"
+#include "seam/include.h"
 #include "seam/pins/pinConnection.h"
+#include "seam/pins/pinOutput.h"
+#include "seam/pins/pinInput.h"
 #include "seam/hash.h"
-#include "seam/flags-helper.h"
+#include "seam/flagsHelper.h"
 
 namespace seam::nodes {
 	class INode;
@@ -74,18 +76,19 @@ namespace seam::pins {
 						conn.pinIn->PushEvents(data, numElements);
 					} else {
 						assert(conn.pinIn->type == PinType::FLOW);
-						conn.pinIn->Callback();
+						conn.pinIn->OnValueChanged();
 					}
 				}
 			} else {
 				for (auto& conn : pinOut.connections) {
 					// Dirty the input node
 					conn.pinIn->node->SetDirty();
+
 					ConvertMultiArgs args(data, pinOut.NumCoords(), numElements, conn.pinIn);
+
+					conn.pinIn->OnValueChanging();
 					conn.convertMulti(args);
-				
-					// Fire whatever user callback was provided, if any.
-					conn.pinIn->Callback();
+					conn.pinIn->OnValueChanged();
 				}
 			}
 		}
@@ -115,8 +118,9 @@ namespace seam::pins {
 					ConvertSingleArgs args(data, pinOut.NumCoords(), 
 						dst, conn.pinIn->NumCoords(), conn.pinIn);
 
+					conn.pinIn->OnValueChanging();
 					conn.convertSingle(args);
-					conn.pinIn->Callback();
+					conn.pinIn->OnValueChanged();
 					
 					pushed = true;
 				}
@@ -128,7 +132,7 @@ namespace seam::pins {
 		void PushFlow(const PinOutput& pinOut) {
 			assert(pinOut.type == PinType::FLOW);
 			for (auto& conn : pinOut.connections) {
-				conn.pinIn->Callback();
+				conn.pinIn->OnValueChanged();
 			}
 		}
 

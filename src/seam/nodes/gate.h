@@ -1,6 +1,7 @@
 #pragma once
 
-#include "iNode.h"
+#include "seam/include.h"
+#include "seam/pins/pin.h"
 
 using namespace seam::pins;
 
@@ -9,6 +10,8 @@ namespace seam::nodes {
 	public:
 		Gate();
 		~Gate();
+
+		void Setup(SetupParams* params) override;
 
 		void Update(UpdateParams* params) override;
 

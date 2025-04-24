@@ -1,4 +1,4 @@
-#include "idManager.h"
+#include "seam/idManager.h"
 
 using namespace seam;
 

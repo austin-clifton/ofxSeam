@@ -48,9 +48,9 @@ void ChannelMap::Update(UpdateParams* params) {
         params->push_patterns->Push(pinOutputs[i], outBuff.data(), outMap.channelsCount * pinElementSize);
     }
 
-    // some butts
 }
 
+/*
 void ChannelMap::OnPinConnected(PinConnectedArgs args) {
     // If an input pin was connected
     if (FindPinInput(args.pinIn->id)) {
@@ -73,10 +73,7 @@ void ChannelMap::OnPinConnected(PinConnectedArgs args) {
         // An output was connected, nothing to do?
     }
 }
-
-void ChannelMap::OnPinDisconnected(pins::PinInput* pinIn, pins::PinOutput* pinOut) {
-    // Is there anything to do here...?
-}
+*/
 
 bool ChannelMap::GuiDrawPropertiesList(UpdateParams* params) {
     bool changed = false;

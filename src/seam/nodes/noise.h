@@ -1,6 +1,6 @@
 #pragma once
 
-#include "iNode.h"
+#include "seam/include.h"
 
 using namespace seam::pins;
 
@@ -27,6 +27,8 @@ namespace seam::nodes {
 		float maxN = 1.f;
 
 		uint32_t numCoords = 1;
+
+		float seed;
 
 		std::array<PinInput, 3> pin_inputs = {
 			pins::SetupInputPin(PinType::FLOAT, this, &speedMultiplier, 1, "Speed"),

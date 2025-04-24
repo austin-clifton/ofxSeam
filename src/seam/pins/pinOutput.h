@@ -7,6 +7,8 @@
 #include "seam/pins/iOutPinnable.h"
 
 namespace seam::pins {
+    class PushPatterns;
+
     struct PinOutput final : public Pin, public IOutPinnable {
         ~PinOutput();
 
@@ -26,10 +28,37 @@ namespace seam::pins {
         inline uint16_t NumCoords() { return numCoords; }
         void SetNumCoords(uint16_t newNumCoords);
 
+        inline void SetOnConnected(ConnectedCallback&& _onConnected) {
+            onConnected = std::move(_onConnected);
+        }
+
+        inline void OnConnected(PinConnectedArgs args) {
+            if (onConnected) {
+                onConnected(args);
+            }
+        }
+
+        inline void SetOnDisconnected(DisconnectedCallback&& _onDisconnected) {
+            onDisconnected = std::move(_onDisconnected);
+        }
+
+        inline void OnDisconnected(PinConnectedArgs args) {
+            if (onDisconnected) {
+                onDisconnected(args);
+            }
+        }
+
+        /// @brief Run OnConnected() for each connected input.
+        /// Useful for FBO pins where texture bindings only need to run when the FBO itself changes (rather than its contents)
+        void Reconnect(PushPatterns* pushPatterns);
+
         std::vector<seam::pins::PinConnection> connections;
         std::vector<PinOutput> childPins;
 
     private:
         uint16_t numCoords = 1;
+
+        ConnectedCallback onConnected;
+        DisconnectedCallback onDisconnected;
     };
 }

@@ -1,4 +1,4 @@
-#include "range.h"
+#include "seam/nodes/range.h"
 
 using namespace seam;
 using namespace seam::nodes;
@@ -16,7 +16,26 @@ namespace {
 }
 
 Range::Range() : INode("Range") {
+	PinInput* valuePin = FindPinInByName(this, inputValuePinName);
+	assert(valuePin != nullptr);
 
+	valuePin->SetOnConnected([this](PinConnectedArgs args) {
+		// If the value pin was connected, use the output's number of coordinates to determine
+		// how many coords Range should have.
+		// TODO... This isn't the right place to do this; what if the parent pin updates its numCoords after connecting?
+		// There needs to be some other way for coordinate-dependent nodes/pins to handle num coords changes.
+
+		// Can't accomodate more than 4 coords... for now?
+		uint16_t numCoords = std::min(args.pinOut->NumCoords(), (uint16_t)4);
+
+		if (args.pinIn->name == inputValuePinName) {
+			for (size_t i = 0; i < pinInputs.size(); i++) {
+				pinInputs[i].SetNumCoords(numCoords);
+			}
+		}
+
+		pin_out_value.SetNumCoords(numCoords);
+	});
 }
 
 PinInput* Range::PinInputs(size_t& size) {
@@ -39,22 +58,4 @@ void Range::Update(UpdateParams* params) {
 	);
 
 	params->push_patterns->Push(pin_out_value, &value, 1);
-}
-
-void Range::OnPinConnected(PinConnectedArgs args) {
-	// If the value pin was connected, use the output's number of coordinates to determine
-	// how many coords Range should have.
-	// TODO... This isn't the right place to do this; what if the parent pin updates its numCoords after connecting?
-	// There needs to be some other way for coordinate-dependent nodes/pins to handle num coords changes.
-
-	// Can't accomodate more than 4 coords... for now?
-	uint16_t numCoords = std::min(args.pinOut->NumCoords(), (uint16_t)4);
-
-	if (args.pinIn->name == inputValuePinName) {
-		for (size_t i = 0; i < pinInputs.size(); i++) {
-			pinInputs[i].SetNumCoords(numCoords);
-		}
-	}
-
-	pin_out_value.SetNumCoords(numCoords);
 }

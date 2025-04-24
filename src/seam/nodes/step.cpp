@@ -1,4 +1,4 @@
-#include "step.h"
+#include "seam/nodes/step.h"
 
 using namespace seam;
 using namespace seam::nodes;
