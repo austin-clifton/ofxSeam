@@ -23,6 +23,7 @@ const char* Editor::CONFIG_FILE_NAME = "seamConfig.ini";
 namespace {
 	const char* POPUP_NAME_NEW_NODE = "Create New Node";
 	const char* POPUP_NAME_WINDOW_RESIZE = "Resize Windows";
+	const char* POPUP_NAME_NODE_CONTEXT_MENU = "Node Context Menu";
 	const char* WINDOW_NAME_NODE_MENU = "Node Properties Menu";
 }
 
@@ -110,7 +111,8 @@ void Editor::GuiDrawPopups() {
 		showCreateDialog = true;
 		ImGui::OpenPopup(POPUP_NAME_NEW_NODE);
 	} else if (ed::ShowNodeContextMenu(&node_id)) {
-		// TODO this is a right click on the node, not left click
+		selectedContextMenuNode = node_id.AsPointer<INode>();
+		ImGui::OpenPopup(POPUP_NAME_NODE_CONTEXT_MENU);
 	}
 	// TODO there are more contextual menus, see blueprints-example.cpp line 1545
 
@@ -148,6 +150,17 @@ void Editor::GuiDrawPopups() {
 		showWindowResize = false;
 	}
 
+	if (ImGui::BeginPopup(POPUP_NAME_NODE_CONTEXT_MENU)) {
+		// TODO HERE: copy node / copy node values buttons
+
+		if (selectedContextMenuNode->IsVisual() && ImGui::Button("Set as Visual Output Node")) {
+			graph.SetVisualOutputNode(selectedContextMenuNode);
+			ImGui::CloseCurrentPopup();
+		}
+
+		ImGui::EndPopup();
+	}
+
 	ed::Resume();
 }
 
@@ -179,14 +192,11 @@ void Editor::LoadGraph(const std::string_view filename) {
 	}	
 }
 
-
 void Editor::DrawSelectedNode() {
-	// draw the selected node's display FBO if it's a visual node
-	if (lastSelectedVisualNode != nullptr) {
-		// visual nodes should set an FBO for GUI display!
-		// TODO this assert should be placed elsewhere (it shouldn't only fire when selected)
-		assert(lastSelectedVisualNode->gui_display_fbo != nullptr);
-		lastSelectedVisualNode->gui_display_fbo->draw(0, 0);
+	INode* visualOutputNode = graph.GetVisualOutputNode();
+	if (visualOutputNode != nullptr) {
+		assert(visualOutputNode->gui_display_fbo != nullptr);
+		visualOutputNode->gui_display_fbo->draw(0, 0);
 	}
 }
 

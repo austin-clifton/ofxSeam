@@ -328,6 +328,8 @@ void SeamGraph::NewGraph() {
     nodesUpdateOverTime.clear();
     nodesUpdateEveryFrame.clear();
 
+	visualOutputNode = nullptr;
+
 #if BUILD_AUDIO_ANALYSIS
 	while (!destructing && clearAudioNodes.load() == true) {
 		std::this_thread::yield();
@@ -423,6 +425,17 @@ void SeamGraph::DeleteNode(INode* node) {
 
     // Finally, delete the Node.
     delete node;
+}
+
+INode* SeamGraph::GetVisualOutputNode() {
+	return visualOutputNode;
+}
+
+void SeamGraph::SetVisualOutputNode(INode* node) {
+	assert(node->IsVisual());
+	visualOutputNode = node;
+
+	// TODO recalculate visual draw chain
 }
 
 bool SeamGraph::Connect(PinInput* pinIn, PinOutput* pinOut) {
@@ -641,10 +654,6 @@ bool SeamGraph::SaveGraph(const std::string_view filename, const std::vector<INo
             maxNodeId++;
             nodeMap.emplace(std::make_pair(node_id, nodesToSave[i]));
         }
-
-        size_t outputs_size, inputs_size;
-        auto output_pins = nodesToSave[i]->PinOutputs(outputs_size);
-        auto input_pins = nodesToSave[i]->PinInputs(inputs_size);
     }
 
     // Third pass: all nodes and pins should be assigned unique IDs now, and we can finally build the serialized graph.
@@ -706,6 +715,7 @@ bool SeamGraph::SaveGraph(const std::string_view filename, const std::vector<INo
     serialized_graph.setName(filename.data()); 
 	serialized_graph.setMaxNodeId(IdsDistributor::GetInstance().NextNodeId());
 	serialized_graph.setMaxPinId(IdsDistributor::GetInstance().NextPinId());
+	serialized_graph.setVisualOutputNodeId(visualOutputNode != nullptr ? visualOutputNode->id : 0);
 
     PrintGraph(serialized_graph.asReader());
 
@@ -939,6 +949,18 @@ bool SeamGraph::LoadGraph(const std::string_view filename, std::vector<SeamGraph
 
 	// Ensure that window-size related pins use the current resolution instead of the file's resolution.
 	OnWindowResized(ofGetWidth(), ofGetHeight());
+
+	auto visualOutputNodeId = node_graph.getVisualOutputNodeId();
+	if (visualOutputNodeId != 0) {
+		auto it = std::find_if(nodes.begin(), nodes.end(), [visualOutputNodeId](const INode* n) {
+			return n->id == visualOutputNodeId;
+		});
+
+		assert(it != nodes.end());
+		if (it != nodes.end()) {
+			SetVisualOutputNode(*it);
+		}
+	}
 	
     return true;
 }

@@ -57,9 +57,10 @@ struct PinConnection {
 }
 
 struct NodeGraph {
-    nodes       @0 :List(Node);
-    connections @1 :List(PinConnection);
-    name        @2 :Text;
-    maxNodeId   @3 :UInt64;
-    maxPinId    @4 :UInt64;
+    nodes               @0 :List(Node);
+    connections         @1 :List(PinConnection);
+    name                @2 :Text;
+    maxNodeId           @3 :UInt64;
+    maxPinId            @4 :UInt64;
+    visualOutputNodeId  @5 :UInt64;
 }
