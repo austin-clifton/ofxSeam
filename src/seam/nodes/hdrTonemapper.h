@@ -54,7 +54,7 @@ namespace seam::nodes {
         ofShader tonemapShader;
 
 		std::array<PinInput, 2> pinInputs = {
-			pins::SetupInputPin(PinType::FBO_RGBA16F, this, &hdrFbo, 1, "HDR FBO",
+			pins::SetupInputPin(PinType::FboRgba16F, this, &hdrFbo, 1, "HDR FBO",
 				PinInOptions::WithChangedCallbacks(
 					std::bind(&HdrTonemapper::RebindTexture, this),
 					[this]() {
@@ -64,10 +64,10 @@ namespace seam::nodes {
 					}
 				)
 			),
-			pins::SetupInputPin(PinType::FLOAT, this, &gamma, 1, "Gamma"),
+			pins::SetupInputPin(PinType::Float, this, &gamma, 1, "Gamma"),
 		};
         
         PinOutput pinOutFbo = pins::SetupOutputStaticFboPin(
-			this, &tonemappedFbo, pins::PinType::FBO_RGBA, "Tonemapped FBO");
+			this, &tonemappedFbo, pins::PinType::FboRgba, "Tonemapped FBO");
 	};
 }

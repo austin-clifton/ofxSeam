@@ -9,7 +9,7 @@ using namespace seam::nodes;
 using namespace seam::notes;
 
 ForceGrid::ForceGrid() : INode("Force Grid") {
-	flags = (NodeFlags)(flags | NodeFlags::IS_VISUAL);
+	flags = (NodeFlags)(flags | NodeFlags::IsVisual);
 	pinNotesOnStream = &pin_inputs[2];
 	pinNotesOffStream = &pin_inputs[3];
 
@@ -92,23 +92,23 @@ void ForceGrid::Update(UpdateParams* params) {
 		nf.cpu.time += params->delta_time;
 
 		switch (nf.cpu.state) {
-		case ForceState::BIRTH:
+		case ForceState::Birth:
 			if (nf.cpu.time > birth_time) {
 				// transition to LIVE state
-				nf.cpu.state = ForceState::LIVE;
+				nf.cpu.state = ForceState::Live;
 				nf.cpu.time = 0.f;
 				AnimateLife(nf);
 			}
 			AnimateBirth(nf);
 			break;
 
-		case ForceState::LIVE:
+		case ForceState::Live:
 			// notes don't transition to dying until a MIDI note off event is received
 			// TODO a fail-safe death after some time may be desirable here
 			AnimateLife(nf);
 			break;
 
-		case ForceState::DYING:
+		case ForceState::Dying:
 			if (nf.cpu.time > death_time) {
 				// DIE
 				// replace with the force in the back and decrement note_forces_size

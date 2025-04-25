@@ -35,14 +35,14 @@ namespace seam::nodes {
 
 		std::array<PinInput, 4> pin_inputs = {
 			pins::SetupInputFlowPin(this, [this] { eventTriggered = true; }, "Trigger"),
-			pins::SetupInputQueuePin(PinType::NOTE_EVENT, this, notesOnStreamPinName),
-			pins::SetupInputPin(PinType::FLOAT, this, &curveModifier, 1, "Curve Modifier", 
+			pins::SetupInputQueuePin(PinType::NoteEvent, this, notesOnStreamPinName),
+			pins::SetupInputPin(PinType::Float, this, &curveModifier, 1, "Curve Modifier", 
 				PinInOptions("0 for linear, positive for an x^N curve, negative for x^(1 / -N) curve")),
-			pins::SetupInputPin(PinType::FLOAT, this, &totalTriggerTime, 1, "Total Trigger Time", 
+			pins::SetupInputPin(PinType::Float, this, &totalTriggerTime, 1, "Total Trigger Time", 
 				PinInOptions("the total amount of time each trigger animation runs for, in seconds")),
 		};
 
-		PinOutput pinOutCurve = pins::SetupOutputPin(this, pins::PinType::FLOAT, "Trigger Curve");
-		PinOutput pinOutTriggered = pins::SetupOutputPin(this, pins::PinType::FLOW, "On Triggered");
+		PinOutput pinOutCurve = pins::SetupOutputPin(this, pins::PinType::Float, "Trigger Curve");
+		PinOutput pinOutTriggered = pins::SetupOutputPin(this, pins::PinType::Flow, "On Triggered");
 	};
 }

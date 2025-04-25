@@ -28,16 +28,16 @@ namespace seam::nodes {
 		float phase_shift = 0.f;
 		
 		std::array<PinInput, 4> pin_inputs = {
-			pins::SetupInputPin(PinType::FLOAT, this, &frequency, 1, "Frequency",
+			pins::SetupInputPin(PinType::Float, this, &frequency, 1, "Frequency",
 				PinInOptions("a frequency of one will oscillate once per second; two will oscillate twice per second, etc.", &frequencyMeta)),
-			pins::SetupInputPin(PinType::FLOAT, this, &amplitude, 1, "Amplitude", 
+			pins::SetupInputPin(PinType::Float, this, &amplitude, 1, "Amplitude", 
 				PinInOptions("all values are multiplied by this number")),
-			pins::SetupInputPin(PinType::FLOAT, this, &amplitude_shift, 1, "Amplitude_Shift", 
+			pins::SetupInputPin(PinType::Float, this, &amplitude_shift, 1, "Amplitude_Shift", 
 				PinInOptions("is added to all values")),
-			pins::SetupInputPin(PinType::FLOAT, this, &phase_shift, 1, "Phase_Shift", 
+			pins::SetupInputPin(PinType::Float, this, &phase_shift, 1, "Phase_Shift", 
 				PinInOptions("offsets oscillations")),
 		};
 
-		PinOutput pin_out_fval = pins::SetupOutputPin(this, pins::PinType::FLOAT, "output");
+		PinOutput pin_out_fval = pins::SetupOutputPin(this, pins::PinType::Float, "output");
 	};
 }

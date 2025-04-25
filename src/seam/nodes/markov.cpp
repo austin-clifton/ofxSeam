@@ -4,7 +4,7 @@ using namespace seam;
 using namespace seam::nodes;
 
 Markov::Markov() : INode("Markov") {
-	flags = (NodeFlags)(NodeFlags::UPDATES_OVER_TIME | flags);
+	flags = (NodeFlags)(NodeFlags::UpdatesOverTime | flags);
 	Reconfigure();
 }
 

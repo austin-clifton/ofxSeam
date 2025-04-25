@@ -7,9 +7,22 @@ namespace seam::flags {
 	/// \return true if in_flags & raised_flags == raised_flags
 	template <typename T>
 	bool AreRaised(T in_flags, T raised_flags) {
-		return ((in_flags & raised_flags) == raised_flags);
+		return (T((uint64_t)in_flags & (uint64_t)raised_flags) == raised_flags);
 	}
-
-
-
 }
+
+#define DeclareFlagOperators(enumFlagType, underlyingDataType) \
+	enumFlagType operator|(enumFlagType lhs, enumFlagType rhs); \
+	enumFlagType operator&(enumFlagType lhs, enumFlagType rhs); \
+
+#define DefineFlagOperators(enumFlagType, underlyingDataType) \
+	enumFlagType operator|(enumFlagType lhs, enumFlagType rhs) { \
+		return static_cast<enumFlagType>( \
+			static_cast<underlyingDataType>(lhs) | static_cast<underlyingDataType>(rhs) \
+		); \
+	} \
+	enumFlagType operator&(enumFlagType lhs, enumFlagType rhs) { \
+		return static_cast<enumFlagType>( \
+			static_cast<underlyingDataType>(lhs) & static_cast<underlyingDataType>(rhs) \
+		); \
+	}

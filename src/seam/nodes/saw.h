@@ -26,14 +26,14 @@ namespace seam::nodes {
 		float fallingEdge = 0.01f;
 
 		std::array<PinInput, 4> pin_inputs = {
-			pins::SetupInputPin(PinType::FLOAT, this, &frequency, 1, "Frequency"),
-			pins::SetupInputPin(PinType::FLOAT, this, &leadingEdge, 1, "Leading Edge", 
+			pins::SetupInputPin(PinType::Float, this, &frequency, 1, "Frequency"),
+			pins::SetupInputPin(PinType::Float, this, &leadingEdge, 1, "Leading Edge", 
 				PinInOptions("right before the saw wave snap, the value will be this")),
-			pins::SetupInputPin(PinType::FLOAT, this, &fallingEdge, 1, "Falling Edge", 
+			pins::SetupInputPin(PinType::Float, this, &fallingEdge, 1, "Falling Edge", 
 				PinInOptions("right after the saw wave snap, the value will be this")),
 			pins::SetupInputFlowPin(this, [&] { Reset(); }, "Reset"),
 		};
 
-		PinOutput pin_out_fval = pins::SetupOutputPin(this, pins::PinType::FLOAT, "output");
+		PinOutput pin_out_fval = pins::SetupOutputPin(this, pins::PinType::Float, "output");
 	};
 }

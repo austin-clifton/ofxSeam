@@ -17,21 +17,23 @@ namespace {
 }
 
 namespace seam::pins {
+	DefineFlagOperators(PinFlags, uint16_t);
+
 	props::NodePropertyType PinTypeToPropType(PinType pinType) {
 		using namespace seam::props;
 		switch (pinType) {
-		case PinType::BOOL:
-			return NodePropertyType::PROP_BOOL;
-		case PinType::CHAR:
-			return NodePropertyType::PROP_CHAR;
-		case PinType::FLOAT:
-			return NodePropertyType::PROP_FLOAT;
-		case PinType::INT:
-			return NodePropertyType::PROP_INT;
-		case PinType::UINT:
-			return NodePropertyType::PROP_UINT;
-		case PinType::STRING:
-			return NodePropertyType::PROP_STRING;
+		case PinType::Bool:
+			return NodePropertyType::Bool;
+		case PinType::Char:
+			return NodePropertyType::Char;
+		case PinType::Float:
+			return NodePropertyType::Float;
+		case PinType::Int:
+			return NodePropertyType::Int;
+		case PinType::Uint:
+			return NodePropertyType::Uint;
+		case PinType::String:
+			return NodePropertyType::String;
 		default:
 			throw std::logic_error("Only some pin types can be converted to property types");
 		}
@@ -40,15 +42,15 @@ namespace seam::pins {
 	PinType SerializedPinTypeToPinType(seam::schema::PinValue::Which serializedType) {
 		switch (serializedType) {
 			case seam::schema::PinValue::Which::BOOL_VALUE:
-				return PinType::BOOL;
+				return PinType::Bool;
 			case seam::schema::PinValue::Which::FLOAT_VALUE:
-				return PinType::FLOAT;
+				return PinType::Float;
 			case seam::schema::PinValue::Which::INT_VALUE:
-				return PinType::INT;
+				return PinType::Int;
 			case seam::schema::PinValue::Which::UINT_VALUE:
-				return PinType::UINT;
+				return PinType::Uint;
 			case seam::schema::PinValue::Which::STRING_VALUE:
-				return PinType::STRING;
+				return PinType::String;
 			default:
 				throw std::logic_error("Unimplemented?");
 		}
@@ -70,7 +72,7 @@ namespace seam::pins {
 		pinOut.type = type;
 		pinOut.name = name;
 		pinOut.SetNumCoords(numCoords);
-		pinOut.flags = (PinFlags)(flags | PinFlags::OUTPUT);
+		pinOut.flags = (PinFlags)(flags | PinFlags::Output);
 		pinOut.userp = userp;
 		return pinOut;
 	}
@@ -93,7 +95,7 @@ namespace seam::pins {
 		pinOut.node = node;
 		pinOut.type = fboType;
 		pinOut.name = name;
-		pinOut.flags = (PinFlags)(flags | PinFlags::OUTPUT);
+		pinOut.flags = (PinFlags)(flags | PinFlags::Output);
 		pinOut.userp = userp;
 
 		pinOut.SetOnConnected([fbo](PinConnectedArgs args) {
@@ -171,7 +173,7 @@ namespace seam::pins {
 			}
 
 			bool failed = false;
-			PinType pinType = PinType::TYPE_NONE;
+			PinType pinType = PinType::None;
 			uint16_t numCoords = 0;
 
 			// Now make a PinInput for the uniform.
@@ -179,35 +181,35 @@ namespace seam::pins {
 			// TODO many more possible types here, including textures.
 			switch (uniform_type) {
 			case GL_FLOAT:
-				pinType = PinType::FLOAT;
+				pinType = PinType::Float;
 				numCoords = 1;
 				break;
 			case GL_INT:
-				pinType = PinType::INT;
+				pinType = PinType::Int;
 				numCoords = 1;
 				break;
 			case GL_UNSIGNED_INT:
-				pinType = PinType::UINT;
+				pinType = PinType::Uint;
 				numCoords = 1;
 				break;
 			case GL_FLOAT_VEC2:
-				pinType = PinType::FLOAT;
+				pinType = PinType::Float;
 				numCoords = 2;
 				break;
 			case GL_FLOAT_VEC3:
-				pinType = PinType::FLOAT;
+				pinType = PinType::Float;
 				numCoords = 3;
 				break;
 			case GL_INT_VEC2:
-				pinType = PinType::INT;
+				pinType = PinType::Int;
 				numCoords = 2;
 				break;
 			case GL_UNSIGNED_INT_VEC2:
-				pinType = PinType::UINT;
+				pinType = PinType::Uint;
 				numCoords = 2;
 				break;
 			case GL_SAMPLER_2D_ARB:
-				pinType = PinType::FBO_RGBA;
+				pinType = PinType::FboRgba;
 				numCoords = 1;
 				break;
 			default:
@@ -262,21 +264,21 @@ namespace seam::pins {
 
 			// fill the Pin's default values
 			switch (pinIn.type) {
-			case PinType::FLOAT:
+			case PinType::Float:
 				glGetnUniformfv(program, uniform_location, 
 					pinIn.NumCoords() * sizeof(float), (float*)buffer);
 				break;
-			case PinType::INT:
+			case PinType::Int:
 				glGetnUniformiv(program, uniform_location, 
 					pinIn.NumCoords() * sizeof(int32_t), (int32_t*)buffer);
 				break;
-			case PinType::UINT:
+			case PinType::Uint:
 				glGetnUniformuiv(program, uniform_location, 
 					pinIn.NumCoords() * sizeof(uint32_t), (uint32_t*)buffer);
 				break;
-			case PinType::FBO_RGBA:
-			case PinType::FBO_RGBA16F:
-			case PinType::FBO_RED:
+			case PinType::FboRgba:
+			case PinType::FboRgba16F:
+			case PinType::FboRed:
 				memset(buffer, 0, sizeof(ofFbo**));
 				break;
 			}
@@ -403,11 +405,11 @@ namespace seam::pins {
 		std::string_view name
 	) {
 		std::vector<PinInput> childPins = {
-			pins::SetupInputPin(PinType::FLOAT, node, &v.x, 1, "X"),
-			pins::SetupInputPin(PinType::FLOAT, node, &v.y, 1, "Y"),
+			pins::SetupInputPin(PinType::Float, node, &v.x, 1, "X"),
+			pins::SetupInputPin(PinType::Float, node, &v.y, 1, "Y"),
 		};
 
-		PinInput pinIn = pins::SetupInputPin(PinType::FLOAT, node, &v, 2, name);
+		PinInput pinIn = pins::SetupInputPin(PinType::Float, node, &v, 2, name);
 		pinIn.SetChildren(std::move(childPins));
 		return pinIn;
 	}
@@ -424,25 +426,25 @@ namespace seam::pins {
 
 	size_t PinTypeToElementSize(PinType type) {
 		switch (type) {
-		case PinType::BOOL:
+		case PinType::Bool:
 			return sizeof(bool);
-		case PinType::CHAR:
+		case PinType::Char:
 			return sizeof(char);
-		case PinType::FLOAT:
+		case PinType::Float:
 			return sizeof(float);
-		case PinType::ANY:
-		case PinType::FLOW:
-		case PinType::STRUCT:
+		case PinType::Any:
+		case PinType::Flow:
+		case PinType::Struct:
 			return 0;
-		case PinType::INT:
+		case PinType::Int:
 			return sizeof(int32_t);
-		case PinType::UINT:
+		case PinType::Uint:
 			return sizeof(uint32_t);
-		case PinType::NOTE_EVENT:
+		case PinType::NoteEvent:
 			return sizeof(notes::NoteEvent*);
-		case PinType::FBO_RGBA:
-		case PinType::FBO_RGBA16F:
-		case PinType::FBO_RED:
+		case PinType::FboRgba:
+		case PinType::FboRgba16F:
+		case PinType::FboRed:
 			return sizeof(ofFbo*);
 		default:
 			throw std::runtime_error("Unknown pin type! You need to provide the element size in bytes yourself.");

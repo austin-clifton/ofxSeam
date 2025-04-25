@@ -40,7 +40,7 @@ namespace seam::nodes {
 		
 		float currentStateDuration = 0.f;
 
-		PinOutput pinOutSelection = pins::SetupOutputPin(this, pins::PinType::INT, "Selection");
-		PinOutput pinOutChangedEvent = pins::SetupOutputPin(this, pins::PinType::FLOW, "Gate Changed Event");
+		PinOutput pinOutSelection = pins::SetupOutputPin(this, pins::PinType::Int, "Selection");
+		PinOutput pinOutChangedEvent = pins::SetupOutputPin(this, pins::PinType::Flow, "Gate Changed Event");
 	};
 }

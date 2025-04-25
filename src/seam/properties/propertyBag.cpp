@@ -23,7 +23,7 @@ PropertyBag::PropertyBag(PropertyReader _reader) {
 
 PropertyBag::Property<int32_t> PropertyBag::GetIntProperty(const char* propName) {
     ValuesReader valuesReader;
-    Property<int32_t> prop = GetProperty<int32_t>(propName, NodePropertyType::PROP_INT, valuesReader);
+    Property<int32_t> prop = GetProperty<int32_t>(propName, NodePropertyType::Int, valuesReader);
     if (prop.name != nullptr) {
         // Fill the Property with values from the reader.
         for (uint32_t i = 0; i < valuesReader.size(); i++) {
@@ -36,7 +36,7 @@ PropertyBag::Property<int32_t> PropertyBag::GetIntProperty(const char* propName)
 
 PropertyBag::Property<uint32_t> PropertyBag::GetUIntProperty(const char* propName) {
     ValuesReader valuesReader;
-    Property<uint32_t> prop = GetProperty<uint32_t>(propName, NodePropertyType::PROP_UINT, valuesReader);
+    Property<uint32_t> prop = GetProperty<uint32_t>(propName, NodePropertyType::Uint, valuesReader);
     if (prop.name != nullptr) {
         // Fill the Property with values from the reader.
         for (uint32_t i = 0; i < valuesReader.size(); i++) {
@@ -49,7 +49,7 @@ PropertyBag::Property<uint32_t> PropertyBag::GetUIntProperty(const char* propNam
 
 PropertyBag::Property<float> PropertyBag::GetFloatProperty(const char* propName) {
     ValuesReader valuesReader;
-    Property<float> prop = GetProperty<float>(propName, NodePropertyType::PROP_FLOAT, valuesReader);
+    Property<float> prop = GetProperty<float>(propName, NodePropertyType::Float, valuesReader);
     if (prop.name != nullptr) {
         // Fill the Property with values from the reader.
         for (uint32_t i = 0; i < valuesReader.size(); i++) {
@@ -62,7 +62,7 @@ PropertyBag::Property<float> PropertyBag::GetFloatProperty(const char* propName)
 
 PropertyBag::Property<bool> PropertyBag::GetBoolProperty(const char* propName) {
     ValuesReader valuesReader;
-    Property<bool> prop = GetProperty<bool>(propName, NodePropertyType::PROP_BOOL, valuesReader);
+    Property<bool> prop = GetProperty<bool>(propName, NodePropertyType::Bool, valuesReader);
     if (prop.name != nullptr) {
         // Fill the Property with values from the reader.
         for (uint32_t i = 0; i < valuesReader.size(); i++) {
@@ -75,7 +75,7 @@ PropertyBag::Property<bool> PropertyBag::GetBoolProperty(const char* propName) {
 
 PropertyBag::Property<string> PropertyBag::GetStringProperty(const char* propName) {
     ValuesReader valuesReader;
-    Property<string> prop = GetProperty<string>(propName, NodePropertyType::PROP_STRING, valuesReader);
+    Property<string> prop = GetProperty<string>(propName, NodePropertyType::String, valuesReader);
     if (prop.name != nullptr) {
         // Fill the Property with values from the reader.
         for (uint32_t i = 0; i < valuesReader.size(); i++) {
@@ -103,7 +103,7 @@ PropertyBag::Property<T> PropertyBag::GetProperty(
         if (outValuesReader.size() == 0) {
             printf("PropertyBag: Property %s has no values\n", prop.name);
             return Property<T>();
-        } else if (propType != NodePropertyType::PROP_NONE && serializedType != propType) {
+        } else if (propType != NodePropertyType::None && serializedType != propType) {
             printf("PropertyBag: Property %s doesn't have the expected type, cannot deserialize!\n", prop.name);
             return Property<T>();
         }

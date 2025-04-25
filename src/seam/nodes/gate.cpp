@@ -12,7 +12,7 @@ Gate::~Gate() {
 }
 
 void Gate::Setup(SetupParams* params) {
-	pinInputs.push_back(SetupInputPin(PinType::INT, this, &selectedGate, 1, "Selected Gate"));
+	pinInputs.push_back(SetupInputPin(PinType::Int, this, &selectedGate, 1, "Selected Gate"));
 	UpdateGatesCount(2);
 }
 
@@ -118,6 +118,6 @@ void Gate::ResizeGatedValues() {
 PinInput* Gate::AddGatePin(const std::string_view name) {
 	gatesCount += 1;
 	ResizeGatedValues();
-	pinInputs.push_back(SetupInputPin(PinType::FLOAT, this, &gatedValues[gatedValues.size() - numCoords], 1, name));
+	pinInputs.push_back(SetupInputPin(PinType::Float, this, &gatedValues[gatedValues.size() - numCoords], 1, name));
 	return &pinInputs[pinInputs.size() - 1];
 }

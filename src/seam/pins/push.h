@@ -63,7 +63,7 @@ namespace seam::pins {
 		/// @param numElements The number of elements pointed to by the data pointer.
 		template <typename T>
 		void Push(PinOutput& pinOut, T* data, size_t numElements) {
-			const bool isEventQueuePin = flags::AreRaised(pinOut.flags, pins::PinFlags::EVENT_QUEUE);
+			const bool isEventQueuePin = flags::AreRaised(pinOut.flags, pins::PinFlags::EventQueue);
 			// Event queue pins don't use push patterns, they just push to the input pins' vectors
 			if (isEventQueuePin) {
 				for (auto& conn : pinOut.connections) {
@@ -71,11 +71,11 @@ namespace seam::pins {
 					conn.pinIn->node->SetDirty();
 
 					// Input pins should either be event queue input pins, or flow pins.
-					if (flags::AreRaised(conn.pinIn->flags, pins::PinFlags::EVENT_QUEUE)) {
+					if (flags::AreRaised(conn.pinIn->flags, pins::PinFlags::EventQueue)) {
 						// Push the output pin's data to the back of the input pin's vector
 						conn.pinIn->PushEvents(data, numElements);
 					} else {
-						assert(conn.pinIn->type == PinType::FLOW);
+						assert(conn.pinIn->type == PinType::Flow);
 						conn.pinIn->OnValueChanged();
 					}
 				}
@@ -105,7 +105,7 @@ namespace seam::pins {
 			bool pushed = false;
 
 			// Use Push() instead of PushSingle() for event queue pins!
-			assert(!flags::AreRaised(pinOut.flags, pins::PinFlags::EVENT_QUEUE));
+			assert(!flags::AreRaised(pinOut.flags, pins::PinFlags::EventQueue));
 			for (auto& conn : pinOut.connections) {
 				conn.pinIn->node->SetDirty();
 
@@ -130,7 +130,7 @@ namespace seam::pins {
 		}
 
 		void PushFlow(const PinOutput& pinOut) {
-			assert(pinOut.type == PinType::FLOW);
+			assert(pinOut.type == PinType::Flow);
 			for (auto& conn : pinOut.connections) {
 				conn.pinIn->OnValueChanged();
 			}

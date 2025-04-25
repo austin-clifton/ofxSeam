@@ -21,7 +21,7 @@ void Serialize(ValuesBuilder& builder, NodePropertyType type, PinInput* pinIn)
     const uint16_t numCoords = pinIn->NumCoords();
 
     switch (type) {
-    case NodePropertyType::PROP_BOOL: {
+    case NodePropertyType::Bool: {
         for (size_t i = 0; i < srcSize; i++) {
             bool* boolVals = (bool*)((char*)buff + i * stride);
             for (size_t j = 0; j < numCoords; j++) {
@@ -30,7 +30,7 @@ void Serialize(ValuesBuilder& builder, NodePropertyType type, PinInput* pinIn)
         }
         break;
     }
-    case NodePropertyType::PROP_INT: {
+    case NodePropertyType::Int: {
         for (size_t i = 0; i < srcSize; i++) {
             int32_t* intVals = (int32_t*)((char*)buff + i * stride);
             for (size_t j = 0; j < numCoords; j++) {
@@ -39,7 +39,7 @@ void Serialize(ValuesBuilder& builder, NodePropertyType type, PinInput* pinIn)
         }
         break;
     }
-    case NodePropertyType::PROP_UINT: {
+    case NodePropertyType::Uint: {
         for (size_t i = 0; i < srcSize; i++) {
             uint32_t* uintVals = (uint32_t*)((char*)buff + i * stride);
             for (size_t j = 0; j < numCoords; j++) {
@@ -48,7 +48,7 @@ void Serialize(ValuesBuilder& builder, NodePropertyType type, PinInput* pinIn)
         }
         break;
     }
-    case NodePropertyType::PROP_FLOAT: {
+    case NodePropertyType::Float: {
         for (size_t i = 0; i < srcSize; i++) {
             float* floatVals = (float*)((char*)buff + i * stride);
             for (size_t j = 0; j < numCoords; j++) {
@@ -57,7 +57,7 @@ void Serialize(ValuesBuilder& builder, NodePropertyType type, PinInput* pinIn)
         }
         break;
     }
-    case NodePropertyType::PROP_STRING:
+    case NodePropertyType::String:
         for (size_t i = 0; i < srcSize; i++) {
             std::string* stringVals = (std::string*)((char*)buff + i * stride);
             for (size_t j = 0; j < numCoords; j++) {
@@ -65,7 +65,7 @@ void Serialize(ValuesBuilder& builder, NodePropertyType type, PinInput* pinIn)
             }
         }
         break;
-    case NodePropertyType::PROP_CHAR:
+    case NodePropertyType::Char:
 
 
     default:
@@ -97,7 +97,7 @@ void Deserialize(const seam::schema::PinIn::Reader& serializedPin, PinInput* pin
     }
 
     switch (type) {
-    case NodePropertyType::PROP_BOOL: {
+    case NodePropertyType::Bool: {
         if (serializedValues[0].isBoolValue()) {
             // Make sure each loop around won't go out of bounds in the src array.
             for (size_t i = 0; i < dstSize && i * srcNumCoords + minNumCoords - 1 < serializedValues.size(); i++) {
@@ -110,7 +110,7 @@ void Deserialize(const seam::schema::PinIn::Reader& serializedPin, PinInput* pin
         }
         break;
     }
-    case NodePropertyType::PROP_FLOAT: {
+    case NodePropertyType::Float: {
         if (serializedValues[0].isFloatValue()) {
             // Make sure each loop around won't go out of bounds in the src array.
             for (size_t i = 0; i < dstSize && i * srcNumCoords + minNumCoords - 1 < serializedValues.size(); i++) {
@@ -123,7 +123,7 @@ void Deserialize(const seam::schema::PinIn::Reader& serializedPin, PinInput* pin
         }
         break;
     }
-    case NodePropertyType::PROP_INT: {
+    case NodePropertyType::Int: {
         if (serializedValues[0].isIntValue()) {
             // Make sure each loop around won't go out of bounds in the src array.
             for (size_t i = 0; i < dstSize && i * srcNumCoords + minNumCoords - 1 < serializedValues.size(); i++) {
@@ -136,7 +136,7 @@ void Deserialize(const seam::schema::PinIn::Reader& serializedPin, PinInput* pin
         }
         break;
     }
-    case NodePropertyType::PROP_UINT: {
+    case NodePropertyType::Uint: {
         if (serializedValues[0].isUintValue()) {
             // Make sure each loop around won't go out of bounds in the src array.
             for (size_t i = 0; i < dstSize && i * srcNumCoords + minNumCoords - 1 < serializedValues.size(); i++) {
@@ -149,7 +149,7 @@ void Deserialize(const seam::schema::PinIn::Reader& serializedPin, PinInput* pin
         }
         break;
     }
-    case NodePropertyType::PROP_STRING: {
+    case NodePropertyType::String: {
         if (serializedValues[0].isStringValue()) {
             // Make sure each loop around won't go out of bounds in the src array.
             for (size_t i = 0; i < dstSize && i * srcNumCoords + minNumCoords - 1 < serializedValues.size(); i++) {
@@ -177,35 +177,35 @@ void SerializeProperty(ValuesBuilder& builder, NodePropertyType type, void* srcB
     }
 
     switch (type) {
-    case NodePropertyType::PROP_BOOL: {
+    case NodePropertyType::Bool: {
         bool* bool_values = (bool*)srcBuff;
         for (size_t i = 0; i < srcElementsCount; i++) {
             builder[i].setBoolValue(bool_values[i]);
         }
         break;
     }
-    case NodePropertyType::PROP_INT: {
+    case NodePropertyType::Int: {
         int32_t* int_values = (int32_t*)srcBuff;
         for (size_t i = 0; i < srcElementsCount; i++) {
             builder[i].setIntValue(int_values[i]);
         }
         break;
     }
-    case NodePropertyType::PROP_UINT: {
+    case NodePropertyType::Uint: {
         uint32_t* uint_values = (uint32_t*)srcBuff;
         for (size_t i = 0; i < srcElementsCount; i++) {
             builder[i].setUintValue(uint_values[i]);
         }
         break;
     }
-    case NodePropertyType::PROP_FLOAT: {
+    case NodePropertyType::Float: {
         float* float_values = (float*)srcBuff;
         for (size_t i = 0; i < srcElementsCount; i++) {
             builder[i].setFloatValue(float_values[i]);
         }
         break;
     }
-    case NodePropertyType::PROP_STRING: {
+    case NodePropertyType::String: {
         std::string* string_values = (std::string*)srcBuff;
         for (size_t i = 0; i < srcElementsCount; i++) {
             builder[i].setStringValue(string_values[i]);
@@ -213,7 +213,7 @@ void SerializeProperty(ValuesBuilder& builder, NodePropertyType type, void* srcB
         break;
     }
 
-    case NodePropertyType::PROP_CHAR:
+    case NodePropertyType::Char:
     default:
         throw std::logic_error("not implemented yet!");
     }
@@ -225,7 +225,7 @@ void DeserializeProperty(const ValuesReader& serializedValues, NodePropertyType 
     }
 
     switch (type) {
-    case NodePropertyType::PROP_BOOL: {
+    case NodePropertyType::Bool: {
         if (serializedValues[0].isBoolValue()) {
             bool* bool_channels = (bool*)dstBuff;
             for (size_t i = 0; i < dstElementsCount && i < serializedValues.size(); i++) {
@@ -234,7 +234,7 @@ void DeserializeProperty(const ValuesReader& serializedValues, NodePropertyType 
         }
         break;
     }
-    case NodePropertyType::PROP_FLOAT: {
+    case NodePropertyType::Float: {
         if (serializedValues[0].isFloatValue()) {
             float* float_channels = (float*)dstBuff;
             for (size_t i = 0; i < dstElementsCount && i < serializedValues.size(); i++) {
@@ -243,7 +243,7 @@ void DeserializeProperty(const ValuesReader& serializedValues, NodePropertyType 
         }
         break;
     }
-    case NodePropertyType::PROP_INT: {
+    case NodePropertyType::Int: {
         if (serializedValues[0].isIntValue()) {
             int* int_channels = (int32_t*)dstBuff;
             for (size_t i = 0; i < dstElementsCount && i < serializedValues.size(); i++) {
@@ -252,7 +252,7 @@ void DeserializeProperty(const ValuesReader& serializedValues, NodePropertyType 
         }
         break;
     }
-    case NodePropertyType::PROP_UINT: {
+    case NodePropertyType::Uint: {
         if (serializedValues[0].isUintValue()) {
             uint32_t* uint_channels = (uint32_t*)dstBuff;
             for (size_t i = 0; i < dstElementsCount && i < serializedValues.size(); i++) {
@@ -261,7 +261,7 @@ void DeserializeProperty(const ValuesReader& serializedValues, NodePropertyType 
         }
         break;
     }
-    case NodePropertyType::PROP_STRING: {
+    case NodePropertyType::String: {
         if (serializedValues[0].isStringValue()) {
             std::string* string_channels = (std::string*)dstBuff;
             for (size_t i = 0; i < dstElementsCount && i < serializedValues.size(); i++) {
@@ -282,7 +282,7 @@ NodeProperty SetupFloatProperty(std::string&& name,
 {
     // Wrap the type-specific getter and setter around getters and setters that accept void*.
     // This isn't cheap, but property getters and setters are meant to be convenient, not fast...
-    return NodeProperty(std::move(name), NodePropertyType::PROP_FLOAT, [getter](size_t& size) -> void* {
+    return NodeProperty(std::move(name), NodePropertyType::Float, [getter](size_t& size) -> void* {
         return getter(size);
     }, [setter](void* data, size_t size) {
         setter((float*)data, size);
@@ -292,7 +292,7 @@ NodeProperty SetupFloatProperty(std::string&& name,
 NodeProperty SetupIntProperty(std::string&& name, 
     std::function<int32_t*(size_t&)> getter, std::function<void(int32_t*, size_t)> setter)
 {
-    return NodeProperty(std::move(name), NodePropertyType::PROP_INT, [getter](size_t& size) -> void* {
+    return NodeProperty(std::move(name), NodePropertyType::Int, [getter](size_t& size) -> void* {
         return getter(size);
     }, [setter](void* data, size_t size) {
         setter((int32_t*)data, size);
@@ -302,7 +302,7 @@ NodeProperty SetupIntProperty(std::string&& name,
 NodeProperty SetupUintProperty(std::string&& name, 
     std::function<uint32_t*(size_t&)> getter, std::function<void(uint32_t*, size_t)> setter)
 {
-    return NodeProperty(std::move(name), NodePropertyType::PROP_UINT, [getter](size_t& size) -> void* {
+    return NodeProperty(std::move(name), NodePropertyType::Uint, [getter](size_t& size) -> void* {
         return getter(size);
     }, [setter](void* data, size_t size) {
         setter((uint32_t*)data, size);
@@ -312,7 +312,7 @@ NodeProperty SetupUintProperty(std::string&& name,
 NodeProperty SetupStringProperty(std::string&& name,
     std::function<std::string*(size_t& size)> getter, std::function<void(std::string*, size_t)> setter)
 {
-    return NodeProperty(std::move(name), NodePropertyType::PROP_STRING, [getter](size_t& size) -> void* {
+    return NodeProperty(std::move(name), NodePropertyType::String, [getter](size_t& size) -> void* {
         return getter(size);
     }, [setter](void* data, size_t size) {
         setter((std::string*)data, size);
@@ -322,15 +322,15 @@ NodeProperty SetupStringProperty(std::string&& name,
 NodePropertyType SerializedPinTypeToPropType(seam::schema::PinValue::Which pinType) {
     switch (pinType) {
     case seam::schema::PinValue::Which::BOOL_VALUE:
-        return NodePropertyType::PROP_BOOL;
+        return NodePropertyType::Bool;
     case seam::schema::PinValue::Which::FLOAT_VALUE:
-        return NodePropertyType::PROP_FLOAT;
+        return NodePropertyType::Float;
     case seam::schema::PinValue::Which::INT_VALUE:
-        return NodePropertyType::PROP_INT;
+        return NodePropertyType::Int;
     case seam::schema::PinValue::Which::UINT_VALUE:
-        return NodePropertyType::PROP_UINT;
+        return NodePropertyType::Uint;
     case seam::schema::PinValue::Which::STRING_VALUE:
-        return NodePropertyType::PROP_STRING;
+        return NodePropertyType::String;
     default:
         throw std::logic_error("Unimplemented?");
     }
@@ -338,18 +338,18 @@ NodePropertyType SerializedPinTypeToPropType(seam::schema::PinValue::Which pinTy
 
 seam::schema::PinValue::Which PropTypeToSerializedPinType(NodePropertyType propType) {
     switch (propType) {
-        case NodePropertyType::PROP_BOOL:
+        case NodePropertyType::Bool:
             return seam::schema::PinValue::Which::BOOL_VALUE;
-        case NodePropertyType::PROP_FLOAT:
+        case NodePropertyType::Float:
             return seam::schema::PinValue::Which::FLOAT_VALUE;
-        case NodePropertyType::PROP_INT:
+        case NodePropertyType::Int:
             return seam::schema::PinValue::Which::INT_VALUE;
-        case NodePropertyType::PROP_CHAR:
-        case NodePropertyType::PROP_STRING:
+        case NodePropertyType::Char:
+        case NodePropertyType::String:
             return seam::schema::PinValue::Which::STRING_VALUE;
-        case NodePropertyType::PROP_UINT:
+        case NodePropertyType::Uint:
             return seam::schema::PinValue::Which::UINT_VALUE;
-        case NodePropertyType::PROP_NONE:
+        case NodePropertyType::None:
             throw std::logic_error("None is not a valid property type, is this a real Property?");
         default:
             throw std::logic_error("Unimplemented?");
@@ -358,21 +358,21 @@ seam::schema::PinValue::Which PropTypeToSerializedPinType(NodePropertyType propT
 
 size_t PropTypeToByteSize(NodePropertyType propType) {
     switch (propType) {
-        case NodePropertyType::PROP_BOOL:
+        case NodePropertyType::Bool:
             return sizeof(bool);
-        case NodePropertyType::PROP_CHAR:
+        case NodePropertyType::Char:
             return sizeof(char);
-        case NodePropertyType::PROP_FLOAT:
+        case NodePropertyType::Float:
             return sizeof(float);
-        case NodePropertyType::PROP_INT:
+        case NodePropertyType::Int:
             return sizeof(int32_t);
-        case NodePropertyType::PROP_STRING:
+        case NodePropertyType::String:
             return sizeof(std::string);
-        case NodePropertyType::PROP_UINT:
+        case NodePropertyType::Uint:
             return sizeof(uint32_t);
-        case NodePropertyType::PROP_STRUCT:
+        case NodePropertyType::Struct:
             return 0; // I think this is right for structs? They don't inherently contain data.
-        case NodePropertyType::PROP_NONE:
+        case NodePropertyType::None:
             throw std::logic_error("None is not a valid property type, is this a real Property?");
         default:
             throw std::logic_error("Unimplemented?");

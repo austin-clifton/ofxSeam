@@ -27,8 +27,8 @@ namespace seam::nodes {
 		PinInput* pinNotesOffStream;
 
 		std::array<PinInput, 2> pin_inputs = {
-			pins::SetupInputQueuePin(PinType::NOTE_EVENT, this, "Notes On Stream"),
-			pins::SetupInputQueuePin(PinType::NOTE_EVENT, this, "Notes Off Stream"),
+			pins::SetupInputQueuePin(PinType::NoteEvent, this, "Notes On Stream"),
+			pins::SetupInputQueuePin(PinType::NoteEvent, this, "Notes Off Stream"),
 		};
 	};
 }

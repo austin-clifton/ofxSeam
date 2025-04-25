@@ -25,14 +25,14 @@ namespace seam::nodes {
 		float input = 0.f;
 
 		std::array<PinInput, 3> pin_inputs = {
-			pins::SetupInputPin(PinType::FLOAT, this, &edge, 1, "Edge", 
+			pins::SetupInputPin(PinType::Float, this, &edge, 1, "Edge", 
 				PinInOptions("The input value will be compared to this edge value using the comparator.")),
-			pins::SetupInputPin(PinType::FLOAT, this, &comparator, 1, "Comparator", 
+			pins::SetupInputPin(PinType::Float, this, &comparator, 1, "Comparator", 
 				PinInOptions("When < 0, output is input < edge, when == 0 equality is used, when > 0 check input > edge" )),
-			pins::SetupInputPin(PinType::FLOAT, this, &input, 1, "Input"),
+			pins::SetupInputPin(PinType::Float, this, &input, 1, "Input"),
 		};
 
-		PinOutput pin_out_fval = pins::SetupOutputPin(this, pins::PinType::FLOAT, "Float Output");
-		PinOutput pin_out_bval = pins::SetupOutputPin(this, pins::PinType::BOOL, "Bool Output");
+		PinOutput pin_out_fval = pins::SetupOutputPin(this, pins::PinType::Float, "Float Output");
+		PinOutput pin_out_bval = pins::SetupOutputPin(this, pins::PinType::Bool, "Bool Output");
 	};
 }

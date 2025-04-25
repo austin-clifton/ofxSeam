@@ -23,6 +23,7 @@ const char* Editor::CONFIG_FILE_NAME = "seamConfig.ini";
 namespace {
 	const char* POPUP_NAME_NEW_NODE = "Create New Node";
 	const char* POPUP_NAME_WINDOW_RESIZE = "Resize Windows";
+	const char* POPUP_NAME_NODE_CONTEXT_MENU = "Node Context Menu";
 	const char* WINDOW_NAME_NODE_MENU = "Node Properties Menu";
 }
 
@@ -110,7 +111,8 @@ void Editor::GuiDrawPopups() {
 		showCreateDialog = true;
 		ImGui::OpenPopup(POPUP_NAME_NEW_NODE);
 	} else if (ed::ShowNodeContextMenu(&node_id)) {
-		// TODO this is a right click on the node, not left click
+		selectedContextMenuNode = node_id.AsPointer<INode>();
+		ImGui::OpenPopup(POPUP_NAME_NODE_CONTEXT_MENU);
 	}
 	// TODO there are more contextual menus, see blueprints-example.cpp line 1545
 
@@ -148,6 +150,17 @@ void Editor::GuiDrawPopups() {
 		showWindowResize = false;
 	}
 
+	if (ImGui::BeginPopup(POPUP_NAME_NODE_CONTEXT_MENU)) {
+		// TODO HERE: copy node / copy node values buttons
+
+		if (selectedContextMenuNode->IsVisual() && ImGui::Button("Set as Visual Output Node")) {
+			graph.SetVisualOutputNode(selectedContextMenuNode);
+			ImGui::CloseCurrentPopup();
+		}
+
+		ImGui::EndPopup();
+	}
+
 	ed::Resume();
 }
 
@@ -179,14 +192,11 @@ void Editor::LoadGraph(const std::string_view filename) {
 	}	
 }
 
-
 void Editor::DrawSelectedNode() {
-	// draw the selected node's display FBO if it's a visual node
-	if (lastSelectedVisualNode != nullptr) {
-		// visual nodes should set an FBO for GUI display!
-		// TODO this assert should be placed elsewhere (it shouldn't only fire when selected)
-		assert(lastSelectedVisualNode->gui_display_fbo != nullptr);
-		lastSelectedVisualNode->gui_display_fbo->draw(0, 0);
+	INode* visualOutputNode = graph.GetVisualOutputNode();
+	if (visualOutputNode != nullptr) {
+		assert(visualOutputNode->gui_display_fbo != nullptr);
+		visualOutputNode->gui_display_fbo->draw(0, 0);
 	}
 }
 
@@ -304,7 +314,7 @@ void Editor::GuiDraw() {
 				// figure out which Pin is the input pin, and which is the output pin
 				Pin* pin_in = start_pin_id.AsPointer<Pin>();
 				Pin* pin_out = end_pin_id.AsPointer<Pin>();
-				if ((pin_in->flags & PinFlags::INPUT) != PinFlags::INPUT) {
+				if ((pin_in->flags & PinFlags::Input) != PinFlags::Input) {
 					// in and out are reversed, swap them
 					std::swap(pin_in, pin_out);
 				}
@@ -315,7 +325,7 @@ void Editor::GuiDraw() {
 				} else if (pin_in->type != pin_out->type) {
 					bool canConvert;
 					pins::GetConvertSingle(pin_out->type, pin_in->type, canConvert);
-					if (canConvert || pin_in->type == PinType::ANY) {
+					if (canConvert || pin_in->type == PinType::Any) {
 						showLabel("+ Create Link", ImColor(32, 45, 32, 180));
 						if (ed::AcceptNewItem(ImColor(128, 255, 128), 4.0f)) {
 							Connect((PinInput*)pin_in, (PinOutput*)pin_out);
@@ -325,8 +335,8 @@ void Editor::GuiDraw() {
 						ed::RejectNewItem(ImColor(255, 128, 128), 1.0f);
 					}
 				} else if (
-					(pin_in->flags & PinFlags::INPUT) != PinFlags::INPUT
-					|| (pin_out->flags & PinFlags::OUTPUT) != PinFlags::OUTPUT
+					(pin_in->flags & PinFlags::Input) != PinFlags::Input
+					|| (pin_out->flags & PinFlags::Output) != PinFlags::Output
 				) {
 					showLabel("x Connections must be made from input to output", ImColor(45, 32, 32, 180));
 					ed::RejectNewItem(ImColor(255, 128, 128), 1.0f);

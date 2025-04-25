@@ -95,12 +95,12 @@ namespace {
 			}
 
 			// Don't serialize channels if this input type doesn't have serializable state
-			if (pinIn.type == PinType::FLOW
-				|| pinIn.type == PinType::FBO_RGBA
-				|| pinIn.type == PinType::FBO_RGBA16F
-				|| pinIn.type == PinType::FBO_RED
-				|| pinIn.type == PinType::NOTE_EVENT
-				|| pinIn.type == PinType::STRUCT
+			if (pinIn.type == PinType::Flow
+				|| pinIn.type == PinType::FboRgba
+				|| pinIn.type == PinType::FboRgba16F
+				|| pinIn.type == PinType::FboRed
+				|| pinIn.type == PinType::NoteEvent
+				|| pinIn.type == PinType::Struct
 			) {
 				continue;
 			}
@@ -122,7 +122,7 @@ namespace {
 
 			builder.setId(pinOut.id);
 			builder.setName(pinOut.name);
-			builder.setType(pinOut.type);
+			builder.setType((uint16_t)pinOut.type);
 			builder.setNumCoords(pinOut.NumCoords());
 
 			// Remember what connections this output has so we can serialize all the connections after this loop.
@@ -328,6 +328,8 @@ void SeamGraph::NewGraph() {
     nodesUpdateOverTime.clear();
     nodesUpdateEveryFrame.clear();
 
+	visualOutputNode = nullptr;
+
 #if BUILD_AUDIO_ANALYSIS
 	while (!destructing && clearAudioNodes.load() == true) {
 		std::this_thread::yield();
@@ -425,9 +427,20 @@ void SeamGraph::DeleteNode(INode* node) {
     delete node;
 }
 
+INode* SeamGraph::GetVisualOutputNode() {
+	return visualOutputNode;
+}
+
+void SeamGraph::SetVisualOutputNode(INode* node) {
+	assert(node->IsVisual());
+	visualOutputNode = node;
+
+	// TODO recalculate visual draw chain
+}
+
 bool SeamGraph::Connect(PinInput* pinIn, PinOutput* pinOut) {
-	assert((pinIn->flags & PinFlags::INPUT) == PinFlags::INPUT);
-	assert((pinOut->flags & PinFlags::OUTPUT) == PinFlags::OUTPUT);
+	assert((pinIn->flags & PinFlags::Input) == PinFlags::Input);
+	assert((pinOut->flags & PinFlags::Output) == PinFlags::Output);
 
 	INode* parent = pinOut->node;
 	INode* child = pinIn->node;
@@ -467,8 +480,8 @@ bool SeamGraph::Connect(PinInput* pinIn, PinOutput* pinOut) {
 }
 
 bool SeamGraph::Disconnect(PinInput* pinIn, PinOutput* pinOut) {
-    assert((pinIn->flags & PinFlags::INPUT) == PinFlags::INPUT);
-	assert((pinOut->flags & PinFlags::OUTPUT) == PinFlags::OUTPUT);
+    assert((pinIn->flags & PinFlags::Input) == PinFlags::Input);
+	assert((pinOut->flags & PinFlags::Output) == PinFlags::Output);
 
 	INode* parent = pinOut->node;
 	INode* child = pinIn->node;
@@ -641,10 +654,6 @@ bool SeamGraph::SaveGraph(const std::string_view filename, const std::vector<INo
             maxNodeId++;
             nodeMap.emplace(std::make_pair(node_id, nodesToSave[i]));
         }
-
-        size_t outputs_size, inputs_size;
-        auto output_pins = nodesToSave[i]->PinOutputs(outputs_size);
-        auto input_pins = nodesToSave[i]->PinInputs(inputs_size);
     }
 
     // Third pass: all nodes and pins should be assigned unique IDs now, and we can finally build the serialized graph.
@@ -706,6 +715,7 @@ bool SeamGraph::SaveGraph(const std::string_view filename, const std::vector<INo
     serialized_graph.setName(filename.data()); 
 	serialized_graph.setMaxNodeId(IdsDistributor::GetInstance().NextNodeId());
 	serialized_graph.setMaxPinId(IdsDistributor::GetInstance().NextPinId());
+	serialized_graph.setVisualOutputNodeId(visualOutputNode != nullptr ? visualOutputNode->id : 0);
 
     PrintGraph(serialized_graph.asReader());
 
@@ -775,27 +785,27 @@ bool SeamGraph::LoadGraph(const std::string_view filename, std::vector<SeamGraph
 					}
 
 					switch (prop.type) {
-						case props::NodePropertyType::PROP_INT: {
+						case props::NodePropertyType::Int: {
 							std::vector<int32_t> values = props::Deserialize<int32_t>(propValues, prop.type);
 							prop.setValues(&values[0], values.size());
 							break;
 						}
-						case props::NodePropertyType::PROP_UINT: {
+						case props::NodePropertyType::Uint: {
 							std::vector<uint32_t> values = props::Deserialize<uint32_t>(propValues, prop.type);
 							prop.setValues(&values[0], values.size());
 							break;
 						}
-						case props::NodePropertyType::PROP_FLOAT: {
+						case props::NodePropertyType::Float: {
 							std::vector<float> values = props::Deserialize<float>(propValues, prop.type);
 							prop.setValues(&values[0], values.size());
 							break;
 						}
-						case props::NodePropertyType::PROP_STRING: {
+						case props::NodePropertyType::String: {
 							std::vector<std::string> values = props::Deserialize<std::string>(propValues, prop.type);
 							prop.setValues(&values[0], values.size());
 							break;
 						}
-						case props::NodePropertyType::PROP_BOOL: {
+						case props::NodePropertyType::Bool: {
 							// Can't use std::vector<bool> since it packs data tighter than is desirable here.
 							bool* buff = new bool[propValues.size()];
 							props::DeserializeProperty(propValues, prop.type, buff, propValues.size());
@@ -837,7 +847,7 @@ bool SeamGraph::LoadGraph(const std::string_view filename, std::vector<SeamGraph
 			if (matchPos != nullptr) {
 				PinInput* match = matchPos;
 				// If this is a vector pin, first set its size.
-				if ((match->flags & PinFlags::VECTOR) == PinFlags::VECTOR) {
+				if ((match->flags & PinFlags::Vector) == PinFlags::Vector) {
 					VectorPinInput* vectorPin = (VectorPinInput*)match->seamp;
 					vectorPin->UpdateSize(serialized_pin_in.getChildren().size());
 				}
@@ -939,6 +949,18 @@ bool SeamGraph::LoadGraph(const std::string_view filename, std::vector<SeamGraph
 
 	// Ensure that window-size related pins use the current resolution instead of the file's resolution.
 	OnWindowResized(ofGetWidth(), ofGetHeight());
+
+	auto visualOutputNodeId = node_graph.getVisualOutputNodeId();
+	if (visualOutputNodeId != 0) {
+		auto it = std::find_if(nodes.begin(), nodes.end(), [visualOutputNodeId](const INode* n) {
+			return n->id == visualOutputNodeId;
+		});
+
+		assert(it != nodes.end());
+		if (it != nodes.end()) {
+			SetVisualOutputNode(*it);
+		}
+	}
 	
     return true;
 }

@@ -4,7 +4,7 @@ using namespace seam;
 using namespace seam::nodes;
 
 Cos::Cos() : INode("Cosine") {
-	flags = (NodeFlags)(flags | NodeFlags::UPDATES_OVER_TIME);
+	flags = (NodeFlags)(flags | NodeFlags::UpdatesOverTime);
 }
 
 Cos::~Cos() {

@@ -6,7 +6,7 @@ using namespace seam::nodes;
 NotesPrinter::NotesPrinter() : INode("Notes Printer") {
 	// this is a debug tool which will never be part of a visual chain (it has no outputs).
 	// check for Update() every frame.
-	flags = (NodeFlags)(flags | NodeFlags::UPDATES_EVERY_FRAME | NodeFlags::UPDATES_OVER_TIME | NodeFlags::IS_VISUAL);
+	flags = (NodeFlags)(flags | NodeFlags::UpdatesEveryFrame | NodeFlags::UpdatesOverTime | NodeFlags::IsVisual);
 	pinNotesOnStream = &pin_inputs[0];
 	pinNotesOffStream = &pin_inputs[1];
 }

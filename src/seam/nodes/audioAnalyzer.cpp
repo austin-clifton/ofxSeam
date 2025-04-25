@@ -6,7 +6,7 @@ using namespace seam;
 using namespace seam::nodes;
 
 AudioAnalyzer::AudioAnalyzer() : INode("Audio Analyzer") {
-	flags = (NodeFlags)(flags | NodeFlags::UPDATES_OVER_TIME);
+	flags = (NodeFlags)(flags | NodeFlags::UpdatesOverTime);
 }
 
 void AudioAnalyzer::Setup(SetupParams* params) {

@@ -5,7 +5,7 @@ using namespace seam::nodes;
 using namespace seam::pins;
 
 VideoPlayer::VideoPlayer() : INode("Video Player") {
-	flags = (NodeFlags)(flags | NodeFlags::IS_VISUAL | NodeFlags::UPDATES_OVER_TIME);
+	flags = (NodeFlags)(flags | NodeFlags::IsVisual | NodeFlags::UpdatesOverTime);
     gui_display_fbo = &fbo;
 	windowFbos.push_back(WindowRatioFbo(&fbo, &pinOutFbo));
 }

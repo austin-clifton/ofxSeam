@@ -52,10 +52,10 @@ namespace seam::nodes {
 
         ThresholdConfig defaultConfig;
 
-        VectorPinInput values = VectorPinInput(PinType::FLOAT);
+        VectorPinInput values = VectorPinInput(PinType::Float);
         
-        PinInput pinInThresholds = thresholds.SetupVectorPin(this, PinType::STRUCT, "Thresholds");
-        PinInput pinInValues = values.SetupVectorPin(this, PinType::FLOAT, "Values");
+        PinInput pinInThresholds = thresholds.SetupVectorPin(this, PinType::Struct, "Thresholds");
+        PinInput pinInValues = values.SetupVectorPin(this, PinType::Float, "Values");
 
         std::vector<PinOutput> pinOutEvents;
     };

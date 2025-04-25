@@ -7,7 +7,7 @@ using namespace seam::nodes;
 const std::string Feedback::fboInputName = "Input FBO";
 
 Feedback::Feedback() : INode("Feedback") {
-	flags = (NodeFlags)(flags | NodeFlags::IS_VISUAL);
+	flags = (NodeFlags)(flags | NodeFlags::IsVisual);
 	gui_display_fbo = &fbo1;
 }
 
@@ -39,6 +39,10 @@ void Feedback::Draw(DrawParams* params) {
 	feedback_shader.setUniform1f("decay", decay);
 	feedback_shader.setUniform4f("filterColor", filterColor);
 	feedback_shader.setUniform2f("feedbackOffset", feedbackOffset);
+	
+	// TODO if/else for radial vs non-radial modes
+	feedback_shader.setUniform2f("radialFeedbackCenter", radialCenter);
+	feedback_shader.setUniform1f("radialOffset", radialOffset);
 
 	fbo_read->draw(0, 0);
 

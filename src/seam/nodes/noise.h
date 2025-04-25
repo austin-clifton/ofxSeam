@@ -31,12 +31,12 @@ namespace seam::nodes {
 		float seed;
 
 		std::array<PinInput, 3> pin_inputs = {
-			pins::SetupInputPin(PinType::FLOAT, this, &speedMultiplier, 1, "Speed"),
-			pins::SetupInputPin(PinType::FLOAT, this, &minN, 1, "Min Output"),
-			pins::SetupInputPin(PinType::FLOAT, this, &maxN, 1, "Max Output"),
+			pins::SetupInputPin(PinType::Float, this, &speedMultiplier, 1, "Speed"),
+			pins::SetupInputPin(PinType::Float, this, &minN, 1, "Min Output"),
+			pins::SetupInputPin(PinType::Float, this, &maxN, 1, "Max Output"),
 
 		};
 
-		PinOutput pinOutNoiseVal = pins::SetupOutputPin(this, pins::PinType::FLOAT, "Output");
+		PinOutput pinOutNoiseVal = pins::SetupOutputPin(this, pins::PinType::Float, "Output");
 	};
 }

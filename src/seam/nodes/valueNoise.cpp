@@ -6,7 +6,7 @@ using namespace seam;
 using namespace seam::nodes;
 
 ValueNoise::ValueNoise() : INode("Value Noise") {
-	flags = (NodeFlags)(flags | NodeFlags::IS_VISUAL);
+	flags = (NodeFlags)(flags | NodeFlags::IsVisual);
 	gui_display_fbo = &fbo;
 }
 

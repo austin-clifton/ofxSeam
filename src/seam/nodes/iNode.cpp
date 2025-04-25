@@ -22,16 +22,16 @@ namespace {
 	{
 		switch (type) {
 		default:
-		case PinType::TYPE_NONE:
-		case PinType::FLOW:     	return ImColor(255, 255, 255);
-		case PinType::BOOL:     	return ImColor(220, 48, 48);
-		case PinType::INT:      	return ImColor(68, 201, 156);
-		case PinType::FLOAT:    	return ImColor(147, 226, 74);
-		case PinType::STRING:   	return ImColor(124, 21, 153);
-		case PinType::FBO_RGBA:  	return ImColor(51, 150, 215);
-		case PinType::FBO_RGBA16F:  return ImColor(215, 150, 51);
-		case PinType::FBO_RED:  	return ImColor(215, 0, 0);
-		case PinType::STRUCT: 		return ImColor(128);
+		case PinType::None:
+		case PinType::Flow:     	return ImColor(255, 255, 255);
+		case PinType::Bool:     	return ImColor(220, 48, 48);
+		case PinType::Int:      	return ImColor(68, 201, 156);
+		case PinType::Float:    	return ImColor(147, 226, 74);
+		case PinType::String:   	return ImColor(124, 21, 153);
+		case PinType::FboRgba:  	return ImColor(51, 150, 215);
+		case PinType::FboRgba16F:  return ImColor(215, 150, 51);
+		case PinType::FboRed:  	return ImColor(215, 0, 0);
+		case PinType::Struct: 		return ImColor(128);
 		// case PinType::Function: return ImColor(218, 0, 183);
 		// case PinType::Delegate: return ImColor(255, 48, 48);
 		}
@@ -45,23 +45,23 @@ namespace {
 		ImColor color = GetIconColor(type);
 		color.Value.w = alpha;
 		switch (type) {
-		case PinType::FLOW:		    icon_type = IconType::Flow;   break;
-		case PinType::BOOL:			icon_type = IconType::Circle; break;
-		case PinType::INT:			icon_type = IconType::Circle; break;
-		case PinType::UINT:			icon_type = IconType::Circle; break;
-		case PinType::FLOAT:		icon_type = IconType::Circle; break;
-		case PinType::STRING:		icon_type = IconType::Circle; break;
-		case PinType::FBO_RGBA:		icon_type = IconType::Square; break;
-		case PinType::FBO_RGBA16F:	icon_type = IconType::Square; break;
-		case PinType::FBO_RED:		icon_type = IconType::Square; break;
-		case PinType::NOTE_EVENT:	icon_type = IconType::Grid; break;
-		case PinType::ANY:			icon_type = IconType::Diamond; break;
-		case PinType::STRUCT:		icon_type = IconType::Square; break;
+		case PinType::Flow:		    icon_type = IconType::Flow;   break;
+		case PinType::Bool:			icon_type = IconType::Circle; break;
+		case PinType::Int:			icon_type = IconType::Circle; break;
+		case PinType::Uint:			icon_type = IconType::Circle; break;
+		case PinType::Float:		icon_type = IconType::Circle; break;
+		case PinType::String:		icon_type = IconType::Circle; break;
+		case PinType::FboRgba:		icon_type = IconType::Square; break;
+		case PinType::FboRgba16F:	icon_type = IconType::Square; break;
+		case PinType::FboRed:		icon_type = IconType::Square; break;
+		case PinType::NoteEvent:	icon_type = IconType::Grid; break;
+		case PinType::Any:			icon_type = IconType::Diamond; break;
+		case PinType::Struct:		icon_type = IconType::Square; break;
 
 		// case PinType::Object:   icon_type = IconType::Circle; break;
 		// case PinType::Function: icon_type = IconType::Circle; break;
 		// case PinType::Delegate: icon_type = IconType::Square; break;
-		case PinType::TYPE_NONE:
+		case PinType::None:
 			// pins which are drawn should not have type none
 			// did you forget to set it?
 			assert(false);
@@ -73,6 +73,10 @@ namespace {
 
 		ax::Widgets::Icon(ImVec2(icon_size, icon_size), icon_type, connected, color, ImColor(.125f, .125f, .125f, alpha));
 	};
+}
+
+namespace seam::nodes {
+	DefineFlagOperators(NodeFlags, uint16_t);
 }
 
 bool INode::CompareUpdateOrder(const INode* l, const INode* r) {
@@ -255,7 +259,7 @@ bool INode::UpdateResolutionPin(glm::uvec2 resolution) {
 	PinInput* resolutionPin = FindPinInByName(this, "resolution");
 	if (resolutionPin != nullptr) {
 		// Expect resolution to be an ivec2 or uvec2
-		assert(resolutionPin->type == PinType::UINT || resolutionPin->type == PinType::INT);
+		assert(resolutionPin->type == PinType::Uint || resolutionPin->type == PinType::Int);
 		size_t size;
 		void* buffer = resolutionPin->Buffer(size);
 		assert(size * resolutionPin->NumCoords() == 2);
@@ -291,7 +295,7 @@ bool INode::GuiDrawPropertiesList(UpdateParams* params) {
 
 		ImGuiDataType imguiType = -1;
 		switch (prop.type) {
-			case NodePropertyType::PROP_BOOL: {
+			case NodePropertyType::Bool: {
 				for (size_t i = 0; i < totalElements; i++) {
 					std::string name = prop.name + " " + std::to_string(i);
 					changed = ImGui::Checkbox(name.c_str(), (bool*)&tmpBuf[i]) || changed;
@@ -302,27 +306,27 @@ bool INode::GuiDrawPropertiesList(UpdateParams* params) {
 				}
 				break;
 			}
-			case NodePropertyType::PROP_FLOAT: {
+			case NodePropertyType::Float: {
 				imguiType = ImGuiDataType_Float;
 				break;
 			}
-			case NodePropertyType::PROP_INT: {
+			case NodePropertyType::Int: {
 				imguiType = ImGuiDataType_S32;
 				break;
 			}
-			case NodePropertyType::PROP_UINT: {
+			case NodePropertyType::Uint: {
 				imguiType = ImGuiDataType_U32;
 				break;
 			}
-			case NodePropertyType::PROP_STRING: {
+			case NodePropertyType::String: {
 				// TODO
 				assert(false);
 			}
-			case NodePropertyType::PROP_STRUCT: {
+			case NodePropertyType::Struct: {
 				// TODO
 				assert(false);
 			}
-			case NodePropertyType::PROP_NONE: {
+			case NodePropertyType::None: {
 				// Why do you have a property with type none??
 				assert(false);
 			}

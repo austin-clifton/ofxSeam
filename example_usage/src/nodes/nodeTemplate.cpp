@@ -12,7 +12,7 @@ NodeTemplate::NodeTemplate() : INode("Node Template") {
     // - Don't do any heavy setup configuration here; do that in Setup() instead.
 
     /* TODO: Uncomment if this node has a visual output, otherwise delete.
-	flags = (NodeFlags)(flags | NodeFlags::IS_VISUAL);
+	flags = (NodeFlags)(flags | NodeFlags::IsVisual);
 
     // TODO: Visual nodes MUST provide a gui display FBO (usually an output FBO).
     // Configure the gui_display_fbo to be your output FBO (whatever it's named) here.

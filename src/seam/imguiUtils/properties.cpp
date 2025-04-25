@@ -44,7 +44,7 @@ namespace seam::props {
 		ImGui::PushID(input);
 
 		// If this is a vector pin, draw the vector resize GUI.
-		if ((input->flags & PinFlags::VECTOR) > 0) {
+		if ((input->flags & PinFlags::Vector) > PinFlags::None) {
 			sizeChanged = DrawVectorResize(input);
 		}
 
@@ -57,7 +57,7 @@ namespace seam::props {
 		void* guiMax = nullptr;
 		const char* format = nullptr;
 		switch (input->type) {
-		case PinType::INT: {
+		case PinType::Int: {
 			imguiType = ImGuiDataType_S32;
 			PinIntMeta* meta = (PinIntMeta*)input->PinMetadata();
 			if (meta != nullptr) {
@@ -67,7 +67,7 @@ namespace seam::props {
 			format = "%d";
 			break;
 		}
-		case PinType::UINT: {
+		case PinType::Uint: {
 			imguiType = ImGuiDataType_U32;
 			PinUintMeta* meta = (PinUintMeta*)input->PinMetadata();
 			if (meta != nullptr) {
@@ -77,7 +77,7 @@ namespace seam::props {
 			format = "%u";
 			break;
 		}
-		case PinType::FLOAT: {
+		case PinType::Float: {
 			imguiType = ImGuiDataType_Float;
 			PinFloatMeta* meta = (PinFloatMeta*)input->PinMetadata();
 			if (meta != nullptr) {
@@ -87,30 +87,30 @@ namespace seam::props {
 			format = "%.3f";
 			break;
 		}
-		case PinType::BOOL: {
+		case PinType::Bool: {
 			// TODO how to draw more than one bool?
 			assert(totalElements == 1);
 			pinsChanged = ImGui::Checkbox(input->name.c_str(), (bool*)buffer);
 			break;
 		}
-		case PinType::FLOW: {
+		case PinType::Flow: {
 			if (ImGui::Button(input->name.c_str())) {
 				input->OnValueChanged();
 				pinsChanged = true;
 			}
 			break;
 		}
-		case PinType::ANY:
-		case PinType::NOTE_EVENT:
-		case PinType::FBO_RGBA:
-		case PinType::FBO_RGBA16F:
-		case PinType::FBO_RED:
+		case PinType::Any:
+		case PinType::NoteEvent:
+		case PinType::FboRgba:
+		case PinType::FboRgba16F:
+		case PinType::FboRed:
 		{
 			// TODO maybe allow note events to be "mocked" here;
 			// there isn't really anything else to draw for these otherwise.
 			break;
 		}
-		case PinType::STRUCT:
+		case PinType::Struct:
 		{
 			// Draw child pins; should this just be done for all pin inputs though...?
 			size_t childrenSize; 

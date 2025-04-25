@@ -5,7 +5,7 @@ using namespace seam::nodes;
 
 Step::Step() : INode("Step") {
 	// temp???@@@
-	flags = (NodeFlags)(flags | NodeFlags::UPDATES_OVER_TIME);
+	flags = (NodeFlags)(flags | NodeFlags::UpdatesOverTime);
 }
 
 Step::~Step() {

@@ -13,7 +13,7 @@ namespace seam::props {
         /// @brief A Property minus its values.
         struct PropertyInfo {
             const char* name = nullptr;
-            NodePropertyType type = NodePropertyType::PROP_NONE;
+            NodePropertyType type = NodePropertyType::None;
         };
 
         template <typename T>

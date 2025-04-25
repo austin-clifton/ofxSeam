@@ -8,14 +8,14 @@ PinInput TransformPinMap::Setup(nodes::INode* node, ofNode* _transform, const st
     assert(transform == nullptr);
     transform = _transform;
 
-    PinInput pin = SetupInputPin(PinType::STRUCT, node, nullptr, 0, name);
+    PinInput pin = SetupInputPin(PinType::Struct, node, nullptr, 0, name);
     std::vector<PinInput> children;
 
-    children.push_back(SetupInputPin(PinType::FLOAT, node, &position, 1, "Position", 
+    children.push_back(SetupInputPin(PinType::Float, node, &position, 1, "Position", 
         PinInOptions::WithCoords(3, [this]() { transform->setPosition(position); })));
-    children.push_back(SetupInputPin(PinType::FLOAT, node, &rotation, 1, "Rotation", 
+    children.push_back(SetupInputPin(PinType::Float, node, &rotation, 1, "Rotation", 
         PinInOptions::WithCoords(3, [this]() { transform->setOrientation(rotation); })));
-    children.push_back(SetupInputPin(PinType::FLOAT, node, &scale, 1, "Scale", 
+    children.push_back(SetupInputPin(PinType::Float, node, &scale, 1, "Scale", 
         PinInOptions::WithCoords(3, [this]() { transform->setScale(scale); })));
         
     pin.SetChildren(std::move(children));

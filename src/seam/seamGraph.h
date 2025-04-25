@@ -69,6 +69,12 @@ namespace seam {
 
         void DeleteNode(INode* node);
 
+		/// @brief Get the visual node which should be displayed in the output window.
+		INode* GetVisualOutputNode();
+		/// @brief Set the visual node which should be displayed in the output window.
+		/// Calling this function will cause the SeamGraph to recalculate its visual update chain.
+		void SetVisualOutputNode(INode* node);
+
 		/// @brief Connect an output pin to an input pin.
 		/// @return true if the Pins were successfully connected.
 		bool Connect(PinInput* pinIn, PinOutput* pinOut);
@@ -103,23 +109,27 @@ namespace seam {
 		/// @brief Recalculates the update and/or draw orders of nodes
 		void RecalculateTraversalOrder(INode* node);
 
-        // Unsorted list of all the Nodes in the graph.
+        /// @brief Unsorted list of all the Nodes in the graph.
 		std::vector<INode*> nodes;
 
-		// these two are re-calculated each frame, and then sorted for update + draw in that order
+		/// @brief These two are re-calculated each frame, and then sorted for update + draw in that order
         std::vector<INode*> nodesToDraw;
 
-		// visible visual nodes dictate which nodes actually get updated and drawn during those loops
+		/// @brief Visible visual nodes dictate which nodes actually get updated and drawn during those loops
 		std::vector<INode*> visibleNodes;
 
-		// Nodes which update over time need to be invalidated every frame.
+		/// @brief Nodes which update over time need to be invalidated every frame.
 		std::vector<INode*> nodesUpdateOverTime;
 
-		// Nodes which update every frame may need to need to Update() no matter what,
+		/// @brief Nodes which update every frame may need to need to Update() no matter what,
 		// even if they are not part of a visible visual chain
 		std::vector<INode*> nodesUpdateEveryFrame;
 
 		std::vector<IAudioNode*> audioNodes;
+
+		/// @brief The visual node which is drawn to the output window.
+		/// Dictates which Nodes are in the active visual update chain and will be updated each frame.
+		INode* visualOutputNode = nullptr;
 
 		SetupParams setupParams;
 

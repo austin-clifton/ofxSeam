@@ -27,6 +27,6 @@ namespace seam::nodes {
 
 		std::vector<PinInput> pinInputs;
 
-		PinOutput pinOutTrigger = pins::SetupOutputPin(this, pins::PinType::FLOW, "Trigger");
+		PinOutput pinOutTrigger = pins::SetupOutputPin(this, pins::PinType::Flow, "Trigger");
 	};
 }

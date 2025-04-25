@@ -93,12 +93,12 @@ namespace seam::nodes {
 		};
 
 		std::array<PinOutput, 6> pinOutputs = {
-			SetupOutputPin(this, PinType::FLOAT, "RMS"),
-			SetupOutputPin(this, PinType::FLOAT, "Spectrum Channels"),
-			SetupOutputPin(this, PinType::FLOAT, "Spectrum Size"),
-			SetupOutputPin(this, PinType::FLOAT, "HPCP"),
-			SetupOutputPin(this, PinType::FLOAT, "Mel Bands"),
-			SetupOutputPin(this, PinType::FLOAT, "Mel Bands Size"),
+			SetupOutputPin(this, PinType::Float, "RMS"),
+			SetupOutputPin(this, PinType::Float, "Spectrum Channels"),
+			SetupOutputPin(this, PinType::Float, "Spectrum Size"),
+			SetupOutputPin(this, PinType::Float, "HPCP"),
+			SetupOutputPin(this, PinType::Float, "Mel Bands"),
+			SetupOutputPin(this, PinType::Float, "Mel Bands Size"),
 		};
 
 		std::array<AudioAlgorithmMulti, 3> multiValueAlgos = {

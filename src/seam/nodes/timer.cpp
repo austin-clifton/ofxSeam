@@ -6,7 +6,7 @@ using namespace seam::nodes;
 Timer::Timer() : INode("Timer") {
 	// TODO you may want to instead update every frame;
 	// I could see this causing some weirdness later on...
-	flags = (NodeFlags)(flags | NodeFlags::UPDATES_OVER_TIME);
+	flags = (NodeFlags)(flags | NodeFlags::UpdatesOverTime);
 }
 
 Timer::~Timer() {

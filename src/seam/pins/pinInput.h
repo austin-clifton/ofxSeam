@@ -82,7 +82,7 @@ namespace seam::pins {
     class PinInput final : public Pin, public IInPinnable {
     public:
         PinInput() {
-            type = PinType::TYPE_NONE;
+            type = PinType::None;
             buffer = nullptr;
             totalElements = 0;
         }
@@ -106,8 +106,7 @@ namespace seam::pins {
             name = _name;
             description = _description;
             node = _node;
-            isQueue = false;
-            flags = (PinFlags)(flags | PinFlags::INPUT);
+            flags = (PinFlags)(flags | PinFlags::Input);
             buffer = _buffer;
             totalElements = _totalElements;
             sizeInBytes = _elementSizeInBytes;
@@ -132,8 +131,7 @@ namespace seam::pins {
             name = _name;
             description = _description;
             node = _node;
-            isQueue = true;
-            flags = (PinFlags)(flags | PinFlags::INPUT | PinFlags::EVENT_QUEUE);
+            flags = (PinFlags)(flags | PinFlags::Input | PinFlags::EventQueue);
             pinMetadata = _pinMetadata;
             sizeInBytes = _elementSizeInBytes;
             buffer = malloc(sizeInBytes * MAX_EVENTS);
@@ -146,12 +144,11 @@ namespace seam::pins {
             void* _pinMetadata
         )
         {
-            type = PinType::FLOW;
+            type = PinType::Flow;
             name = _name;
             description = _description;
             node = _node;
-            isQueue = false;
-            flags = (PinFlags)(flags | PinFlags::INPUT);
+            flags = (PinFlags)(flags | PinFlags::Input);
             pinMetadata = _pinMetadata;
             onValueChanged = std::move(_onValueChanged);
             sizeInBytes = 0;
@@ -173,20 +170,20 @@ namespace seam::pins {
 
         template <typename T>
         inline void PushEvents(T* events, size_t numEvents) {
-            assert(isQueue);
+            assert((flags & PinFlags::EventQueue) == PinFlags::EventQueue);
             size_t offset = totalElements * sizeof(T);
             memcpy_s(((T*)buffer) + offset, sizeInBytes * MAX_EVENTS - offset, events, numEvents * sizeof(T));
             totalElements = std::min(MAX_EVENTS, totalElements + numEvents);
         }
 
         inline void* GetEvents(size_t& size) {
-            assert(isQueue);
+            assert((flags & PinFlags::EventQueue) == PinFlags::EventQueue);
             size = totalElements;
             return buffer;
         }
 
         inline void ClearEvents(size_t expected) {
-            assert(isQueue);
+            assert((flags & PinFlags::EventQueue) == PinFlags::EventQueue);
             // This is just a check in case any multithreading funkiness happens;
             // Pins shouldn't be pushed to outside of an update loop, or events WILL be lost.
             assert(expected == totalElements);
@@ -278,8 +275,6 @@ namespace seam::pins {
 
     private:
         const static size_t MAX_EVENTS;
-
-        bool isQueue = false;
 
         void* buffer = nullptr;
 

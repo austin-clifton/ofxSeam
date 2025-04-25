@@ -136,16 +136,16 @@ namespace seam::nodes {
 		glm::uvec2 resolution = glm::uvec2(1920, 1080);
 
 		std::array<PinInput, 8> pin_inputs = {
-			pins::SetupInputPin(PinType::FLOAT, this, &avoidanceRadius, 1, "Avoidance Radius"),
-			pins::SetupInputPin(PinType::FLOAT, this, &momAvoidanceRadius, 1, "Mom Avoidance Radius"),
-			pins::SetupInputPin(PinType::FLOAT, this, &avoidanceForce, 1, "Avoidance Force"),
-			pins::SetupInputPin(PinType::FLOAT, this, &maxVelocity, 1, "Max Velocity"),
-			pins::SetupInputPin(PinType::FLOAT, this, &pulseCameraDistance, 1, "Pulse Distance"),
-			pins::SetupInputPin(PinType::FLOAT, this, &pulseRange, 1, "Pulse Range"),
-			pins::SetupInputPin(PinType::FLOAT, this, &useAxisAlignedCompute, 1, "Axis Aligned"),
-			pins::SetupInputPin(PinType::UINT, this, &resolution, 1, "Resolution", PinInOptions::WithCoords(2)),
+			pins::SetupInputPin(PinType::Float, this, &avoidanceRadius, 1, "Avoidance Radius"),
+			pins::SetupInputPin(PinType::Float, this, &momAvoidanceRadius, 1, "Mom Avoidance Radius"),
+			pins::SetupInputPin(PinType::Float, this, &avoidanceForce, 1, "Avoidance Force"),
+			pins::SetupInputPin(PinType::Float, this, &maxVelocity, 1, "Max Velocity"),
+			pins::SetupInputPin(PinType::Float, this, &pulseCameraDistance, 1, "Pulse Distance"),
+			pins::SetupInputPin(PinType::Float, this, &pulseRange, 1, "Pulse Range"),
+			pins::SetupInputPin(PinType::Float, this, &useAxisAlignedCompute, 1, "Axis Aligned"),
+			pins::SetupInputPin(PinType::Uint, this, &resolution, 1, "Resolution", PinInOptions::WithCoords(2)),
 		};
 		
-		PinOutput pinOutFbo = pins::SetupOutputStaticFboPin(this, &fbo, pins::PinType::FBO_RGBA, "texture");
+		PinOutput pinOutFbo = pins::SetupOutputStaticFboPin(this, &fbo, pins::PinType::FboRgba, "texture");
 	};
 }

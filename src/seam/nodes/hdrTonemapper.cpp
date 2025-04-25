@@ -4,7 +4,7 @@
 using namespace seam::nodes;
 
 HdrTonemapper::HdrTonemapper() : INode("HDR Tone Mapper") {
-    flags = (NodeFlags)(flags | NodeFlags::IS_VISUAL);
+    flags = (NodeFlags)(flags | NodeFlags::IsVisual);
 	gui_display_fbo = &tonemappedFbo;
 }
 

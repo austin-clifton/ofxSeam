@@ -33,10 +33,10 @@ namespace seam::nodes {
 		UniformsPinMap uniformsPin = UniformsPinMap(this, &shader);
 		PinInput shaderPin = uniformsPin.SetupUniformsPin("Shader");
 
-		std::string shader_name = "simple-glass";
+		std::string shader_name = "daedelusSmear";
 		ofShader shader;
 		ofFbo fbo;
 
-		PinOutput pinOutMaterial = pins::SetupOutputStaticFboPin(this, &fbo, pins::PinType::FBO_RGBA, "Image");
+		PinOutput pinOutMaterial = pins::SetupOutputStaticFboPin(this, &fbo, pins::PinType::FboRgba16F, "Image");
 	};
 }

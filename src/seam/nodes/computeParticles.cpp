@@ -48,10 +48,10 @@ bool ComputeParticles::ReloadGeometryShader() {
 }
 
 ComputeParticles::ComputeParticles() : INode("Compute Particles") {
-	flags = (NodeFlags)(flags | NodeFlags::IS_VISUAL);
+	flags = (NodeFlags)(flags | NodeFlags::IsVisual);
 
 	// TEMP!!!
-	flags = (NodeFlags)(flags | NodeFlags::UPDATES_OVER_TIME);
+	flags = (NodeFlags)(flags | NodeFlags::UpdatesOverTime);
 
 	gui_display_fbo = &fbo;
 
