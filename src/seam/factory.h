@@ -52,8 +52,8 @@ namespace seam {
 
 		/// \return the NodeId of the new node to create, or 0 if no new node was requested
 		seam::nodes::NodeId DrawCreatePopup(
-			pins::PinType input_type = pins::PinType::TYPE_NONE, 
-			pins::PinType output_type = pins::PinType::TYPE_NONE
+			pins::PinType input_type = pins::PinType::None, 
+			pins::PinType output_type = pins::PinType::None
 		);
 
 		/// creates a node and puts its metadata into a generator

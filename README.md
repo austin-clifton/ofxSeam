@@ -77,7 +77,7 @@ Version history
     - Fast Noise node is an integration of [the GLSL version](https://github.com/Auburn/FastNoiseLite/tree/master/GLSL) of [FastNoiseLite](https://github.com/Auburn/FastNoiseLite).
     - Optional Audio Analyzer Node, which is an integration of `ofxAudioAnalyzer`. Audio analysis can be enabled by defining the macro `BUILD_AUDIO_ANALYSIS`.
 - Pin system changes:
-    - Add `PinType::ANY` for Nodes that want to accept any type as an input.
+    - Add `PinType::Any` for Nodes that want to accept any type as an input.
     - Add support for Pin hierarchies. Pins can now have children, which are displayed in a dropdown in the editor GUI.
     - Add support for stride, offset, and numCoords in `PinInput` so GPU-mapped data is easier to configure using the editor GUI.
     - Differing Pin types will now connect as long as a reasonable and expected conversion exists. For instance, in a float --> int connection the receiving end will be set to the floored input value.

@@ -4,6 +4,7 @@
 #include <functional>
 
 #include "seam/pins/pinTypes.h"
+#include "seam/flagsHelper.h"
 #include "seam/idsDistributor.h"
 #include "seam/properties/nodePropertyType.h"
 
@@ -29,36 +30,38 @@ namespace seam::pins {
     using PushId = uint32_t; 
 
     // a bitmask enum for marking boolean properties of a Pin
-    enum PinFlags : uint16_t {
-        FLAGS_NONE = 0,
-        ///  input pins must have this flag raised;
-        /// incompatible with PinFlags::OUTPUT
-        INPUT = 1 << 0,
+    enum class PinFlags : uint16_t {
+        None = 0,
+        /// @brief Input pins must have this flag raised;
+        /// incompatible with PinFlags::Output
+        Input = 1 << 0,
 
-        /// output pins must have this flag raised;
-        /// incompatible with PinFlags::INPUT
-        OUTPUT = 1 << 1,
+        /// @brief Output pins must have this flag raised;
+        /// incompatible with PinFlags::Input
+        Output = 1 << 1,
 
-        /// Pins which receive feedback textures (to be used by the next update frame) must raise this flag.
+        /// @brief Pins which receive feedback textures (to be used by the next update frame) must raise this flag.
         /// only INPUT pins can be marked as feedback
-        FEEDBACK = 1 << 2,
+        Feedback = 1 << 2,
 
-        /// Only variable-sized INPUT Pins can raise this flag.
+        /// @brief Only variable-sized INPUT Pins can raise this flag.
         /// Causes the node to receive a stream of pushed events to be drained during update,
         /// rather than treating the Pin's underlying vector as value channels.
         /// Is useful for receiving note events or any kind of event stream.
-        EVENT_QUEUE = 1 << 3,
+        EventQueue = 1 << 3,
 
         /// @brief Valid for Input pins only; means Pin channels are resizable,
         /// and the void* backing the Pin points to a vector<T>
-        VECTOR = 1 << 4,
+        Vector = 1 << 4,
     };
 
+    DeclareFlagOperators(PinFlags, uint16_t);
+
     // TODO move me
-    enum RangeType : uint8_t {
-        LINEAR,
+    enum class RangeType : uint8_t {
+        Linear,
         // logarithmic
-        LOG,
+        Log,
     };
 
     // base struct for pin types, holds metadata about the pin

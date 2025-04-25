@@ -27,13 +27,13 @@ namespace seam::nodes {
 		glm::vec4 outRangeMax = glm::vec4(1.f);
 
 		std::array<PinInput, 5> pinInputs = {
-			pins::SetupInputPin(PinType::FLOAT, this, &inRangeMin, 1, "Input Range Min"),
-			pins::SetupInputPin(PinType::FLOAT, this, &inRangeMax, 1, "Input Range Max"),
-			pins::SetupInputPin(PinType::FLOAT, this, &inValue, 1, inputValuePinName),
-			pins::SetupInputPin(PinType::FLOAT, this, &outRangeMin, 1, "Output Range Min"),
-			pins::SetupInputPin(PinType::FLOAT, this, &outRangeMax, 1, "Output Range Max"),
+			pins::SetupInputPin(PinType::Float, this, &inRangeMin, 1, "Input Range Min"),
+			pins::SetupInputPin(PinType::Float, this, &inRangeMax, 1, "Input Range Max"),
+			pins::SetupInputPin(PinType::Float, this, &inValue, 1, inputValuePinName),
+			pins::SetupInputPin(PinType::Float, this, &outRangeMin, 1, "Output Range Min"),
+			pins::SetupInputPin(PinType::Float, this, &outRangeMax, 1, "Output Range Max"),
 		};
 
-		PinOutput pin_out_value = pins::SetupOutputPin(this, pins::PinType::FLOAT, "value");
+		PinOutput pin_out_value = pins::SetupOutputPin(this, pins::PinType::Float, "value");
 	};
 }

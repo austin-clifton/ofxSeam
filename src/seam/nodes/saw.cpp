@@ -4,7 +4,7 @@ using namespace seam;
 using namespace seam::nodes;
 
 Saw::Saw() : INode("Saw") {
-	flags = (NodeFlags)(flags | NodeFlags::UPDATES_OVER_TIME);
+	flags = (NodeFlags)(flags | NodeFlags::UpdatesOverTime);
 }
 
 Saw::~Saw() {

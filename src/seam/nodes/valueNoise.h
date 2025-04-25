@@ -38,7 +38,7 @@ namespace seam::nodes {
 		};
 
 		PinOutput pinOutFbo = pins::SetupOutputStaticFboPin(
-			this, &fbo, pins::PinType::FBO_RGBA, "Output");
+			this, &fbo, pins::PinType::FboRgba, "Output");
 
 		ofFbo fbo;
 		ofShader shader;

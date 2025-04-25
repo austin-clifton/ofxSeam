@@ -6,7 +6,7 @@ using namespace seam;
 using namespace seam::nodes;
 
 Shader::Shader() : INode("Shader Material") {
-	flags = (NodeFlags)(flags | NodeFlags::IS_VISUAL);
+	flags = (NodeFlags)(flags | NodeFlags::IsVisual);
 
 	windowFbos.push_back(WindowRatioFbo(&fbo, &pinOutMaterial));
 	gui_display_fbo = &fbo;

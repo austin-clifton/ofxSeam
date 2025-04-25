@@ -117,10 +117,10 @@ namespace seam {
 			glm::vec3 leaf_bounds;
 		};
 
-		enum IntersectResult {
-			INTERSECT_NONE,
-			INTERSECT_PARTIAL,
-			INTERSECT_FULL
+		enum class IntersectResult {
+			None,
+			Partial,
+			Full
 		};
 
 		void Add(T* item, glm::vec3 position, OctreeNode* branch, glm::vec3 center, glm::vec3 bounds) {
@@ -202,11 +202,11 @@ namespace seam {
 		{
 			IntersectResult intersect = CalculateBoxBoundsIntersection(branch_center, branch_bounds, search_center, glm::vec3(search_radius));
 
-			if (intersect == INTERSECT_FULL) {
+			if (intersect == IntersectResult::Full) {
 				// The search area completely contains this branch.
 				// Find all items down this branch and do the final radius check and add.
 				return AddItems(node, search_center, search_radius, found);
-			} else if (intersect == INTERSECT_PARTIAL) {
+			} else if (intersect == IntersectResult::Partial) {
 				if (node->is_branch) {
 					size_t added = 0;
 					for (uint8_t i = 0; i < 8; i++) {
@@ -294,10 +294,10 @@ namespace seam {
 				return search_min.x <= node_min.x && search_max.x >= node_max.x
 					&& search_min.y <= node_min.y && search_max.y >= node_max.y
 					&& search_min.z <= node_min.z && search_max.z >= node_max.z
-					? INTERSECT_FULL : INTERSECT_PARTIAL;
+					? IntersectResult::Full : IntersectResult::Partial;
 			}
 
-			return INTERSECT_NONE;
+			return IntersectResult::None;
 		}
 
 		FindResult FindLeaf(glm::vec3 position, OctreeNode* branch, glm::vec3 center, glm::vec3 bounds) {

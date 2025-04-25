@@ -8,6 +8,7 @@
 
 #include "ofMain.h"
 
+#include "seam/flagsHelper.h"
 #include "seam/properties/nodeProperty.h"
 #include "seam/framePool.h"
 #include "seam/seamState.h"
@@ -32,26 +33,28 @@ namespace seam::nodes {
 	using NodeId = uint64_t;
 
 	/// A bitmask enum for marking boolean properties of a Node
-	enum NodeFlags : uint16_t {
+	enum class NodeFlags : uint16_t {
 		// visual nodes draw things using the GPU,
 		// and visible visual nodes dictate each frame's update and draw workloads
-		IS_VISUAL = 1 << 0,
+		IsVisual = 1 << 0,
 
 		// if a node uses time as an update parameter and should update every frame,
 		// it should mark itself with this flag.
 		// Nodes with this flag which are not part of an active visible chain will not update.
-		// If you want to update regardless, use UPDATES_EVERY_FRAME.
-		UPDATES_OVER_TIME = 1 << 1,
+		// If you want to update regardless, use UpdatesEveryFrame.
+		UpdatesOverTime = 1 << 1,
 
 		// Nodes which receive events from external sources (MIDI for instance)
 		// should mark themselves with this flag.
 		// Nodes with this flag will Update() every frame, 
 		// regardless of whether they are in a visual chain or not.
-		UPDATES_EVERY_FRAME = 1 << 2,
+		UpdatesEveryFrame = 1 << 2,
 
 		/// Nodes which process audio should use this flag and overrid INode::ProcessAudio()
-		PROCESSES_AUDIO = 1 << 3,
+		ProcessesAudio = 1 << 3,
 	};
+
+	DeclareFlagOperators(NodeFlags, uint16_t);
 
 	struct WindowRatioFbo {
 		WindowRatioFbo(
@@ -197,15 +200,15 @@ namespace seam::nodes {
 		}
 
 		inline bool UpdatesOverTime() {
-			return (flags & NodeFlags::UPDATES_OVER_TIME) == NodeFlags::UPDATES_OVER_TIME;
+			return (flags & NodeFlags::UpdatesOverTime) == NodeFlags::UpdatesOverTime;
 		}
 
 		inline bool UpdatesEveryFrame() {
-			return (flags & NodeFlags::UPDATES_EVERY_FRAME) == NodeFlags::UPDATES_EVERY_FRAME;
+			return (flags & NodeFlags::UpdatesEveryFrame) == NodeFlags::UpdatesEveryFrame;
 		}
 
 		inline bool IsVisual() {
-			return (flags & NodeFlags::IS_VISUAL) == NodeFlags::IS_VISUAL;
+			return (flags & NodeFlags::IsVisual) == NodeFlags::IsVisual;
 		}
 
 		pins::PinInput* FindPinInput(pins::PinId id);

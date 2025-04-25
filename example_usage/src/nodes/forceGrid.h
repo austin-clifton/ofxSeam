@@ -26,13 +26,13 @@ namespace seam::nodes {
 		// contains the data needed for CPU side animation into the NoteForceGpu struct.
 		struct NoteForceAnim {
 			// Forces animate in, are alive for awhile, and then animate out
-			enum ForceState : uint8_t {
-				BIRTH,
-				LIVE,
-				DYING
+			enum class ForceState : uint8_t {
+				Birth,
+				Live,
+				Dying
 			};
 
-			ForceState state = ForceState::BIRTH;
+			ForceState state = ForceState::Birth;
 			// helps us keep a pair of on/off events together
 			int instance_id = 0;
 			// frequency in HERTZ of the input note
@@ -105,12 +105,12 @@ namespace seam::nodes {
 		PinInput* pinNotesOffStream;
 
 		std::array<PinInput, 4> pin_inputs = {
-			pins::SetupInputPin(PinType::FLOAT, this, &time, 1, "Time"),
-			pins::SetupInputPin(PinType::NOTE_EVENT, this, &kickDrumOn, 1, "Kick Drum On"),
-			pins::SetupInputQueuePin(PinType::NOTE_EVENT, this, "Notes On Stream"),
-			pins::SetupInputQueuePin(PinType::NOTE_EVENT, this, "Notes Off Stream"),
+			pins::SetupInputPin(PinType::Float, this, &time, 1, "Time"),
+			pins::SetupInputPin(PinType::NoteEvent, this, &kickDrumOn, 1, "Kick Drum On"),
+			pins::SetupInputQueuePin(PinType::NoteEvent, this, "Notes On Stream"),
+			pins::SetupInputQueuePin(PinType::NoteEvent, this, "Notes Off Stream"),
 		};
 
-		PinOutput pin_out_material = pins::SetupOutputPin(this, pins::PinType::FBO_RGBA, "material");
+		PinOutput pin_out_material = pins::SetupOutputPin(this, pins::PinType::FboRgba, "material");
 	};
 }

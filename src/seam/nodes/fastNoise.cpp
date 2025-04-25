@@ -5,33 +5,33 @@
 using namespace seam::nodes;
 
 FastNoise::FastNoise() : INode("Fast Noise") {
-    // TEMP: always use UPDATES_OVER_TIME, but there should be a way to flag and unflag
+    // TEMP: always use UpdatesOverTime, but there should be a way to flag and unflag
     // nodes for over-time updates instead.
-    flags = (NodeFlags)(flags | NodeFlags::IS_VISUAL | NodeFlags::UPDATES_OVER_TIME);
+    flags = (NodeFlags)(flags | NodeFlags::IsVisual | NodeFlags::UpdatesOverTime);
     gui_display_fbo = &fbo;
 
     // Input pins are set up in the constructor since they require a loop.
 
     std::array<PinInput, 18> nonEnumInputPins = {
-        SetupInputPin(PinType::INT, this, &resolution, 1, "Resolution", 
+        SetupInputPin(PinType::Int, this, &resolution, 1, "Resolution", 
             PinInOptions(sizeof(glm::vec2), 2, 0, std::bind(&FastNoise::ResizeFbo, this))),
-        SetupInputPin(PinType::INT, this, &vSplits, 1, "Vertical Splits"),
-        SetupInputPin(PinType::INT, this, &hSplits, 1, "Horizontal Splits"),
-        SetupInputPin(PinType::FLOAT, this, &speed, 1, "Speed"),
-        SetupInputPin(PinType::BOOL, this, &animateOverTime, 1, "Animate Over Time"),
-        SetupInputPin(PinType::BOOL, this, &enableDomainWarp, 1, "Enable Domain Warp"),
-        SetupInputPin(PinType::BOOL, this, &filterNearest, 1, "Filter Nearest"),
-        SetupInputPin(PinType::INT, this, &seed, 1, "Seed"),
-        SetupInputPin(PinType::FLOAT, this, &frequency, 1, "Frequency"),
-        SetupInputPin(PinType::INT, this, &octaves, 1, "Octaves"),
-        SetupInputPin(PinType::FLOAT, this, &lacunarity, 1, "Lacunarity"),
-        SetupInputPin(PinType::FLOAT, this, &gain, 1, "Gain"),
-        SetupInputPin(PinType::FLOAT, this, &weightedStrength, 1, "Weighted Strength"),
-        SetupInputPin(PinType::FLOAT, this, &pingPongStrength, 1, "Ping Pong Strength"),
-        SetupInputPin(PinType::FLOAT, this, &cellularJitterMod, 1, "Cellular Jitter Mod"),
-        SetupInputPin(PinType::FLOAT, this, &domainWarpAmp, 1, "Domain Warp Amp"),
-        SetupInputPin(PinType::BOOL, this, &calculateGChannel, 1, "Calculate G Channel"),
-        SetupInputPin(PinType::BOOL, this, &calculateBChannel, 1, "Calculate B Channel"),
+        SetupInputPin(PinType::Int, this, &vSplits, 1, "Vertical Splits"),
+        SetupInputPin(PinType::Int, this, &hSplits, 1, "Horizontal Splits"),
+        SetupInputPin(PinType::Float, this, &speed, 1, "Speed"),
+        SetupInputPin(PinType::Bool, this, &animateOverTime, 1, "Animate Over Time"),
+        SetupInputPin(PinType::Bool, this, &enableDomainWarp, 1, "Enable Domain Warp"),
+        SetupInputPin(PinType::Bool, this, &filterNearest, 1, "Filter Nearest"),
+        SetupInputPin(PinType::Int, this, &seed, 1, "Seed"),
+        SetupInputPin(PinType::Float, this, &frequency, 1, "Frequency"),
+        SetupInputPin(PinType::Int, this, &octaves, 1, "Octaves"),
+        SetupInputPin(PinType::Float, this, &lacunarity, 1, "Lacunarity"),
+        SetupInputPin(PinType::Float, this, &gain, 1, "Gain"),
+        SetupInputPin(PinType::Float, this, &weightedStrength, 1, "Weighted Strength"),
+        SetupInputPin(PinType::Float, this, &pingPongStrength, 1, "Ping Pong Strength"),
+        SetupInputPin(PinType::Float, this, &cellularJitterMod, 1, "Cellular Jitter Mod"),
+        SetupInputPin(PinType::Float, this, &domainWarpAmp, 1, "Domain Warp Amp"),
+        SetupInputPin(PinType::Bool, this, &calculateGChannel, 1, "Calculate G Channel"),
+        SetupInputPin(PinType::Bool, this, &calculateBChannel, 1, "Calculate B Channel"),
     };
 
     // Exactly this many non-enum pins are expected!
@@ -40,7 +40,7 @@ FastNoise::FastNoise() : INode("Fast Noise") {
     std::move(nonEnumInputPins.begin(), nonEnumInputPins.end(), pinInputs.begin());
 
     for (size_t i = nonEnumInputPins.size(), j = 0; i < pinInputs.size(); i++, j++) {
-        pinInputs[i] = SetupInputPin(PinType::INT, this, &fnlOptions[j].currValue, 1, 
+        pinInputs[i] = SetupInputPin(PinType::Int, this, &fnlOptions[j].currValue, 1, 
             fnlOptions[j].optionName, PinInOptions("", &fnlOptions[j].meta));
     }
 }

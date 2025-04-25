@@ -31,7 +31,7 @@ namespace seam {
 
 	namespace pins {
 		struct PinFloatMeta {
-			PinFloatMeta(float _min = -FLT_MAX, float _max = FLT_MAX, RangeType _range = RangeType::LINEAR) {
+			PinFloatMeta(float _min = -FLT_MAX, float _max = FLT_MAX, RangeType _range = RangeType::Linear) {
 				min = _min;
 				max = _max;
 				range_type = _range;
@@ -43,7 +43,7 @@ namespace seam {
 		};
 
 		struct PinIntMeta {
-			PinIntMeta(int _min = INT_MIN, int _max = INT_MAX, RangeType _range = RangeType::LINEAR) {
+			PinIntMeta(int _min = INT_MIN, int _max = INT_MAX, RangeType _range = RangeType::Linear) {
 				min = _min;
 				max = _max;
 				range_type = _range;
@@ -62,7 +62,7 @@ namespace seam {
 
 			uint32_t min = 0;
 			uint32_t max = UINT_MAX;
-			RangeType range_type = RangeType::LINEAR;
+			RangeType range_type = RangeType::Linear;
 		};
 
 		struct PinNoteEventMeta {
@@ -113,7 +113,7 @@ namespace seam {
 			PinType type, 
 			std::string_view name,
 			uint16_t numCoords = 1,
-			PinFlags flags = PinFlags::FLAGS_NONE,
+			PinFlags flags = PinFlags::None,
 			void* userp = nullptr
 		);
 
@@ -125,7 +125,7 @@ namespace seam {
 			ofFbo* fbo,
 			PinType fboType,
 			const std::string_view name = "Image",
-			PinFlags flags = PinFlags::FLAGS_NONE,
+			PinFlags flags = PinFlags::None,
 			const std::string_view description = "",
 			void* userp = nullptr
 		);

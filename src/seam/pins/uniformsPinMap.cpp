@@ -12,7 +12,7 @@ UniformsPinMap::UniformsPinMap(nodes::INode* _node, ofShader* _shader) {
 
 PinInput UniformsPinMap::SetupUniformsPin(const std::string_view name) {
 	uniformsPinName = std::string(name) + " Uniforms";
-	PinInput pinIn = SetupInputPin(PinType::STRUCT, node, nullptr, 0, uniformsPinName);
+	PinInput pinIn = SetupInputPin(PinType::Struct, node, nullptr, 0, uniformsPinName);
 	pinIn.seamp = this;
     return pinIn;
 }
@@ -97,7 +97,7 @@ void UniformsPinMap::SetUniforms() {
 		// TODO put this somewhere more accessible,
 		// and add more type conversions as you add more to UniformsToPinInputs()
 		switch (pin.type) {
-		case pins::PinType::FLOAT: {
+		case pins::PinType::Float: {
             switch (numCoords) {
                 case 1:
     				shader->setUniform1f(pin.name, *(float*)buffer);
@@ -111,7 +111,7 @@ void UniformsPinMap::SetUniforms() {
             }
 			break;
 		}
-		case pins::PinType::INT: { 
+		case pins::PinType::Int: { 
 			int32_t* ichans = (int32_t*)buffer;
 			if (numCoords == 1) {
 				shader->setUniform1i(pin.name, ichans[0]);
@@ -120,7 +120,7 @@ void UniformsPinMap::SetUniforms() {
 			}
 			break;
 		}
-		case pins::PinType::UINT: {
+		case pins::PinType::Uint: {
 			uint32_t* uchans = (uint32_t*)buffer;
 			if (numCoords == 1) {
 				glUniform1ui(shader->getUniformLocation(pin.name), *uchans);
@@ -129,9 +129,9 @@ void UniformsPinMap::SetUniforms() {
 			}
 			break;
 		}
-		case pins::PinType::FBO_RGBA: 
-		case pins::PinType::FBO_RGBA16F:
-		case pins::PinType::FBO_RED:
+		case pins::PinType::FboRgba: 
+		case pins::PinType::FboRgba16F:
+		case pins::PinType::FboRed:
 			// Nothing to do, FBOs are bound on value change instead of per-frame.
 			break;
 		}

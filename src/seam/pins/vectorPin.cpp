@@ -40,7 +40,7 @@ PinInput VectorPinInput::SetupVectorPin(
 ) {
     assert(elementSize != 0);
     PinInput pinIn = SetupInputPin(pinType, node, nullptr, 0, name);
-    pinIn.flags = (PinFlags)(pinIn.flags | PinFlags::VECTOR);
+    pinIn.flags = (PinFlags)(pinIn.flags | PinFlags::Vector);
     pinIn.seamp = this;
 
     // vectorPin = &pinIn;

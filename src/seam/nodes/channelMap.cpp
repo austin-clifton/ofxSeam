@@ -20,7 +20,7 @@ PinInput* ChannelMap::PinInputs(size_t& size) {
 }
 
 PinOutput* ChannelMap::PinOutputs(size_t& size) {
-    if (currentInputType != PinType::ANY) {
+    if (currentInputType != PinType::Any) {
         size = pinOutputs.size();
         return &pinOutputs[0];
     }
@@ -54,7 +54,7 @@ void ChannelMap::Update(UpdateParams* params) {
 void ChannelMap::OnPinConnected(PinConnectedArgs args) {
     // If an input pin was connected
     if (FindPinInput(args.pinIn->id)) {
-        if (currentInputType == PinType::ANY) {
+        if (currentInputType == PinType::Any) {
             // Set our type to the Output's type.
             SetInputType(args.pinOut->type);
         }
@@ -97,7 +97,7 @@ bool ChannelMap::GuiDrawPropertiesList(UpdateParams* params) {
 
     if (ImGui::TreeNode("Outputs")) {
         // Don't allow outputs to be added until the input type is known.
-        if (currentInputType != PinType::ANY && ImGui::Button("Add Output")) {
+        if (currentInputType != PinType::Any && ImGui::Button("Add Output")) {
             CreateOutput();
         }
         
@@ -204,7 +204,7 @@ void ChannelMap::SetInputType(PinType type) {
         CreateOutput();
     }
 
-    if (currentInputType != PinType::ANY) {
+    if (currentInputType != PinType::Any) {
         for (auto& conn : pinOutputs[0].connections) {
             conn.RecacheConverts();
         }

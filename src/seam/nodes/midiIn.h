@@ -55,9 +55,9 @@ namespace seam::nodes {
 		// there is always at least one, an EVENT_QUEUE Pin which pushes ALL note events,
 		// plus 0 to many Pins which only send one MIDI note value
 		std::vector<PinOutput> pin_outputs = {
-			pins::SetupOutputPin(this, pins::PinType::NOTE_EVENT, "all notes stream", 1, pins::PinFlags::EVENT_QUEUE),
-			pins::SetupOutputPin(this, pins::PinType::NOTE_EVENT, "notes on stream", 1, pins::PinFlags::EVENT_QUEUE),
-			pins::SetupOutputPin(this, pins::PinType::NOTE_EVENT, "notes off stream", 1, pins::PinFlags::EVENT_QUEUE),
+			pins::SetupOutputPin(this, pins::PinType::NoteEvent, "all notes stream", 1, pins::PinFlags::EventQueue),
+			pins::SetupOutputPin(this, pins::PinType::NoteEvent, "notes on stream", 1, pins::PinFlags::EventQueue),
+			pins::SetupOutputPin(this, pins::PinType::NoteEvent, "notes off stream", 1, pins::PinFlags::EventQueue),
 		};
 		// tracks where user-defined (per-note) Pins begin
 		size_t custom_pins_index;
@@ -65,8 +65,8 @@ namespace seam::nodes {
 		// dictates which note event types a MIDI input node will push to its children;
 		// filter events you don't want out at this layer for better efficiency
 		notes::EventTypes listening_event_types = notes::EventTypes(
-			notes::EventTypes::ON
-			| notes::EventTypes::OFF
+			(uint8_t)notes::EventTypes::On
+			| (uint8_t)notes::EventTypes::Off
 		);
 
 		// receives MIDI messages from external sources

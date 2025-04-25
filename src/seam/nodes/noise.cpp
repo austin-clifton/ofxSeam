@@ -4,7 +4,7 @@ using namespace seam;
 using namespace seam::nodes;
 
 Noise::Noise() : INode("Noise") {
-	flags = (NodeFlags)(flags | NodeFlags::UPDATES_OVER_TIME);
+	flags = (NodeFlags)(flags | NodeFlags::UpdatesOverTime);
 	seed = ofRandom(-100.f, 100.f);
 }
 

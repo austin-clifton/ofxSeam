@@ -28,7 +28,7 @@ namespace {
 }
 
 PercussiveTrigger::PercussiveTrigger() : INode("Percussive Trigger") {
-	flags = (NodeFlags)(flags | NodeFlags::UPDATES_OVER_TIME);
+	flags = (NodeFlags)(flags | NodeFlags::UpdatesOverTime);
 	pinNotesOnStream = FindPinInByName(this, notesOnStreamPinName);
 	assert(pinNotesOnStream != nullptr);
 }
@@ -58,7 +58,7 @@ void PercussiveTrigger::Update(UpdateParams* params) {
 
 	for (size_t i = 0; i < size; i++) {
 		notes::NoteEvent* ev = onEvents[i];
-		if (ev->type == notes::EventTypes::ON) {
+		if (ev->type == notes::EventTypes::On) {
 			notes::NoteOnEvent* on_ev = (notes::NoteOnEvent*)ev;
 			maxVel = std::max(maxVel, on_ev->velocity);
 			retrigger = true;

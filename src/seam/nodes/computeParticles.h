@@ -84,16 +84,16 @@ namespace seam::nodes {
 		float particle_wave_distance = 0.f;
 
 		std::array<PinInput, 8> pin_inputs = {
-			pins::SetupInputPin(PinType::FLOAT, this, &fbm_offset, 1, "FBM Offset"),
-			pins::SetupInputPin(PinType::FLOAT, this, &fbm_strength, 1, "FBM Strength"),
-			pins::SetupInputPin(PinType::FLOAT, this, &time, 1, "Time"),
-			pins::SetupInputPin(PinType::FLOAT, this, &camera_speed, 1, "Camera Speed"),
-			pins::SetupInputPin(PinType::FLOAT, this, &camera_theta_tolerance, 1, "Camera Theta Tolerance"),
-			pins::SetupInputPin(PinType::FLOAT, this, &max_particle_velocity, 1, "Max Particle Velocity"),
-			pins::SetupInputPin(PinType::FLOAT, this, &particle_size_modifier, 1, "Particle Size Modifier"),
-			pins::SetupInputPin(PinType::FLOAT, this, &particle_wave_distance, 1, "Particle Wave Distance"),
+			pins::SetupInputPin(PinType::Float, this, &fbm_offset, 1, "FBM Offset"),
+			pins::SetupInputPin(PinType::Float, this, &fbm_strength, 1, "FBM Strength"),
+			pins::SetupInputPin(PinType::Float, this, &time, 1, "Time"),
+			pins::SetupInputPin(PinType::Float, this, &camera_speed, 1, "Camera Speed"),
+			pins::SetupInputPin(PinType::Float, this, &camera_theta_tolerance, 1, "Camera Theta Tolerance"),
+			pins::SetupInputPin(PinType::Float, this, &max_particle_velocity, 1, "Max Particle Velocity"),
+			pins::SetupInputPin(PinType::Float, this, &particle_size_modifier, 1, "Particle Size Modifier"),
+			pins::SetupInputPin(PinType::Float, this, &particle_wave_distance, 1, "Particle Wave Distance"),
 		};
 
-		PinOutput pin_out_material = pins::SetupOutputPin(this, pins::PinType::FBO_RGBA, "FBO");
+		PinOutput pin_out_material = pins::SetupOutputPin(this, pins::PinType::FboRgba, "FBO");
 	};
 }

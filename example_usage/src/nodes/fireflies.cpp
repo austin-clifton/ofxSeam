@@ -15,10 +15,10 @@ Fireflies::Fireflies() : INode("Fireflies"),
 	ff_octree(glm::vec3(0.f), glm::vec3(512.f), PosPtr),  
 	mom_octree(glm::vec3(0.f), glm::vec3(512.f), PosPtr)
 {
-	flags = (NodeFlags)(flags | NodeFlags::IS_VISUAL);
+	flags = (NodeFlags)(flags | NodeFlags::IsVisual);
 
 	// TEMP!!! Until this actually receives time from something....
-	flags = (NodeFlags)(flags | NodeFlags::UPDATES_OVER_TIME);
+	flags = (NodeFlags)(flags | NodeFlags::UpdatesOverTime);
 
 	gui_display_fbo = &fbo;
 	windowFbos.push_back(WindowRatioFbo(&fbo, &pinOutFbo));

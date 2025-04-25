@@ -16,7 +16,7 @@ namespace {
 
 MidiIn::MidiIn() : IDynamicPinsNode("MIDI In") {
 	// external input requires updating every frame
-	flags = (NodeFlags)(flags | NodeFlags::UPDATES_EVERY_FRAME);
+	flags = (NodeFlags)(flags | NodeFlags::UpdatesEveryFrame);
 	custom_pins_index = pin_outputs.size();
 }
 
@@ -82,10 +82,10 @@ PinOutput* MidiIn::AddNotePin(uint32_t midi_note) {
 
 		PinOutput pin_out = pins::SetupOutputPin(
 			this,
-			pins::PinType::NOTE_EVENT,
+			pins::PinType::NoteEvent,
 			pin_name,
 			1,
-			PinFlags::EVENT_QUEUE,
+			PinFlags::EventQueue,
 			// wheehoo
 			// cast midi_note to a size_t, and then mask it as a void* ;
 			// it is treated as a size_t internally
@@ -184,14 +184,14 @@ void MidiIn::Update(UpdateParams* params) {
 	while (messages.Pop(msg)) {
 		// push each message to the event queue pins,
 		// if the message type is one we care about
-		if (msg.status == MIDI_NOTE_ON && flags::AreRaised(listening_event_types, EventTypes::ON)) {
+		if (msg.status == MIDI_NOTE_ON && flags::AreRaised(listening_event_types, EventTypes::On)) {
 			notes::NoteOnEvent* ev = MidiToNoteOnEvent(msg, params->alloc_pool);
 			// push to all notes stream and notes on stream
 			params->push_patterns->Push(pin_outputs[0], &ev, 1);
 			params->push_patterns->Push(pin_outputs[1], &ev, 1);
 			AttemptPushToNotePin(params, ev, msg.pitch);
 
-		} else if (msg.status == MIDI_NOTE_OFF && flags::AreRaised(listening_event_types, EventTypes::OFF)) {
+		} else if (msg.status == MIDI_NOTE_OFF && flags::AreRaised(listening_event_types, EventTypes::Off)) {
 			notes::NoteOffEvent* ev = MidiToNoteOffEvent(msg, params->alloc_pool);
 			// push to all notes stream and notes off stream
 			params->push_patterns->Push(pin_outputs[0], &ev, 1);

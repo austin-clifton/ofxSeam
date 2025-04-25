@@ -3,7 +3,7 @@
 using namespace seam::nodes;
 
 Threshold::Threshold() : INode("Threshold") {
-    flags = (NodeFlags)(flags | NodeFlags::UPDATES_OVER_TIME);
+    flags = (NodeFlags)(flags | NodeFlags::UpdatesOverTime);
 
     VectorPinInput::Options options;
     options.onSizeChanged = [this](VectorPinInput* vectorPin) { OnSizeChanged(vectorPin); };
@@ -77,12 +77,12 @@ PinOutput* Threshold::PinOutputs(size_t& size) {
 }
 
 PinInput Threshold::CreateThresholdPin(VectorPinInput* vectorPin, size_t i) {
-    PinInput pinIn = SetupInputPin(PinType::STRUCT, this, nullptr, 0, "Threshold " + std::to_string(i));
+    PinInput pinIn = SetupInputPin(PinType::Struct, this, nullptr, 0, "Threshold " + std::to_string(i));
     // Set up a child pin per member in ThresholdConfig
     std::vector<PinInput> children = {
-        SetupInputPin(PinType::FLOAT, this, nullptr, 0, "Threshold"),
-        SetupInputPin(PinType::FLOAT, this, nullptr, 0, "Sustain Time"),
-        SetupInputPin(PinType::FLOAT, this, nullptr, 0, "Silence Time"),
+        SetupInputPin(PinType::Float, this, nullptr, 0, "Threshold"),
+        SetupInputPin(PinType::Float, this, nullptr, 0, "Sustain Time"),
+        SetupInputPin(PinType::Float, this, nullptr, 0, "Silence Time"),
     };
 
     pinIn.SetChildren(std::move(children));
@@ -113,10 +113,10 @@ void Threshold::OnSizeChanged(VectorPinInput* changed) {
     for (size_t i = currSize; i < newSize; i++) {
         // Each output pin gets a struct containing a "triggered" flow event pin,
         // and a bool pin that is enabled while triggered.
-        pinOutEvents[i] = SetupOutputPin(this, PinType::STRUCT, "Threshold " + std::to_string(i));
+        pinOutEvents[i] = SetupOutputPin(this, PinType::Struct, "Threshold " + std::to_string(i));
         std::vector<PinOutput> children = {
-            SetupOutputPin(this, PinType::FLOW, "Triggered Event"),
-            SetupOutputPin(this, PinType::BOOL, "Triggered State"),
+            SetupOutputPin(this, PinType::Flow, "Triggered Event"),
+            SetupOutputPin(this, PinType::Bool, "Triggered State"),
         };
 
         pinOutEvents[i].SetChildren(std::move(children));

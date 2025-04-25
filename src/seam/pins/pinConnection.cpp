@@ -32,7 +32,7 @@ namespace seam::pins {
 
     ConvertSingle GetConvertSingle(PinType srcType, PinType dstType, bool& isConvertible) {
         isConvertible = true;
-        const bool dstIsAny = dstType == PinType::ANY;
+        const bool dstIsAny = dstType == PinType::Any;
         // If types match, no conversion is needed and a simple memcpy can be used.
         if (dstType == srcType || dstIsAny) {
             size_t elementSize = PinTypeToElementSize(dstIsAny ? srcType : dstType);
@@ -44,72 +44,72 @@ namespace seam::pins {
         }
         
         switch (dstType) {
-            case PinType::FLOAT:
+            case PinType::Float:
                 switch (srcType) {
-                    case PinType::INT:
+                    case PinType::Int:
                         return Convert<int32_t, float>;
-                    case PinType::UINT:
+                    case PinType::Uint:
                         return Convert<uint32_t, float>;
-                    case PinType::BOOL:
+                    case PinType::Bool:
                         return Convert<bool, float>;
-                    case PinType::CHAR:
+                    case PinType::Char:
                         return Convert<char, float>;
                     default:
                         break;
                 }
-            case PinType::INT:
+            case PinType::Int:
                 switch (srcType) {
-                    case PinType::FLOAT:
+                    case PinType::Float:
                         return Convert<float, int32_t>;
-                    case PinType::UINT:
+                    case PinType::Uint:
                         return Convert<uint32_t, int32_t>;
-                    case PinType::BOOL:
+                    case PinType::Bool:
                         return Convert<bool, int32_t>;
-                    case PinType::CHAR:
+                    case PinType::Char:
                         return Convert<char, int32_t>;
                     default:
                         break;
                 }
-            case PinType::BOOL:
+            case PinType::Bool:
                 switch (srcType) {
-                    case PinType::FLOAT:
+                    case PinType::Float:
                         return Convert<float, bool>;
-                    case PinType::INT:
+                    case PinType::Int:
                         return Convert<int32_t, bool>;
-                    case PinType::UINT:
+                    case PinType::Uint:
                         return Convert<uint32_t, bool>;
-                    case PinType::CHAR:
+                    case PinType::Char:
                         return Convert<char, bool>;
                     default:
                         break;
                 }
-            case PinType::UINT:
+            case PinType::Uint:
                 switch (srcType) {
-                    case PinType::FLOAT:
+                    case PinType::Float:
                         return Convert<float, uint32_t>;
-                    case PinType::INT:
+                    case PinType::Int:
                         return Convert<int32_t, uint32_t>;
-                    case PinType::BOOL:
+                    case PinType::Bool:
                         return Convert<bool, uint32_t>;
-                    case PinType::CHAR:
+                    case PinType::Char:
                         return Convert<char, uint32_t>;
                     default:
                         break;
                 }
-            case PinType::CHAR:
+            case PinType::Char:
                 switch(srcType) {
-                    case PinType::FLOAT:
+                    case PinType::Float:
                         return Convert<float, char>;
-                    case PinType::INT:
+                    case PinType::Int:
                         return Convert<int32_t, char>;
-                    case PinType::BOOL:
+                    case PinType::Bool:
                         return Convert<bool, char>;
-                    case PinType::UINT:
+                    case PinType::Uint:
                         return Convert<uint32_t, char>;
                     default:
                         break;
                 }
-            case PinType::FLOW: {
+            case PinType::Flow: {
                 return [](ConvertSingleArgs args) {
                     args.pinIn->OnValueChanged();
                 };
@@ -117,9 +117,9 @@ namespace seam::pins {
             // The pin system can't always infer what type of FBO is expected,
             // for instance in cases where we create an FBO pin from uniforms.
             // So, allow any FBO pin type to connect to another FBO pin type.
-            case PinType::FBO_RGBA:
-            case PinType::FBO_RED:
-            case PinType::FBO_RGBA16F:
+            case PinType::FboRgba:
+            case PinType::FboRed:
+            case PinType::FboRgba16F:
             {
                 if (IsFboPin(srcType)) {
                     return Convert<ofFbo*, ofFbo*>;
@@ -220,7 +220,7 @@ namespace seam::pins {
 
 TEST_CASE("Test single int to float pin converter") {
 	bool isConvertible = false;
-	pins::ConvertSingle Convert = seam::pins::GetConvertSingle(PinType::INT, PinType::FLOAT, isConvertible);
+	pins::ConvertSingle Convert = seam::pins::GetConvertSingle(PinType::Int, PinType::Float, isConvertible);
 	CHECK(isConvertible);
 	float f = 4.2f;
 	int i = 29;
@@ -231,7 +231,7 @@ TEST_CASE("Test single int to float pin converter") {
 
 TEST_CASE("Test single uint to float pin converter") {
 	bool isConvertible = false;
-	pins::ConvertSingle Convert = seam::pins::GetConvertSingle(PinType::UINT, PinType::FLOAT, isConvertible);
+	pins::ConvertSingle Convert = seam::pins::GetConvertSingle(PinType::Uint, PinType::Float, isConvertible);
 	CHECK(isConvertible);
 	float f = -4.2f;
     uint32_t u = 10;
@@ -242,7 +242,7 @@ TEST_CASE("Test single uint to float pin converter") {
 
 TEST_CASE("Test single bool to float pin converter") {
 	bool isConvertible = false;
-	pins::ConvertSingle Convert = seam::pins::GetConvertSingle(PinType::BOOL, PinType::FLOAT, isConvertible);
+	pins::ConvertSingle Convert = seam::pins::GetConvertSingle(PinType::Bool, PinType::Float, isConvertible);
 	CHECK(isConvertible);
 	float f = 1092.234f;
     bool b = true;
@@ -253,7 +253,7 @@ TEST_CASE("Test single bool to float pin converter") {
 
 TEST_CASE("Test single float to int32 pin converter") {
 	bool isConvertible = false;
-	pins::ConvertSingle Convert = seam::pins::GetConvertSingle(PinType::FLOAT, PinType::INT, isConvertible);
+	pins::ConvertSingle Convert = seam::pins::GetConvertSingle(PinType::Float, PinType::Int, isConvertible);
 	CHECK(isConvertible);
 	int i = 29;
 	float f = 4.2f;
@@ -264,7 +264,7 @@ TEST_CASE("Test single float to int32 pin converter") {
 
 TEST_CASE("Test single uint to int32 pin converter") {
 	bool isConvertible = false;
-	pins::ConvertSingle Convert = seam::pins::GetConvertSingle(PinType::UINT, PinType::INT, isConvertible);
+	pins::ConvertSingle Convert = seam::pins::GetConvertSingle(PinType::Uint, PinType::Int, isConvertible);
 	CHECK(isConvertible);
 	int i = -29;
     uint32_t u = 10;
@@ -275,7 +275,7 @@ TEST_CASE("Test single uint to int32 pin converter") {
 
 TEST_CASE("Test single bool to int32 pin converter") {
 	bool isConvertible = false;
-	pins::ConvertSingle Convert = seam::pins::GetConvertSingle(PinType::BOOL, PinType::INT, isConvertible);
+	pins::ConvertSingle Convert = seam::pins::GetConvertSingle(PinType::Bool, PinType::Int, isConvertible);
 	CHECK(isConvertible);
 	int i = -29;
     bool b = true;
@@ -286,7 +286,7 @@ TEST_CASE("Test single bool to int32 pin converter") {
 
 TEST_CASE("Test single float to bool pin converter") {
 	bool isConvertible = false;
-	pins::ConvertSingle Convert = seam::pins::GetConvertSingle(PinType::FLOAT, PinType::BOOL, isConvertible);
+	pins::ConvertSingle Convert = seam::pins::GetConvertSingle(PinType::Float, PinType::Bool, isConvertible);
 	CHECK(isConvertible);
 	bool b = false;
 	float f = 4.2f;
@@ -297,7 +297,7 @@ TEST_CASE("Test single float to bool pin converter") {
 
 TEST_CASE("Test single int to bool pin converter") {
 	bool isConvertible = false;
-	pins::ConvertSingle Convert = seam::pins::GetConvertSingle(PinType::INT, PinType::BOOL, isConvertible);
+	pins::ConvertSingle Convert = seam::pins::GetConvertSingle(PinType::Int, PinType::Bool, isConvertible);
 	CHECK(isConvertible);
 	bool b = false;
     int32_t i = 10;
@@ -308,7 +308,7 @@ TEST_CASE("Test single int to bool pin converter") {
 
 TEST_CASE("Test single uint to bool pin converter") {
 	bool isConvertible = false;
-	pins::ConvertSingle Convert = seam::pins::GetConvertSingle(PinType::UINT, PinType::BOOL, isConvertible);
+	pins::ConvertSingle Convert = seam::pins::GetConvertSingle(PinType::Uint, PinType::Bool, isConvertible);
 	CHECK(isConvertible);
 	bool b = false;
     uint32_t u = 10;
@@ -319,7 +319,7 @@ TEST_CASE("Test single uint to bool pin converter") {
 
 TEST_CASE("Test single converter for 2-coord float to 3-coord float") {
     bool isConvertible = false;
-	pins::ConvertSingle Convert = seam::pins::GetConvertSingle(PinType::FLOAT, PinType::FLOAT, isConvertible);
+	pins::ConvertSingle Convert = seam::pins::GetConvertSingle(PinType::Float, PinType::Float, isConvertible);
 	CHECK(isConvertible);
 	glm::vec2 src = glm::vec2(-1.f);
     glm::vec3 dst = glm::vec3(1.f);
@@ -332,7 +332,7 @@ TEST_CASE("Test single converter for 2-coord float to 3-coord float") {
 
 TEST_CASE("Test single converter for 3-coord uint to 2-coord float") {
     bool isConvertible = false;
-	pins::ConvertSingle Convert = seam::pins::GetConvertSingle(PinType::UINT, PinType::FLOAT, isConvertible);
+	pins::ConvertSingle Convert = seam::pins::GetConvertSingle(PinType::Uint, PinType::Float, isConvertible);
 	CHECK(isConvertible);
 	glm::uvec3 src = glm::uvec3(10);
     glm::vec2 dst = glm::vec2(1.f);
@@ -347,8 +347,8 @@ TEST_CASE("Test multi float to int pin converter") {
     std::array<int32_t, 4> ints = { 5, 10, 14, 20 };
     bool isConvertible;
 
-    pins::PinInput pinIn = pins::SetupInputPin(PinType::INT, nullptr, &ints, ints.size(), "ints");
-    pins::PinOutput pinOut = pins::SetupOutputPin(nullptr, PinType::FLOAT, "floats");
+    pins::PinInput pinIn = pins::SetupInputPin(PinType::Int, nullptr, &ints, ints.size(), "ints");
+    pins::PinOutput pinOut = pins::SetupOutputPin(nullptr, PinType::Float, "floats");
 
     pins::ConvertMulti Convert = seam::pins::GetConvertMulti(&pinIn, &pinOut, isConvertible);
     CHECK(isConvertible);
@@ -363,8 +363,8 @@ TEST_CASE("Test multi float to bool pin converter") {
     std::array<bool, 4> bools = { 0 };
     bool isConvertible;
 
-    pins::PinInput pinIn = pins::SetupInputPin(PinType::BOOL, nullptr, &bools, bools.size(), "");
-    pins::PinOutput pinOut = pins::SetupOutputPin(nullptr, PinType::FLOAT, "floats");
+    pins::PinInput pinIn = pins::SetupInputPin(PinType::Bool, nullptr, &bools, bools.size(), "");
+    pins::PinOutput pinOut = pins::SetupOutputPin(nullptr, PinType::Float, "floats");
 
     pins::ConvertMulti Convert = seam::pins::GetConvertMulti(&pinIn, &pinOut, isConvertible);
     CHECK(isConvertible);
@@ -379,9 +379,9 @@ TEST_CASE("Test strided multi converter where source and destination are the sam
     std::array<float, 2> src = { -1.0, -1.0 };
     bool isConvertible;
 
-    pins::PinInput pinIn = pins::SetupInputPin(PinType::FLOAT, nullptr, &dst, dst.size(), "dst",
+    pins::PinInput pinIn = pins::SetupInputPin(PinType::Float, nullptr, &dst, dst.size(), "dst",
         PinInOptions(sizeof(float) * 2));
-    pins::PinOutput pinOut = pins::SetupOutputPin(nullptr, PinType::FLOAT, "src");
+    pins::PinOutput pinOut = pins::SetupOutputPin(nullptr, PinType::Float, "src");
 
     pins::ConvertMulti Convert = seam::pins::GetConvertMulti(&pinIn, &pinOut, isConvertible);
     CHECK(isConvertible);
@@ -399,9 +399,9 @@ TEST_CASE("Test strided multi converter where source and destination are differe
     std::array<glm::ivec3, 2> src = { glm::ivec3(-1), glm::ivec3(-2) };
     bool isConvertible;
 
-    pins::PinInput pinIn = pins::SetupInputPin(PinType::FLOAT, nullptr, &dst, dst.size(), "dst",
+    pins::PinInput pinIn = pins::SetupInputPin(PinType::Float, nullptr, &dst, dst.size(), "dst",
         PinInOptions(sizeof(glm::vec2) * 2, 2));
-    pins::PinOutput pinOut = pins::SetupOutputPin(nullptr, PinType::INT, "src", 3);
+    pins::PinOutput pinOut = pins::SetupOutputPin(nullptr, PinType::Int, "src", 3);
 
     pins::ConvertMulti Convert = seam::pins::GetConvertMulti(&pinIn, &pinOut, isConvertible);
     CHECK(isConvertible);

@@ -49,12 +49,12 @@ namespace seam::nodes {
 		*/
 
 		std::array<PinInput, 3> pin_inputs = {
-			pins::SetupInputPin(PinType::FLOAT, this, &time, 1, "Time"),
-			pins::SetupInputPin(PinType::FLOAT, this, &speed, 1, "Speed"),
+			pins::SetupInputPin(PinType::Float, this, &time, 1, "Time"),
+			pins::SetupInputPin(PinType::Float, this, &speed, 1, "Speed"),
 			pins::SetupInputFlowPin(this,[&]() { Pause(); }, "Reset")
 		};
 
-		PinOutput pin_out_time = pins::SetupOutputPin(this, pins::PinType::FLOAT, "time");
-		PinOutput pin_out_delta_time = pins::SetupOutputPin(this, pins::PinType::FLOAT, "delta time");
+		PinOutput pin_out_time = pins::SetupOutputPin(this, pins::PinType::Float, "time");
+		PinOutput pin_out_delta_time = pins::SetupOutputPin(this, pins::PinType::Float, "delta time");
 	};
 }

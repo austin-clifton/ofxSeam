@@ -50,13 +50,13 @@ namespace seam::nodes {
         PinOutput& CreateOutput();
         void DeleteOutput(size_t i);
 
-        PinType currentInputType = PinType::ANY;
+        PinType currentInputType = PinType::Any;
         size_t pinElementSize = 0;
         std::vector<char> inputBuffer;
         size_t nextAvailableByte = 0;
 
         std::vector<PinInput> pinInputs = {
-            pins::SetupInputPin(PinType::ANY, this, &inputBuffer[0], 16, "Channels In"),
+            pins::SetupInputPin(PinType::Any, this, &inputBuffer[0], 16, "Channels In"),
         };
 
         std::string outputName = "Output XX";

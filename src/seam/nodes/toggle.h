@@ -33,6 +33,6 @@ namespace seam::nodes {
 
 		std::vector<PinInput> pinInputs;
 
-		PinOutput pinOutSelection = SetupOutputPin(this, PinType::UINT, "Selection");
+		PinOutput pinOutSelection = SetupOutputPin(this, PinType::Uint, "Selection");
 	};
 }

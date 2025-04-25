@@ -37,11 +37,11 @@ namespace seam::nodes {
         float playbackSpeed = 1.0f;
 
         std::array<PinInput, 1> pinInputs = {
-			pins::SetupInputPin(PinType::FLOAT, this, &playbackSpeed, 1, "Playback Speed"),
+			pins::SetupInputPin(PinType::Float, this, &playbackSpeed, 1, "Playback Speed"),
         };
 
         PinOutput pinOutFbo = pins::SetupOutputStaticFboPin(
-            this, &fbo, pins::PinType::FBO_RGBA16F, "Video Feed"
+            this, &fbo, pins::PinType::FboRgba16F, "Video Feed"
         );
 	};
 }
