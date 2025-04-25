@@ -75,6 +75,12 @@ namespace seam {
 		/// Calling this function will cause the SeamGraph to recalculate its visual update chain.
 		void SetVisualOutputNode(INode* node);
 
+		/// @brief Get the last visual node which was selected in the GUI.
+		/// That node's visual chain will be updated every frame, 
+		/// even if it isn't currently the output Node.
+		INode* GetLastSelectedVisualNode();
+		void SetLastSelectedVisualNode(INode* node);
+
 		/// @brief Connect an output pin to an input pin.
 		/// @return true if the Pins were successfully connected.
 		bool Connect(PinInput* pinIn, PinOutput* pinOut);
@@ -130,6 +136,10 @@ namespace seam {
 		/// @brief The visual node which is drawn to the output window.
 		/// Dictates which Nodes are in the active visual update chain and will be updated each frame.
 		INode* visualOutputNode = nullptr;
+
+		/// @brief Last visual node selected in the GUI. 
+		/// Its display FBO will be rendered to the GUI window.
+		INode* lastSelectedVisualNode = nullptr;
 
 		SetupParams setupParams;
 

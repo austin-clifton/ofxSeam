@@ -329,6 +329,7 @@ void SeamGraph::NewGraph() {
     nodesUpdateEveryFrame.clear();
 
 	visualOutputNode = nullptr;
+	lastSelectedVisualNode = nullptr;
 
 #if BUILD_AUDIO_ANALYSIS
 	while (!destructing && clearAudioNodes.load() == true) {
@@ -423,6 +424,14 @@ void SeamGraph::DeleteNode(INode* node) {
 		audioLock.store(false);
     }
 
+	if (lastSelectedVisualNode == node) {
+		lastSelectedVisualNode = nullptr;
+	}
+
+	if (visualOutputNode == node) {
+		visualOutputNode = nullptr;
+	}
+
     // Finally, delete the Node.
     delete node;
 }
@@ -434,6 +443,16 @@ INode* SeamGraph::GetVisualOutputNode() {
 void SeamGraph::SetVisualOutputNode(INode* node) {
 	assert(node->IsVisual());
 	visualOutputNode = node;
+
+	// TODO recalculate visual draw chain
+}
+
+INode* SeamGraph::GetLastSelectedVisualNode() {
+	return lastSelectedVisualNode;
+}
+
+void SeamGraph::SetLastSelectedVisualNode(INode* node) {
+	lastSelectedVisualNode = node;
 
 	// TODO recalculate visual draw chain
 }

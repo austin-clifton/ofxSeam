@@ -75,6 +75,7 @@ void Editor::Draw() {
 	graph.Draw();
 
 	// draw the selected node's display FBO if it's a visual node
+	INode* lastSelectedVisualNode = graph.GetLastSelectedVisualNode();
 	if (lastSelectedVisualNode != nullptr) {
 		// visual nodes should set an FBO for GUI display!
 		// TODO this assert should be placed elsewhere (it shouldn't only fire when selected)
@@ -171,7 +172,6 @@ void Editor::NewGraph() {
 	loadedFile.clear();
 
 	selectedNode = nullptr;
-	lastSelectedVisualNode = nullptr;
 	newLinkPin = nullptr;
 	showCreateDialog = false;
 	showWindowResize = false;
@@ -280,7 +280,7 @@ void Editor::GuiDraw() {
 		// the last selected node is the one we'll show in the properties editor
 		selectedNode = selectedNodes.back().AsPointer<INode>();
 		if (selectedNode->IsVisual()) {
-			lastSelectedVisualNode = selectedNode;
+			graph.SetLastSelectedVisualNode(selectedNode);
 		}
 	} else {
 		selectedNode = nullptr;
@@ -416,17 +416,13 @@ void Editor::GuiDraw() {
 							links.erase(links.begin() + (i - 1));
 						}
 					}
-
-					graph.DeleteNode(node);
 					
 					// If this node is the selected node, unselect.
 					if (selectedNode == node) {
 						selectedNode = nullptr;
 					}
 
-					if (lastSelectedVisualNode == node) {
-						lastSelectedVisualNode = nullptr;
-					}
+					graph.DeleteNode(node);
 				}
 			}
 		}
