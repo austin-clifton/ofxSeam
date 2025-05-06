@@ -100,6 +100,13 @@ namespace seam {
 		}
 
     private:
+		inline DrawParams GetDrawParams() {
+			DrawParams params;
+			params.time = ofGetElapsedTimef();
+			params.delta_time = ofGetLastFrameTime();
+			return params;
+		}
+
 		void LockAudio();
 
 		/// @brief Recursively traverse a visual node's parent tree and update nodes in order.

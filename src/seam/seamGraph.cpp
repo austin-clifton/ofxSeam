@@ -219,10 +219,7 @@ SeamGraph::~SeamGraph() {
 }
 
 void SeamGraph::Draw() {
-    DrawParams params;
-    params.time = ofGetElapsedTimef();
-    params.delta_time = ofGetLastFrameTime();
-
+    DrawParams params = GetDrawParams();
 	for (auto n : nodesInDrawChain) {
 		n->Draw(&params);
 	}
@@ -368,6 +365,14 @@ INode* SeamGraph::CreateAndAdd(seam::nodes::NodeId node_id) {
 			nodesUpdateOverTime.push_back(node);
 		}
 
+		// Visual nodes should be drawn once after creation,
+		// otherwise their frame buffers won't display anything.
+		if (node->IsVisual()) {
+			node->Update(GetUpdateParams());
+			DrawParams drawParams = GetDrawParams();
+			node->Draw(&drawParams);
+		}
+
 		// Does this Node process audio?
 		IAudioNode* audioNode = dynamic_cast<IAudioNode*>(node);
 		if (audioNode != nullptr) {
@@ -377,6 +382,8 @@ INode* SeamGraph::CreateAndAdd(seam::nodes::NodeId node_id) {
 			audioNodes.push_back(audioNode);
 			audioLock.store(false);
 		}
+
+
 	}
 
 	return node;
