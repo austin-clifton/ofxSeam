@@ -118,11 +118,12 @@ namespace seam {
         /// @brief Unsorted list of all the Nodes in the graph.
 		std::vector<INode*> nodes;
 
-		/// @brief These two are re-calculated each frame, and then sorted for update + draw in that order
-        std::vector<INode*> nodesToDraw;
+		/// @brief Subset of nodesInUpdateChain which have NodeFlags::IsVisual raised.
+		/// Cleared per frame and re-filled based on the dirtied nodes in the update chain.
+		std::vector<INode*> nodesInDrawChain;
 
-		/// @brief Visible visual nodes dictate which nodes actually get updated and drawn during those loops
-		std::vector<INode*> visibleNodes;
+		/// @brief These two are re-calculated each frame, and then sorted for update + draw in that order
+        // std::vector<INode*> nodesToDraw;
 
 		/// @brief Nodes which update over time need to be invalidated every frame.
 		std::vector<INode*> nodesUpdateOverTime;

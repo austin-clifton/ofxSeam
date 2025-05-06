@@ -98,6 +98,8 @@ namespace seam::nodes {
 
 	/// Base class for all nodes that use the eventing system
 	class INode : public pins::IInPinnable, public pins::IOutPinnable {
+		struct ParentConnection;
+
 	public:
 		INode(const char* _name) 
 			: node_name (_name) 
@@ -145,13 +147,6 @@ namespace seam::nodes {
 		/// @brief Updates a resolution pin when the window is resized, if a resolution pin exists.
 		virtual bool UpdateResolutionPin(glm::uvec2 resolution);
 
-		/// @brief Override to draw a custom GUI in the Node Inspector window using Dear ImGui.
-		/// By default, this function will call GetProperties() and draw a property editor for each returned property.
-		/// @return True if a value in the Node was updated and the Node needs to now be updated or re-drawn.
-		virtual bool GuiDrawPropertiesList(UpdateParams* params);
-
-		virtual void GuiDrawNodeCenter();
-
 		/// @brief Override if you need to serialize non-pin state to maintain Node state on save and re-load.
 		/// Properties returned from this function will automatically be displayed in the Node Inspector.
 		/// @return A vector describing each piece of non-pin state as a NodeProperty.
@@ -159,15 +154,22 @@ namespace seam::nodes {
 			return std::vector<props::NodeProperty>();
 		}
 
-		inline SeamState Seam() { return seamState; }
-
 		virtual props::NodeProperty* TryCreateProperty(const std::string& name, props::NodePropertyType type) {
 			return nullptr;
 		}
 
+		/// @brief Override to draw a custom GUI in the Node Inspector window using Dear ImGui.
+		/// By default, this function will call GetProperties() and draw a property editor for each returned property.
+		/// @return True if a value in the Node was updated and the Node needs to now be updated or re-drawn.
+		virtual bool GuiDrawPropertiesList(UpdateParams* params);
+
+		virtual void GuiDrawNodeCenter();
+
 		void GuiDrawInputPin(ed::Utilities::BlueprintNodeBuilder& builder, pins::PinInput* inPin);
 		void GuiDrawOutputPin(ed::Utilities::BlueprintNodeBuilder& builder, pins::PinOutput* outPin);
 		void GuiDraw(ed::Utilities::BlueprintNodeBuilder& builder);
+
+		inline SeamState Seam() { return seamState; }
 
 		inline NodeFlags Flags() {
 			return flags;
@@ -211,32 +213,14 @@ namespace seam::nodes {
 			return (flags & NodeFlags::IsVisual) == NodeFlags::IsVisual;
 		}
 
+		inline const std::vector<ParentConnection>& GetParents() const {
+			return parents;
+		}
+
 		pins::PinInput* FindPinInput(pins::PinId id);
 		pins::PinOutput* FindPinOutput(pins::PinId id);
 
 	protected:
-		struct NodeConnection {
-			INode* node = nullptr;
-			// number of connections to this node,
-			// since there may be more than one Pin connecting the nodes together
-			uint16_t conn_count = 0;
-
-			bool operator==(const INode* other) {
-				return node == other;
-			}
-
-			bool operator<(const INode* other) {
-				return node < other;
-			}
-		};
-
-		virtual void InUseParents(std::vector<INode*>& out_parents) {
-			out_parents.clear();
-			for (size_t i = 0; i < parents.size(); i++) {
-				out_parents.push_back(parents[i].node);
-			}
-		}
-
 		// nodes which draw to FBOs can set this member so the FBO is drawn as part of the node's center view.
 		ofFbo* gui_display_fbo = nullptr;
 
@@ -259,11 +243,32 @@ namespace seam::nodes {
 		std::vector<WindowRatioFbo> windowFbos;
 
 	private:
+		struct NodeConnection {
+			INode* node = nullptr;
+			/// @brief Number of connections to this node,
+			/// since there may be more than one Pin connecting the nodes together
+			uint16_t connCount = 0;
+
+			bool operator==(const INode* other) {
+				return node == other;
+			}
+
+			bool operator<(const INode* other) {
+				return node < other;
+			}
+		};
+
+		struct ParentConnection : public NodeConnection {
+			/// @brief Parent connections also track how many of the connections
+			/// are actually active, since input pins can be disabled.
+			uint16_t activeConnections = 0;
+		};
+
 		static bool CompareUpdateOrder(const INode* l, const INode* r);
 		static bool CompareConnUpdateOrder(const NodeConnection& l, const NodeConnection& r);
 
 		/// \return true if this is a new parent node
-		bool AddParent(INode* parent);
+		bool AddParent(INode* parent, pins::PinInput* pinIn);
 
 		/// \return true if this is a new child node
 		bool AddChild(INode* child);
@@ -281,7 +286,7 @@ namespace seam::nodes {
 		std::vector<NodeConnection> children;
 
 		/// @brief List of parent nodes which this node receives events from
-		std::vector<NodeConnection> parents;		
+		std::vector<ParentConnection> parents;		
 
 		// the factory is a friend class so it can grab all the node's metadata easily
 		friend class seam::EventNodeFactory;

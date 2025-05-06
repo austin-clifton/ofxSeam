@@ -14,6 +14,7 @@ namespace seam::flags {
 #define DeclareFlagOperators(enumFlagType, underlyingDataType) \
 	enumFlagType operator|(enumFlagType lhs, enumFlagType rhs); \
 	enumFlagType operator&(enumFlagType lhs, enumFlagType rhs); \
+	enumFlagType operator~(enumFlagType flag);
 
 #define DefineFlagOperators(enumFlagType, underlyingDataType) \
 	enumFlagType operator|(enumFlagType lhs, enumFlagType rhs) { \
@@ -24,5 +25,10 @@ namespace seam::flags {
 	enumFlagType operator&(enumFlagType lhs, enumFlagType rhs) { \
 		return static_cast<enumFlagType>( \
 			static_cast<underlyingDataType>(lhs) & static_cast<underlyingDataType>(rhs) \
+		); \
+	} \
+	enumFlagType operator~(enumFlagType flag) { \
+		return static_cast<enumFlagType>( \
+			~static_cast<underlyingDataType>(flag) \
 		); \
 	}

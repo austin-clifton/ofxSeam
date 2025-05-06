@@ -91,20 +91,22 @@ void INode::SortParents() {
 	std::sort(parents.begin(), parents.end(), &INode::CompareConnUpdateOrder);
 }
 
-bool INode::AddParent(INode* parent) {
+bool INode::AddParent(INode* parent, PinInput* pinIn) {
 	// the parents list is sorted to keep update traversal in order without any further sorting
 	// insert to a sorted list, if this parent isn't already in the parents list
-	NodeConnection conn;
+	ParentConnection conn;
 	conn.node = parent;
 	auto it = std::lower_bound(parents.begin(), parents.end(), conn, &INode::CompareConnUpdateOrder);
 	if (it == parents.end() || it->node != parent) {
 		// new parent, add the new NodeConnection for it
-		conn.conn_count = 1;
+		conn.connCount = 1;
+		conn.activeConnections += pinIn->IsEnabled();
 		parents.insert(it, conn);
 		return true;
 	} else {
 		// parent already exists, increase its connection count
-		it->conn_count += 1;
+		it->connCount += 1;
+		it->activeConnections += pinIn->IsEnabled();
 		return false;
 	}
 }
@@ -116,12 +118,12 @@ bool INode::AddChild(INode* child) {
 		// new child, make a NodeConnection for it
 		NodeConnection conn;
 		conn.node = child;
-		conn.conn_count = 1;
+		conn.connCount = 1;
 		children.push_back(conn);
 		return true;
 	} else {
 		// child already exists, increase its connection count
-		it->conn_count += 1;
+		it->connCount += 1;
 		return false;
 	}
 }

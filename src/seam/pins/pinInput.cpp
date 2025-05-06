@@ -1,3 +1,4 @@
+#include "seam/nodes/iNode.h"
 #include "seam/pins/pinInput.h"
 #include "seam/pins/pinConnection.h"
 
@@ -31,5 +32,24 @@ void PinInput::SetNumCoords(uint16_t _numCoords) {
         auto it = FindConnection(connection->connections, this);
         assert(it != connection->connections.end());
         it->RecacheConverts();
+    }
+} 
+
+void PinInput::SetEnabled(bool enabled, seam::nodes::UpdateParams* params) {
+    if (IsEnabled() == enabled) {
+        return;
+    } else {
+        if (enabled) {
+            flags = (flags & ~PinFlags::Disabled);
+        } else {
+            flags = (flags | PinFlags::Disabled);
+        }
+
+        if (connection != nullptr) {
+            auto parents = node->GetParents();
+            auto parentConn = std::find(parents.begin(), parents.end(), connection->node);
+            assert(parentConn != parents.end());
+            parentConn->activeConnections += enabled * 1 + !enabled * -1;
+        }
     }
 }

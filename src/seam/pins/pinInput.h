@@ -11,6 +11,10 @@
 #include "seam/pins/iInPinnable.h"
 #include "seam/pins/pinOutput.h"
 
+namespace seam::nodes {
+    class UpdateParams;
+}
+
 namespace seam::pins {
     class VectorPinInput;
 
@@ -263,6 +267,12 @@ namespace seam::pins {
         }
 
         void SetNumCoords(uint16_t _numCoords);
+
+        inline bool IsEnabled() {
+            return (flags & PinFlags::Disabled) != PinFlags::Disabled;
+        }
+
+        inline void SetEnabled(bool enabled, seam::nodes::UpdateParams* params);
 
         /// push pattern id
         PushId push_id;

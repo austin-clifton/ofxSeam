@@ -223,38 +223,34 @@ void SeamGraph::Draw() {
     params.time = ofGetElapsedTimef();
     params.delta_time = ofGetLastFrameTime();
 
-    for (auto n : nodesToDraw) {
-        n->Draw(&params);
-    }
+	for (auto n : nodesInDrawChain) {
+		n->Draw(&params);
+	}
 }
 
 void SeamGraph::UpdateVisibleNodeGraph(INode* n, UpdateParams* params) {
     // Traverse parents and update them before traversing this node.
     // Parents are sorted by update order, so that any "shared parents" are updated first
-    static std::vector<INode*> in_use_parents;
-    n->InUseParents(in_use_parents);
+	auto& parents = n->GetParents();
 
-    for (auto p : in_use_parents) {
-        assert(p->update_order < n->update_order);
-        UpdateVisibleNodeGraph(p, params);
+    for (auto p : parents) {
+		if (p.activeConnections > 0) {
+			assert(p.node->update_order < n->update_order);
+			UpdateVisibleNodeGraph(p.node, params);
+		}
     }
 
-    // now, this node can update, if it's dirty
     if (n->dirty) {
         n->Update(params);
-        n->dirty = false;
-
-        // if this is a visual node, it will need to be re-drawn now
-        if (n->IsVisual()) {
-            nodesToDraw.push_back(n);
-        }
+		if (n->IsVisual()) {
+			nodesInDrawChain.push_back(n);
+		}
+		n->dirty = false;
     }
 }
 
 void SeamGraph::Update() {
     // Traverse the parent tree of each visible visual node and determine what needs to update
-    nodesToDraw.clear();
-
     // Before traversing the graphs of visible nodes, dirty nodes which update every frame
     for (auto n : nodesUpdateOverTime) {
         // Set the dirty flag directly so children aren't affected;
@@ -277,10 +273,17 @@ void SeamGraph::Update() {
         }
     }
 
+	// Clear draw chain, the dirtied update chain will determine it.
+	nodesInDrawChain.clear();
+
     // Traverse the visible node graph and update nodes that need to be updated
-    for (auto n : visibleNodes) {
-        UpdateVisibleNodeGraph(n, params);
-    }
+	if (visualOutputNode != nullptr) {
+		UpdateVisibleNodeGraph(visualOutputNode, params);
+	}
+
+	if (lastSelectedVisualNode != nullptr) {
+		UpdateVisibleNodeGraph(lastSelectedVisualNode, params);
+	}
 }
 
 void SeamGraph::LockAudio() {
@@ -323,8 +326,7 @@ void SeamGraph::NewGraph() {
 	}
 
 	// Clear all the various lists that keep track of nodes.
-    nodesToDraw.clear();
-    visibleNodes.clear();
+    nodesInDrawChain.clear();
     nodesUpdateOverTime.clear();
     nodesUpdateEveryFrame.clear();
 
@@ -358,12 +360,6 @@ INode* SeamGraph::CreateAndAdd(seam::nodes::NodeId node_id) {
 		node->Setup(&setupParams);
 
 		nodes.push_back(node);
-
-		if (node->IsVisual()) {
-			// probably temporary: add to the list of visible nodes up front
-			auto it = std::upper_bound(visibleNodes.begin(), visibleNodes.end(), node, &INode::CompareUpdateOrder);
-			visibleNodes.insert(it, node);
-		}
 
 		if (node->UpdatesEveryFrame()) {
 			nodesUpdateEveryFrame.push_back(node);
@@ -412,8 +408,7 @@ void SeamGraph::DeleteNode(INode* node) {
 
     // Remove the Node from whatever lists it's in...
     Erase(nodes, node);
-    Erase(nodesToDraw, node);
-    Erase(visibleNodes, node);
+    Erase(nodesInDrawChain, node);
     Erase(nodesUpdateEveryFrame, node);
     Erase(nodesUpdateOverTime, node);
     
@@ -487,9 +482,9 @@ bool SeamGraph::Connect(PinInput* pinIn, PinOutput* pinOut) {
 	// add to each node's parents and children list
 	// if this connection rearranged the node graph, 
 	// its traversal order will need to be recalculated
-	const bool is_new_child = parent->AddChild(child);
-	const bool is_new_parent = child->AddParent(parent);
-	const bool rearranged = is_new_parent || is_new_child;
+	const bool isNewChild = parent->AddChild(child);
+	const bool isNewParent = child->AddParent(parent, pinIn);
+	const bool rearranged = isNewParent || isNewChild;
 
 	if (rearranged) {
 		RecalculateTraversalOrder(child);
@@ -543,22 +538,22 @@ bool SeamGraph::Disconnect(PinInput* pinIn, PinOutput* pinOut) {
 	{
 		auto it = std::find(parent->children.begin(), parent->children.end(), child);
 		assert(it != parent->children.end());
-		if (it->conn_count == 1) {
+		if (it->connCount == 1) {
 			parent->children.erase(it);
 			rearranged = true;
 		} else {
-			it->conn_count -= 1;
+			it->connCount -= 1;
 		}
 	}
 
 	{
 		auto it = std::find(child->parents.begin(), child->parents.end(), parent);
 		assert(it != child->parents.end());
-		if (it->conn_count == 1) {
+		if (it->connCount == 1) {
 			child->parents.erase(it);
 			rearranged = true;
 		} else {
-			it->conn_count -= 1;
+			it->connCount -= 1;
 		}
 	}
 

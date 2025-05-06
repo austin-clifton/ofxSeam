@@ -44,7 +44,7 @@ namespace seam::pins {
         /// only INPUT pins can be marked as feedback
         Feedback = 1 << 2,
 
-        /// @brief Only variable-sized INPUT Pins can raise this flag.
+        /// @brief Only variable-sized Input Pins can raise this flag.
         /// Causes the node to receive a stream of pushed events to be drained during update,
         /// rather than treating the Pin's underlying vector as value channels.
         /// Is useful for receiving note events or any kind of event stream.
@@ -53,6 +53,12 @@ namespace seam::pins {
         /// @brief Valid for Input pins only; means Pin channels are resizable,
         /// and the void* backing the Pin points to a vector<T>
         Vector = 1 << 4,
+
+        /// @brief Tells the seam graph that an input pin isn't in use right now,
+        /// which allows the graph to optimize per-frame updates.
+        /// Useful for selector lines.
+        /// Valid only for Input pins.
+        Disabled = 1 << 5,
     };
 
     DeclareFlagOperators(PinFlags, uint16_t);
