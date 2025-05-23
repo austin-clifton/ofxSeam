@@ -29,7 +29,7 @@ void UniformsPinMap::UpdatePins(const std::unordered_set<const char*>& blacklist
     
     // Loop over each new pin, and make sure ids and connections are preserved.
     for (auto& pinIn : newPins) {
-		if (pins::IsFboPin(pinIn.type)) {
+		if (pins::IsFboPin(pinIn.Type())) {
 			// Use the pin's value changed callback to call shader.setUniformTexture(),
 			// so that doesn't have to be called in SetUniforms()
 			pinIn.SetOnValueChanged([this, &pinIn]() {
@@ -96,7 +96,7 @@ void UniformsPinMap::SetUniforms() {
 		
 		// TODO put this somewhere more accessible,
 		// and add more type conversions as you add more to UniformsToPinInputs()
-		switch (pin.type) {
+		switch (pin.Type()) {
 		case pins::PinType::Float: {
             switch (numCoords) {
                 case 1:

@@ -69,7 +69,7 @@ namespace seam::pins {
 #endif
 		PinOutput pinOut;
 		pinOut.node = node;
-		pinOut.type = type;
+		pinOut.SetType(type);
 		pinOut.name = name;
 		pinOut.SetNumCoords(numCoords);
 		pinOut.flags = (PinFlags)(flags | PinFlags::Output);
@@ -93,7 +93,7 @@ namespace seam::pins {
 
 		PinOutput pinOut;
 		pinOut.node = node;
-		pinOut.type = fboType;
+		pinOut.SetType(fboType);
 		pinOut.name = name;
 		pinOut.flags = (PinFlags)(flags | PinFlags::Output);
 		pinOut.userp = userp;
@@ -256,14 +256,14 @@ namespace seam::pins {
 			// set each Pin's buffer to point to the right place.
 			void* buffer = &pinBuffer[currentByte];
 			pinIn.SetBuffer(buffer, 1);
-			currentByte += PinTypeToElementSize(pinIn.type) * pinIn.NumCoords();
+			currentByte += PinTypeToElementSize(pinIn.Type()) * pinIn.NumCoords();
 
 			// grab the location of the uniform so we can set initial values for the Pin
 			GLint uniform_location = glGetUniformLocation(program, pinIn.name.c_str());
 			assert(glGetError() == GL_NO_ERROR);
 
 			// fill the Pin's default values
-			switch (pinIn.type) {
+			switch (pinIn.Type()) {
 			case PinType::Float:
 				glGetnUniformfv(program, uniform_location, 
 					pinIn.NumCoords() * sizeof(float), (float*)buffer);

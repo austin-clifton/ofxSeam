@@ -81,7 +81,7 @@ void Deserialize(const seam::schema::PinIn::Reader& serializedPin, PinInput* pin
         return;
     }
 
-    NodePropertyType type = seam::pins::PinTypeToPropType(pinIn->type);
+    NodePropertyType type = seam::pins::PinTypeToPropType(pinIn->Type());
 
     size_t dstSize;
     void* dstBuff = pinIn->Buffer(dstSize);

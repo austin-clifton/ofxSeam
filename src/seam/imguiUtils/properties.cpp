@@ -56,7 +56,7 @@ namespace seam::props {
 		void* guiMin = nullptr;
 		void* guiMax = nullptr;
 		const char* format = nullptr;
-		switch (input->type) {
+		switch (input->Type()) {
 		case PinType::Int: {
 			imguiType = ImGuiDataType_S32;
 			PinIntMeta* meta = (PinIntMeta*)input->PinMetadata();

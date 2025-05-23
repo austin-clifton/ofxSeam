@@ -81,6 +81,9 @@ namespace seam {
 		INode* GetLastSelectedVisualNode();
 		void SetLastSelectedVisualNode(INode* node);
 
+		INode* GetSelectedNode();
+		void SetSelectedNode(INode* node);
+
 		/// @brief Connect an output pin to an input pin.
 		/// @return true if the Pins were successfully connected.
 		bool Connect(PinInput* pinIn, PinOutput* pinOut);
@@ -109,9 +112,9 @@ namespace seam {
 
 		void LockAudio();
 
-		/// @brief Recursively traverse a visual node's parent tree and update nodes in order.
+		/// @brief Recursively traverse a node's parent tree and update nodes in order.
 		/// Also determines the draw list (but not ordering!) for this frame.
-		void UpdateVisibleNodeGraph(INode* n, UpdateParams* params);
+		void UpdateNodeGraph(INode* n, UpdateParams* params);
 
         /// @brief Recalculate a node and its children's update order
 		int16_t RecalculateUpdateOrder(INode* node);
@@ -145,6 +148,9 @@ namespace seam {
 		/// @brief Last visual node selected in the GUI. 
 		/// Its display FBO will be rendered to the GUI window.
 		INode* lastSelectedVisualNode = nullptr;
+
+		/// @brief Current node selected with a left click (will have its node properties menu opened)
+		INode* selectedNode = nullptr;
 
 		SetupParams setupParams;
 

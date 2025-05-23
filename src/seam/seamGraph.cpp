@@ -95,12 +95,12 @@ namespace {
 			}
 
 			// Don't serialize channels if this input type doesn't have serializable state
-			if (pinIn.type == PinType::Flow
-				|| pinIn.type == PinType::FboRgba
-				|| pinIn.type == PinType::FboRgba16F
-				|| pinIn.type == PinType::FboRed
-				|| pinIn.type == PinType::NoteEvent
-				|| pinIn.type == PinType::Struct
+			if (pinIn.Type() == PinType::Flow
+				|| pinIn.Type() == PinType::FboRgba
+				|| pinIn.Type() == PinType::FboRgba16F
+				|| pinIn.Type() == PinType::FboRed
+				|| pinIn.Type() == PinType::NoteEvent
+				|| pinIn.Type() == PinType::Struct
 			) {
 				continue;
 			}
@@ -109,7 +109,7 @@ namespace {
 			pinIn.Buffer(totalElements);
 			auto valuesBuilder = builder.initValues(totalElements * pinIn.NumCoords());
 
-			seam::props::Serialize(valuesBuilder, PinTypeToPropType(pinIn.type), &pinIn);
+			seam::props::Serialize(valuesBuilder, PinTypeToPropType(pinIn.Type()), &pinIn);
 		}
 	}
 
@@ -122,7 +122,7 @@ namespace {
 
 			builder.setId(pinOut.id);
 			builder.setName(pinOut.name);
-			builder.setType((uint16_t)pinOut.type);
+			builder.setType((uint16_t)pinOut.Type());
 			builder.setNumCoords(pinOut.NumCoords());
 
 			// Remember what connections this output has so we can serialize all the connections after this loop.
@@ -225,7 +225,7 @@ void SeamGraph::Draw() {
 	}
 }
 
-void SeamGraph::UpdateVisibleNodeGraph(INode* n, UpdateParams* params) {
+void SeamGraph::UpdateNodeGraph(INode* n, UpdateParams* params) {
     // Traverse parents and update them before traversing this node.
     // Parents are sorted by update order, so that any "shared parents" are updated first
 	auto& parents = n->GetParents();
@@ -233,7 +233,7 @@ void SeamGraph::UpdateVisibleNodeGraph(INode* n, UpdateParams* params) {
     for (auto p : parents) {
 		if (p.activeConnections > 0) {
 			assert(p.node->update_order < n->update_order);
-			UpdateVisibleNodeGraph(p.node, params);
+			UpdateNodeGraph(p.node, params);
 		}
     }
 
@@ -275,11 +275,18 @@ void SeamGraph::Update() {
 
     // Traverse the visible node graph and update nodes that need to be updated
 	if (visualOutputNode != nullptr) {
-		UpdateVisibleNodeGraph(visualOutputNode, params);
+		UpdateNodeGraph(visualOutputNode, params);
 	}
 
+	// Update the last selected visual node in the GUI;
+	// this is mostly a convenience feature for users building graphs
 	if (lastSelectedVisualNode != nullptr) {
-		UpdateVisibleNodeGraph(lastSelectedVisualNode, params);
+		UpdateNodeGraph(lastSelectedVisualNode, params);
+	}
+
+	// Also update the last selected node in the GUI, again for user convenience
+	if (selectedNode != nullptr) {
+		UpdateNodeGraph(selectedNode, params);
 	}
 }
 
@@ -327,6 +334,7 @@ void SeamGraph::NewGraph() {
     nodesUpdateOverTime.clear();
     nodesUpdateEveryFrame.clear();
 
+	selectedNode = nullptr;
 	visualOutputNode = nullptr;
 	lastSelectedVisualNode = nullptr;
 
@@ -426,6 +434,10 @@ void SeamGraph::DeleteNode(INode* node) {
 		audioLock.store(false);
     }
 
+	if (selectedNode == node) {
+		selectedNode = nullptr;
+	}
+
 	if (lastSelectedVisualNode == node) {
 		lastSelectedVisualNode = nullptr;
 	}
@@ -445,8 +457,6 @@ INode* SeamGraph::GetVisualOutputNode() {
 void SeamGraph::SetVisualOutputNode(INode* node) {
 	assert(node->IsVisual());
 	visualOutputNode = node;
-
-	// TODO recalculate visual draw chain
 }
 
 INode* SeamGraph::GetLastSelectedVisualNode() {
@@ -454,9 +464,16 @@ INode* SeamGraph::GetLastSelectedVisualNode() {
 }
 
 void SeamGraph::SetLastSelectedVisualNode(INode* node) {
+	assert(node->IsVisual());
 	lastSelectedVisualNode = node;
+}
 
-	// TODO recalculate visual draw chain
+INode* SeamGraph::GetSelectedNode() {
+	return selectedNode;
+}
+
+void SeamGraph::SetSelectedNode(INode* node) {
+	selectedNode = node;
 }
 
 bool SeamGraph::Connect(PinInput* pinIn, PinOutput* pinOut) {
@@ -532,7 +549,7 @@ bool SeamGraph::Disconnect(PinInput* pinIn, PinOutput* pinOut) {
 
 	// Null out disconnected FBO pin pointers; this will need to be done for other pointer types!
 	// This is probably a temporary solution.
-	if (pins::IsFboPin(pinIn->type)) {
+	if (pins::IsFboPin(pinIn->Type())) {
 		size_t fbosSize;
 		void* pinBuff = pinIn->Buffer(fbosSize);
 		std::memset(pinBuff, 0, fbosSize * sizeof(ofFbo*));

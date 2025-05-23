@@ -293,10 +293,11 @@ namespace seam::nodes {
 		// the editor is a friend class so it can manage the node's inputs and outputs lists
 		friend class seam::Editor;
 		friend class seam::SeamGraph;
+		friend class seam::pins::PinInput;
 	};
 
 	/// <summary>
-	/// If a Node has non-static Pins, you need to inherit IDynamicIONode for pin deserialization to work as expected.
+	/// If a Node has non-static Pins, you need to inherit IDynamicPinsNode for pin deserialization to work as expected.
 	/// </summary>
 	class IDynamicPinsNode : public INode {
 	public:
@@ -320,8 +321,11 @@ namespace seam::nodes {
 
 		virtual ~IDynamicPinsNode() { }
 
-		virtual pins::PinInput* AddPinIn(PinInArgs args) = 0;
-		virtual pins::PinOutput* AddPinOut(pins::PinOutput&& pinOut, size_t index) = 0;
+		/// @brief Must override if input pins are dynamic.
+		virtual pins::PinInput* AddPinIn(PinInArgs args);
+
+		/// @brief Must override if output pins are dynamic.
+		virtual pins::PinOutput* AddPinOut(pins::PinOutput&& pinOut, size_t index);
 	};
 
 	/// <summary>

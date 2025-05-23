@@ -198,7 +198,8 @@ std::vector<props::NodeProperty> ChannelMap::GetProperties() {
 }
 
 void ChannelMap::SetInputType(PinType type) {
-    currentInputType = pinInputs[0].type = type;
+    pinInputs[0].SetType(type);
+    currentInputType = type;
     if (!pinOutputs.size()) {
         // Create an initial Output using the same type as the just-connected type.
         CreateOutput();

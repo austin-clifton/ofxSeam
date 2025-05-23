@@ -75,7 +75,7 @@ namespace seam::pins {
 						// Push the output pin's data to the back of the input pin's vector
 						conn.pinIn->PushEvents(data, numElements);
 					} else {
-						assert(conn.pinIn->type == PinType::Flow);
+						assert(conn.pinIn->Type() == PinType::Flow);
 						conn.pinIn->OnValueChanged();
 					}
 				}
@@ -130,7 +130,7 @@ namespace seam::pins {
 		}
 
 		void PushFlow(const PinOutput& pinOut) {
-			assert(pinOut.type == PinType::Flow);
+			assert(pinOut.Type() == PinType::Flow);
 			for (auto& conn : pinOut.connections) {
 				conn.pinIn->OnValueChanged();
 			}

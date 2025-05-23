@@ -62,8 +62,6 @@ namespace seam {
 
 		// book keeping for GUI interactions
 		Pin* newLinkPin;
-		/// @brief Node selected with a left click (will have its node properties menu opened)
-		INode* selectedNode = nullptr;
 		/// @brief Node selected with a right click (will have a context menu popup opened)
 		INode* selectedContextMenuNode = nullptr;
 

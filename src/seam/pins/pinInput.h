@@ -272,7 +272,9 @@ namespace seam::pins {
             return (flags & PinFlags::Disabled) != PinFlags::Disabled;
         }
 
-        inline void SetEnabled(bool enabled, seam::nodes::UpdateParams* params);
+        void SetEnabled(bool enabled);
+
+        void SetType(PinType type);
 
         /// push pattern id
         PushId push_id;

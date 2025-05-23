@@ -24,7 +24,7 @@ namespace seam::pins {
 
     void PinConnection::RecacheConverts() {
         bool canConvert;
-        convertSingle = GetConvertSingle(pinOut->type, pinIn->type, canConvert);
+        convertSingle = GetConvertSingle(pinOut->Type(), pinIn->Type(), canConvert);
         assert(canConvert);
         convertMulti = GetConvertMulti(pinIn, pinOut, canConvert);
         assert(canConvert);
@@ -135,9 +135,9 @@ namespace seam::pins {
     }
 
     ConvertMulti GetConvertMulti(PinInput* pinIn, PinOutput* pinOut, bool& isConvertible) {
-        if (pinOut->type == pinIn->type) {
+        if (pinOut->Type() == pinIn->Type()) {
             isConvertible = true;
-            size_t elementSize = PinTypeToElementSize(pinOut->type);
+            size_t elementSize = PinTypeToElementSize(pinOut->Type());
 
             // If there's no stride, one big copy might be possible.
             if (pinIn->Stride() == elementSize * pinIn->NumCoords()) {
@@ -192,9 +192,9 @@ namespace seam::pins {
             }
 
         } else {
-            ConvertSingle Convert = GetConvertSingle(pinOut->type, pinIn->type, isConvertible);
+            ConvertSingle Convert = GetConvertSingle(pinOut->Type(), pinIn->Type(), isConvertible);
             if (isConvertible) {
-                size_t srcStride = PinTypeToElementSize(pinOut->type) * pinOut->NumCoords();
+                size_t srcStride = PinTypeToElementSize(pinOut->Type()) * pinOut->NumCoords();
                 return [Convert, srcStride](ConvertMultiArgs args) {
                     size_t dstElements;
                     char* dst = (char*)args.pinIn->Buffer(dstElements);

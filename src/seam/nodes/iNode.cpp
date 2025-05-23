@@ -137,7 +137,7 @@ void INode::GuiDrawInputPin(ed::Utilities::BlueprintNodeBuilder& builder, pins::
 	PinInput* children = pinIn->PinInputs(childrenSize);
 	bool showChildren = false;
 
-	DrawPinIcon(pinIn->type, pinIn->connection != nullptr, 1.0f);
+	DrawPinIcon(pinIn->Type(), pinIn->connection != nullptr, 1.0f);
 	ImGui::Spring(0.f);
 
 	if (childrenSize > 0) {
@@ -166,7 +166,7 @@ void INode::GuiDrawOutputPin(ed::Utilities::BlueprintNodeBuilder& builder, pins:
 	PinOutput* children = pinOut->PinOutputs(childrenSize);
 	bool showChildren = false;
 
-	DrawPinIcon(pinOut->type, pinOut->connections.size() > 0, 1.0f);
+	DrawPinIcon(pinOut->Type(), pinOut->connections.size() > 0, 1.0f);
 	ImGui::Spring(0.f);
 
 	if (childrenSize > 0) {
@@ -261,7 +261,7 @@ bool INode::UpdateResolutionPin(glm::uvec2 resolution) {
 	PinInput* resolutionPin = FindPinInByName(this, "resolution");
 	if (resolutionPin != nullptr) {
 		// Expect resolution to be an ivec2 or uvec2
-		assert(resolutionPin->type == PinType::Uint || resolutionPin->type == PinType::Int);
+		assert(resolutionPin->Type() == PinType::Uint || resolutionPin->Type() == PinType::Int);
 		size_t size;
 		void* buffer = resolutionPin->Buffer(size);
 		assert(size * resolutionPin->NumCoords() == 2);
@@ -355,4 +355,14 @@ bool INode::GuiDrawPropertiesList(UpdateParams* params) {
 	}
 	
 	return changed;
+}
+
+pins::PinInput* IDynamicPinsNode::AddPinIn(PinInArgs args) {
+	printf("Warning: IDynamicPinsNode::AddPinIn() default implementation called for "
+		"input pin %s, did you forget to override this call?\n", args.name.data());
+}
+
+pins::PinOutput* IDynamicPinsNode::AddPinOut(pins::PinOutput&& pinOut, size_t index) {
+	printf("Warning: IDynamicPinsNode::AddPinOut() default implementation called for "
+		"output pin %s, did you forget to override this call?\n", pinOut.name.c_str());
 }

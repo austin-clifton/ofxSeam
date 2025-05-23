@@ -48,6 +48,8 @@ namespace seam::pins {
             }
         }
 
+        void SetType(PinType type);
+
         /// @brief Run OnConnected() for each connected input.
         /// Useful for FBO pins where texture bindings only need to run when the FBO itself changes (rather than its contents)
         void Reconnect(PushPatterns* pushPatterns);

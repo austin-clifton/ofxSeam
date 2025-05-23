@@ -74,8 +74,6 @@ namespace seam::pins {
     struct Pin {
         PinId id;
 
-        PinType type;
-
         // TODO make name and description string-view-ifiable again somehow
 
         // human-readable Pin name for display purposes
@@ -95,10 +93,18 @@ namespace seam::pins {
         /// @brief Unused pointer for user data, if any is needed.
         void* userp = nullptr;
 
+    protected:
+        PinType type;
+
+    public:
         virtual ~Pin() { }
 
         Pin() {
             id = IdsDistributor::GetInstance().NextPinId();
+        }
+
+        inline PinType Type() const {
+            return type;
         }
     };
 

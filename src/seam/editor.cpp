@@ -171,7 +171,6 @@ void Editor::NewGraph() {
 	links.clear();
 	loadedFile.clear();
 
-	selectedNode = nullptr;
 	newLinkPin = nullptr;
 	showCreateDialog = false;
 	showWindowResize = false;
@@ -278,12 +277,13 @@ void Editor::GuiDraw() {
 	int nodes_count = ed::GetSelectedNodes(selectedNodes.data(), static_cast<int>(selectedNodes.size()));
 	if (nodes_count) {
 		// the last selected node is the one we'll show in the properties editor
-		selectedNode = selectedNodes.back().AsPointer<INode>();
+		INode* selectedNode = selectedNodes.back().AsPointer<INode>();
+		graph.SetSelectedNode(selectedNode);
 		if (selectedNode->IsVisual()) {
 			graph.SetLastSelectedVisualNode(selectedNode);
 		}
 	} else {
-		selectedNode = nullptr;
+		graph.SetSelectedNode(nullptr);
 	}
 
 	// if the create dialog isn't up, handle node graph interactions
@@ -322,10 +322,10 @@ void Editor::GuiDraw() {
 
 				if ((void*)pin_in == (void*)pin_out) {
 					ed::RejectNewItem(ImColor(255, 0, 0), 2.0f);
-				} else if (pin_in->type != pin_out->type) {
+				} else if (pin_in->Type() != pin_out->Type()) {
 					bool canConvert;
-					pins::GetConvertSingle(pin_out->type, pin_in->type, canConvert);
-					if (canConvert || pin_in->type == PinType::Any) {
+					pins::GetConvertSingle(pin_out->Type(), pin_in->Type(), canConvert);
+					if (canConvert || pin_in->Type() == PinType::Any) {
 						showLabel("+ Create Link", ImColor(32, 45, 32, 180));
 						if (ed::AcceptNewItem(ImColor(128, 255, 128), 4.0f)) {
 							Connect((PinInput*)pin_in, (PinOutput*)pin_out);
@@ -416,11 +416,6 @@ void Editor::GuiDraw() {
 							links.erase(links.begin() + (i - 1));
 						}
 					}
-					
-					// If this node is the selected node, unselect.
-					if (selectedNode == node) {
-						selectedNode = nullptr;
-					}
 
 					graph.DeleteNode(node);
 				}
@@ -437,6 +432,7 @@ void Editor::GuiDraw() {
 
 	im::End();
 
+	INode* selectedNode = graph.GetSelectedNode();
 	if (selectedNode) {
 		ImGui::PushStyleVar(ImGuiStyleVar_ChildBorderSize, 2.f);
 		ImGui::PushStyleVar(ImGuiStyleVar_ChildRounding, 4.f);

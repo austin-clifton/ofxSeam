@@ -8,7 +8,7 @@
 #include "seam/nodes/cos.h"
 #include "seam/nodes/fastNoise.h"
 #include "seam/nodes/feedback.h"
-#include "seam/nodes/gate.h"
+#include "seam/nodes/select.h"
 #include "seam/nodes/hdrTonemapper.h"
 #include "seam/nodes/markov.h"
 #include "seam/nodes/midiIn.h"
@@ -38,7 +38,6 @@ EventNodeFactory::EventNodeFactory() {
 	Register(MakeCreate<nodes::Cos>());
 	Register(MakeCreate<nodes::FastNoise>());
 	Register(MakeCreate<nodes::Feedback>());
-	Register(MakeCreate<nodes::Gate>());
 	Register(MakeCreate<nodes::HdrTonemapper>());
 	Register(MakeCreate<nodes::Markov>());
 	// Register(MakeCreate<nodes::MidiIn>());
@@ -48,6 +47,7 @@ EventNodeFactory::EventNodeFactory() {
 	Register(MakeCreate<nodes::PercussiveTrigger>());
 	Register(MakeCreate<nodes::Range>());
 	Register(MakeCreate<nodes::Saw>());
+	Register(MakeCreate<nodes::Select>());
 	Register(MakeCreate<nodes::Shader>());
 	Register(MakeCreate<nodes::Step>());
 	Register(MakeCreate<nodes::Threshold>());
@@ -113,7 +113,7 @@ bool EventNodeFactory::Register(EventNodeFactory::CreateFunc&& Create) {
 	{
 		PinInput* inputs = n->PinInputs(size);
 		for (size_t i = 0; i < size; i++) {
-			PinType type = inputs[i].type;
+			PinType type = inputs[i].Type();
 			// filter only for types that aren't already in the list
 			if (std::find(gen.pin_inputs.begin(), gen.pin_inputs.end(), type) == gen.pin_inputs.end()) {
 				gen.pin_inputs.push_back(type);
@@ -125,7 +125,7 @@ bool EventNodeFactory::Register(EventNodeFactory::CreateFunc&& Create) {
 	{
 		PinOutput* outputs = n->PinOutputs(size);
 		for (size_t i = 0; i < size; i++) {
-			PinType type = outputs[i].type;
+			PinType type = outputs[i].Type();
 			if (std::find(gen.pin_outputs.begin(), gen.pin_outputs.end(), type) == gen.pin_outputs.end()) {
 				gen.pin_outputs.push_back(type);
 			}

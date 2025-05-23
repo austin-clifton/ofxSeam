@@ -24,6 +24,17 @@ void PinOutput::SetNumCoords(uint16_t newNumCoords) {
     }
 }
 
+void PinOutput::SetType(PinType t) {
+    if (type == t) {
+        return;
+    }
+
+    type = t;
+    for (auto& c : connections) {
+        c.RecacheConverts();
+    }
+}
+
 void PinOutput::Reconnect(seam::pins::PushPatterns* pushPatterns) {
     if (!onConnected) {
         return;

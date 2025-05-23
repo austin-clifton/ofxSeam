@@ -35,7 +35,7 @@ void PinInput::SetNumCoords(uint16_t _numCoords) {
     }
 } 
 
-void PinInput::SetEnabled(bool enabled, seam::nodes::UpdateParams* params) {
+void PinInput::SetEnabled(bool enabled) {
     if (IsEnabled() == enabled) {
         return;
     } else {
@@ -46,10 +46,30 @@ void PinInput::SetEnabled(bool enabled, seam::nodes::UpdateParams* params) {
         }
 
         if (connection != nullptr) {
-            auto parents = node->GetParents();
-            auto parentConn = std::find(parents.begin(), parents.end(), connection->node);
-            assert(parentConn != parents.end());
+            auto parentConn = std::find(node->parents.begin(), node->parents.end(), connection->node);
+            assert(parentConn != node->parents.end());
             parentConn->activeConnections += enabled * 1 + !enabled * -1;
         }
+    }
+}
+
+void PinInput::SetType(PinType t) {
+    if (type == t) {
+        return;
+    }
+    
+    type = t;
+    if (connection != nullptr) {
+        // Find this connection in the connections list and recache its convert functions.
+        auto it = std::find_if(
+            connection->connections.begin(), 
+            connection->connections.end(), 
+            [this](PinConnection conn) {
+                return conn.pinIn == this;
+            }
+        );
+
+        assert(it != connection->connections.end());
+        it->RecacheConverts();
     }
 }
