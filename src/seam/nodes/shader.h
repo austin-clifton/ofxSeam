@@ -29,11 +29,22 @@ namespace seam::nodes {
 
 	private:
 		bool AttemptShaderLoad(const std::string& shader_name );
+		void OnFilteringChanged();
+		void OnTextureWrapChanged();
+
+		bool filterLinear = true;
+		int textureWrapHorizontal = GL_CLAMP_TO_EDGE;
+		int textureWrapVertical = GL_CLAMP_TO_EDGE;
 
 		UniformsPinMap uniformsPin = UniformsPinMap(this, &shader);
-		PinInput shaderPin = uniformsPin.SetupUniformsPin("Shader");
+		std::array<PinInput, 2> pinInputs = {
+			uniformsPin.SetupUniformsPin("Shader"),
+			SetupInputPin(PinType::Bool, this, &filterLinear, 1, "Filter Linear", 
+				PinInOptions::WithChangedCallbacks(std::bind(&Shader::OnFilteringChanged, this))
+			)
+		};
 
-		std::string shader_name = "daedelusSmear";
+		std::string shader_name = "mixer";
 		ofShader shader;
 		ofFbo fbo;
 
