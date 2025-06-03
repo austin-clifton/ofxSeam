@@ -1,6 +1,8 @@
 #include "seam/textureLocationResolver.h"
 #include "seam/pins/push.h"
 
+#define TEX_RESOLVER_VERBOSE 0
+
 using namespace seam;
 
 TextureLocationResolver::TextureLocationResolver(pins::PushPatterns* _pushPatterns, uint32_t availableLocations) {
@@ -20,8 +22,10 @@ uint32_t TextureLocationResolver::Bind(ofTexture* tex) {
     if (existing != textureLocations.end()) {
         existing->bindings += 1;
 
+#if TEX_RESOLVER_VERBOSE
         printf("Incrementing ref bindings for existing texture binding %u to %u\n",
             existing->index, existing->bindings);
+#endif
 
         return existing->index;
     } else {
@@ -39,7 +43,9 @@ uint32_t TextureLocationResolver::Bind(ofTexture* tex) {
 
         taken.texture = tex;
 
+#if TEX_RESOLVER_VERBOSE
         printf("New texture binding to index %u\n", taken.index);
+#endif
 
         return taken.index;
     }
@@ -92,7 +98,9 @@ std::vector<TextureLocationResolver::TextureLocation>::iterator
 void TextureLocationResolver::MakeAvailable(uint32_t index) {
     assert(availableIndex > 0 && index < availableIndex && textureLocations[index].bindings == 0);
 
+#if TEX_RESOLVER_VERBOSE
     printf("Making texture index %u available\n", index);
+#endif
 
     textureLocations[index].texture = nullptr;
 
