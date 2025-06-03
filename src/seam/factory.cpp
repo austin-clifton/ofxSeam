@@ -17,6 +17,7 @@
 #include "seam/nodes/notesPrinter.h"
 #include "seam/nodes/percussiveTrigger.h"
 #include "seam/nodes/range.h"
+#include "seam/nodes/random.h"
 #include "seam/nodes/saw.h"
 #include "seam/nodes/shader.h"
 #include "seam/nodes/step.h"
@@ -46,6 +47,7 @@ EventNodeFactory::EventNodeFactory() {
 	Register(MakeCreate<nodes::NotesPrinter>());
 	Register(MakeCreate<nodes::PercussiveTrigger>());
 	Register(MakeCreate<nodes::Range>());
+	Register(MakeCreate<nodes::Random>());
 	Register(MakeCreate<nodes::Saw>());
 	Register(MakeCreate<nodes::Select>());
 	Register(MakeCreate<nodes::Shader>());
