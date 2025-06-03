@@ -5,8 +5,6 @@
 using namespace seam::nodes;
 
 FastNoise::FastNoise() : INode("Fast Noise") {
-    // TEMP: always use UpdatesOverTime, but there should be a way to flag and unflag
-    // nodes for over-time updates instead.
     flags = (NodeFlags)(flags | NodeFlags::IsVisual | NodeFlags::UpdatesOverTime);
     gui_display_fbo = &fbo;
 
@@ -18,7 +16,11 @@ FastNoise::FastNoise() : INode("Fast Noise") {
         SetupInputPin(PinType::Int, this, &vSplits, 1, "Vertical Splits"),
         SetupInputPin(PinType::Int, this, &hSplits, 1, "Horizontal Splits"),
         SetupInputPin(PinType::Float, this, &speed, 1, "Speed"),
-        SetupInputPin(PinType::Bool, this, &animateOverTime, 1, "Animate Over Time"),
+        SetupInputPin(PinType::Bool, this, &animateOverTime, 1, "Animate Over Time",
+            PinInOptions::WithChangedCallbacks([this]() {
+                SetUpdatesOverTime(animateOverTime);
+            }
+        )),
         SetupInputPin(PinType::Bool, this, &enableDomainWarp, 1, "Enable Domain Warp"),
         SetupInputPin(PinType::Bool, this, &filterNearest, 1, "Filter Nearest"),
         SetupInputPin(PinType::Int, this, &seed, 1, "Seed"),

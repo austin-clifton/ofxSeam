@@ -237,7 +237,7 @@ void SeamGraph::UpdateNodeGraph(INode* n, UpdateParams* params) {
 		}
     }
 
-    if (n->dirty) {
+    if (n->dirty || n->UpdatesOverTime()) {
         n->Update(params);
 		if (n->IsVisual()) {
 			nodesInDrawChain.push_back(n);
@@ -247,15 +247,6 @@ void SeamGraph::UpdateNodeGraph(INode* n, UpdateParams* params) {
 }
 
 void SeamGraph::Update() {
-    // Traverse the parent tree of each visible visual node and determine what needs to update
-    // Before traversing the graphs of visible nodes, dirty nodes which update every frame
-    for (auto n : nodesUpdateOverTime) {
-        // Set the dirty flag directly so children aren't affected;
-        // just because the node updates over time doesn't mean it will change every frame,
-        // for instance in the case of a timer which fires every XX seconds
-        n->dirty = true;
-    }
-
     // Clear the per-frame allocation pool
     allocPool.Clear();
 
@@ -331,7 +322,6 @@ void SeamGraph::NewGraph() {
 
 	// Clear all the various lists that keep track of nodes.
     nodesInDrawChain.clear();
-    nodesUpdateOverTime.clear();
     nodesUpdateEveryFrame.clear();
 
 	selectedNode = nullptr;
@@ -369,9 +359,6 @@ INode* SeamGraph::CreateAndAdd(seam::nodes::NodeId node_id) {
 		if (node->UpdatesEveryFrame()) {
 			nodesUpdateEveryFrame.push_back(node);
 		} 
-		if (node->UpdatesOverTime()) {
-			nodesUpdateOverTime.push_back(node);
-		}
 
 		// Visual nodes should be drawn once after creation,
 		// otherwise their frame buffers won't display anything.
@@ -425,7 +412,6 @@ void SeamGraph::DeleteNode(INode* node) {
     Erase(nodes, node);
     Erase(nodesInDrawChain, node);
     Erase(nodesUpdateEveryFrame, node);
-    Erase(nodesUpdateOverTime, node);
     
     IAudioNode* audioNode = dynamic_cast<IAudioNode*>(node);
     if (audioNode != nullptr) {
@@ -497,8 +483,8 @@ bool SeamGraph::Connect(PinInput* pinIn, PinOutput* pinOut) {
 	connectedArgs.pinOut = pinOut;
 	connectedArgs.pushPatterns = &pushPatterns;
 
-	pinOut->OnConnected(connectedArgs);
 	pinIn->OnConnected(connectedArgs);
+	pinOut->OnConnected(connectedArgs);
 
 	// give the input pin the default push pattern
 	pinIn->push_id = pushPatterns.Default().id;

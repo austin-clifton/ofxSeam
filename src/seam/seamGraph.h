@@ -132,9 +132,6 @@ namespace seam {
 		/// Cleared per frame and re-filled based on the dirtied nodes in the update chain.
 		std::vector<INode*> nodesInDrawChain;
 
-		/// @brief Nodes which update over time need to be invalidated every frame.
-		std::vector<INode*> nodesUpdateOverTime;
-
 		/// @brief Nodes which update every frame may need to need to Update() no matter what,
 		// even if they are not part of a visible visual chain
 		std::vector<INode*> nodesUpdateEveryFrame;

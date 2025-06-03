@@ -357,6 +357,14 @@ bool INode::GuiDrawPropertiesList(UpdateParams* params) {
 	return changed;
 }
 
+void INode::SetUpdatesOverTime(bool updatesOverTime) {
+	if (updatesOverTime) {
+		flags = (flags | NodeFlags::UpdatesOverTime);
+	} else {
+		flags = (flags & ~NodeFlags::UpdatesOverTime);
+	}
+}
+
 pins::PinInput* IDynamicPinsNode::AddPinIn(PinInArgs args) {
 	printf("Warning: IDynamicPinsNode::AddPinIn() default implementation called for "
 		"input pin %s, did you forget to override this call?\n", args.name.data());

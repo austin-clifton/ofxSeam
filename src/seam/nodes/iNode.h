@@ -221,6 +221,8 @@ namespace seam::nodes {
 		pins::PinOutput* FindPinOutput(pins::PinId id);
 
 	protected:
+		void SetUpdatesOverTime(bool updatesOverTime);
+
 		// nodes which draw to FBOs can set this member so the FBO is drawn as part of the node's center view.
 		ofFbo* gui_display_fbo = nullptr;
 
