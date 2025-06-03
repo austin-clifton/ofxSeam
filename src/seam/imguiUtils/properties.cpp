@@ -95,7 +95,6 @@ namespace seam::props {
 		}
 		case PinType::Flow: {
 			if (ImGui::Button(input->name.c_str())) {
-				input->OnValueChanged();
 				pinsChanged = true;
 			}
 			break;
