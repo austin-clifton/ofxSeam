@@ -32,9 +32,15 @@ namespace seam::pins {
 
     ConvertSingle GetConvertSingle(PinType srcType, PinType dstType, bool& isConvertible) {
         isConvertible = true;
+        const bool srcIsAny = srcType == PinType::Any;
         const bool dstIsAny = dstType == PinType::Any;
+        if (srcIsAny && dstIsAny) {
+            isConvertible = false;
+            return nullptr;
+        }
+
         // If types match, no conversion is needed and a simple memcpy can be used.
-        if (dstType == srcType || dstIsAny) {
+        if (dstType == srcType || srcIsAny || dstIsAny) {
             size_t elementSize = PinTypeToElementSize(dstIsAny ? srcType : dstType);
             return [elementSize](ConvertSingleArgs args) {
                 uint16_t numCoords = std::min(args.srcNumCoords, args.dstNumCoords);
@@ -131,7 +137,7 @@ namespace seam::pins {
 
         // Return empty converter since we can't actually do it...
         isConvertible = false;
-        return ConvertSingle();
+        return nullptr;
     }
 
     ConvertMulti GetConvertMulti(PinInput* pinIn, PinOutput* pinOut, bool& isConvertible) {
@@ -164,9 +170,25 @@ namespace seam::pins {
 
                         // Copy as many coords as possible per element, and then skip to the next element.
                         for (size_t i = 0; i < totalElements; i++) {
-                            std::copy((char*)args.src + elementSize * args.srcNumCoords * i,
-                                (char*)args.src + bytesPerCopy * (i + i),
-                                (char*)dst + elementSize * args.pinIn->NumCoords() * i);
+                            char* copyStartByte = (char*)args.src + elementSize * args.srcNumCoords * i;
+
+                            // When dstCoords > srcCoords, this loop allows the src to repeat copy to the dst,
+                            // so that (for instance) 1D src copies the same value to a 2D/3D dst
+                            for (uint16_t dstCoordOffset = 0; 
+                                dstCoordOffset < args.pinIn->NumCoords(); 
+                                dstCoordOffset += coordsPerCopy 
+                            ) {
+                                // When copying (for instance) a 2D src to 3D dst, the last copy is partial.
+                                // Make sure we don't copy more than that...
+                                const uint16_t coordsThisCopy = std::min(args.pinIn->NumCoords(), (uint16_t)(args.pinIn->NumCoords() - dstCoordOffset));
+                                const size_t actualBytesThisCopy = std::min(bytesPerCopy, coordsThisCopy * elementSize);
+                                std::copy(
+                                    (char*)copyStartByte,
+                                    (char*)copyStartByte + actualBytesThisCopy * (i + 1),
+                                    (char*)dst + elementSize * dstCoordOffset 
+                                        + elementSize * args.pinIn->NumCoords() * i
+                                );
+                            }
                         }
                     };
                 }
